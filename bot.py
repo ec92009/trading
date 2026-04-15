@@ -28,15 +28,11 @@ load_dotenv(Path(__file__).parent / ".env")
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 
-LOG_FILE = Path(__file__).parent / "bot.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(message)s",
     datefmt="%H:%M:%S",
-    handlers=[
-        logging.FileHandler(LOG_FILE),
-        logging.StreamHandler(),
-    ],
+    handlers=[logging.StreamHandler()],
 )
 
 # ── Config ────────────────────────────────────────────────────────────────────
