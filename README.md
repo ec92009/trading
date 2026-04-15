@@ -10,7 +10,8 @@ All trades run against a **paper trading account** (no real money).
 - Connects to an Alpaca paper trading account
 - Places market orders (stocks and crypto) using fractional/notional amounts
 - Runs an always-on background bot that monitors multiple positions concurrently and enforces trading rules automatically
-- Displays a live visual dashboard of all positions
+- Persists order state in a local TSV log so restarts never duplicate buys
+- Displays a live visual dashboard of all positions (HTML web dashboard or matplotlib chart)
 
 ---
 
@@ -21,12 +22,15 @@ trading/
 ├── .env              # API credentials (not committed)
 ├── requirements.txt  # Python dependencies
 ├── bot.py            # Always-on trading bot (all assets, runs as launchd service)
+├── trade_log.py      # Thread-safe TSV log of pending/filled orders
 ├── add_asset.py      # TUI for adding a new asset to the bot
 ├── main.py           # Check account balance
 ├── portfolio.py      # View positions and pending orders
 ├── queue_orders.py   # Place multiple orders at once
-├── status.py         # Visual dashboard (price history + floor chart)
-└── bot.log           # Live log output (not committed)
+├── dashboard.py      # HTML web dashboard at http://localhost:8080
+├── status.py         # matplotlib chart (interactive window or PNG)
+├── bot.log           # Live log output (not committed)
+└── trades.tsv        # Order state log (not committed)
 ```
 
 ---
@@ -76,8 +80,10 @@ cd ~/Dev/trading && source .venv/bin/activate
 | `python3 main.py` | Show account balance |
 | `python3 portfolio.py` | Show positions and pending orders |
 | `python3 queue_orders.py` | Place a batch of orders |
-| `python3 status.py` | Open live visual dashboard |
-| `SAVE_ONLY=1 python3 status.py` | Save dashboard to `status.png` |
+| `python3 dashboard.py` | Launch HTML web dashboard at http://localhost:8080 |
+| `python3 dashboard.py --no-browser` | Launch dashboard without auto-opening browser |
+| `python3 status.py` | Open matplotlib chart window |
+| `SAVE_ONLY=1 python3 status.py` | Save chart to `status.png` |
 | `python3 add_asset.py` | TUI to add a new asset to the bot |
 
 ---
@@ -102,9 +108,14 @@ Each asset runs in its own thread with independent state.
 
 ### Restart safety
 
-On startup the bot checks for existing positions and pending orders before buying:
-- **Existing position found** → resumes monitoring, cancels any stale pending buy orders
-- **No position** → cancels stale orders, places a fresh entry buy
+On startup the bot checks Alpaca positions **and** the local `trades.tsv` log before buying:
+- **Existing filled position** → resume monitoring, cancel any duplicate open buy orders
+- **Pending buy in TSV + still open on Alpaca** → keep it, resume with estimated entry
+- **Pending buy in TSV + filled since last run** → update TSV, resume with actual fill price
+- **Pending buy in TSV + cancelled on Alpaca** → mark TSV cancelled, place a fresh buy
+- **No position, no TSV record** → fresh entry buy
+
+The TSV log prevents duplicate buys if the bot restarts multiple times before a pending order has filled.
 
 ### Market hours
 
@@ -132,25 +143,19 @@ and the bot reloads automatically.
 
 ### Option 2 — Edit `bot.py` directly
 
-Open `bot.py` and find the `BOTS` list near the top:
+Open `bot.py` and find the `BOTS` list near the top. A typical setup sizes each position as a fraction of total portfolio value:
 
 ```python
+_P = 348.71   # portfolio value at last rebalance
 BOTS = [
-    BotConfig(symbol="AAPL",    asset_class="stock"),
-    BotConfig(symbol="BTC/USD", asset_class="crypto"),
+    BotConfig(symbol="AAPL",    asset_class="stock",  initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
+    BotConfig(symbol="BTC/USD", asset_class="crypto", initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
+    BotConfig(symbol="PLTR",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
+    BotConfig(symbol="NVDA",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
 ]
 ```
 
-Add a new `BotConfig` line for your asset:
-
-```python
-BOTS = [
-    BotConfig(symbol="AAPL",    asset_class="stock"),
-    BotConfig(symbol="BTC/USD", asset_class="crypto"),
-    BotConfig(symbol="NVDA",    asset_class="stock"),   # ← new
-    BotConfig(symbol="ETH/USD", asset_class="crypto"),  # ← new
-]
-```
+Add a new `BotConfig` line for any asset you want to track.
 
 **`asset_class` values:**
 - `"stock"` — US equities (respects market hours, uses `DAY` orders)
@@ -191,6 +196,39 @@ After editing, reload the background service:
 launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.trading.bot.plist
 launchctl load ~/Library/LaunchAgents/com.trading.bot.plist
 ```
+
+---
+
+## Live dashboard
+
+Two dashboards are available:
+
+### HTML web dashboard (`dashboard.py`) — recommended
+
+```bash
+python3 dashboard.py
+```
+
+Starts a local HTTP server at **http://localhost:8080** and opens your browser. Shows one Chart.js panel per asset:
+- Price line (color-coded per asset)
+- Floor as a red dashed step function
+- Y axis centered on entry price
+- Live P&L badge per card
+- Portfolio total, cash, P&L in the header
+- **Refresh** button pulls fresh data from Alpaca + `bot.log`
+
+Charts are responsive and fill the browser window. Use `--no-browser` to skip auto-opening.
+
+### matplotlib chart (`status.py`)
+
+```bash
+python3 status.py              # interactive window
+SAVE_ONLY=1 python3 status.py  # save to status.png
+```
+
+Same layout but rendered via matplotlib. Useful for saving a snapshot PNG.
+
+Both dashboards auto-load the current `BOTS` list from `bot.py` — no manual sync needed.
 
 ---
 
