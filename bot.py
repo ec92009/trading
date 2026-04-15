@@ -107,7 +107,16 @@ class Bot:
     def tif(self):
         return TimeInForce.GTC if self.cfg.asset_class == "crypto" else TimeInForce.DAY
 
+    def check_buying_power(self, needed: float):
+        """Raise if account buying power is insufficient."""
+        bp = float(trading.get_account().buying_power)
+        if bp < needed:
+            raise RuntimeError(
+                f"Insufficient buying power: need ${needed}, available ${bp:.2f}"
+            )
+
     def buy(self, notional: float, reason: str):
+        self.check_buying_power(notional)
         order = trading.submit_order(MarketOrderRequest(
             symbol=self.cfg.symbol,
             notional=notional,
@@ -213,7 +222,17 @@ class Bot:
                 self.logger.error(f"ERROR: {e}")
 
     def run(self):
-        self.setup()
+        retry_interval = 60
+        while True:
+            try:
+                self.setup()
+                break
+            except RuntimeError as e:
+                self.logger.error(f"SETUP FAILED: {e} — retrying in {retry_interval}s")
+                time.sleep(retry_interval)
+            except Exception as e:
+                self.logger.error(f"SETUP ERROR: {e} — retrying in {retry_interval}s")
+                time.sleep(retry_interval)
         self.monitor()
 
 # ── Main ──────────────────────────────────────────────────────────────────────
