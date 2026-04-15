@@ -57,8 +57,7 @@ BOTS = [
     BotConfig(symbol="BTC/USD", asset_class="crypto"),
     BotConfig(symbol="PLTR", asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
     BotConfig(symbol="NVDA", asset_class="stock", initial_notional=20.00, ladder_notional=20.00),
-    BotConfig(symbol="TSMC", asset_class="stock", initial_notional=20.00, ladder_notional=20.00),
-    BotConfig(symbol="TSM", asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
+    BotConfig(symbol="TSM",  asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
 ]
 
 # ── Shared clients ────────────────────────────────────────────────────────────
@@ -169,7 +168,7 @@ class Bot:
     def _cancel_open_buys_except(self, keep_id: str | None = None):
         """Cancel all open buy orders for this symbol, optionally sparing one."""
         orders = trading.get_orders(GetOrdersRequest(
-            symbol=self.cfg.symbol,
+            symbols=[self.cfg.symbol],        # must be a list — symbol= is ignored by SDK
             status=QueryOrderStatus.OPEN,
         ))
         for o in orders:

@@ -36,6 +36,28 @@ def existing_symbols():
     text = (HERE / "bot.py").read_text()
     return re.findall(r'symbol\s*=\s*"([^"]+)"', text)
 
+def validate_symbol(symbol: str, asset_class: str) -> str | None:
+    """
+    Confirm the symbol is tradable on Alpaca.
+    Returns None if valid, or an error string if not.
+    """
+    from alpaca.trading.client import TradingClient
+    from alpaca.trading.exceptions import APIError
+    c = TradingClient(
+        api_key=os.getenv("ALPACA_API_KEY"),
+        secret_key=os.getenv("ALPACA_SECRET_KEY"),
+        paper=True,
+    )
+    try:
+        asset = c.get_asset(symbol)
+        if not asset.tradable:
+            return f"{symbol} exists but is not tradable."
+        return None
+    except APIError:
+        return f"{symbol} not found on Alpaca."
+    except Exception as e:
+        return f"Could not validate {symbol}: {e}"
+
 def add_to_bot(symbol: str, asset_class: str, notional: float):
     path = HERE / "bot.py"
     text = path.read_text()
@@ -510,6 +532,13 @@ class AddAssetApp(App):
             return
 
         asset_class = "crypto" if "/" in symbol else "stock"
+
+        # Validate symbol against Alpaca before writing anything
+        err = validate_symbol(symbol, asset_class)
+        if err:
+            self._error(err)
+            return
+
         try:
             add_to_bot(symbol, asset_class, notional)
             reload_service()
