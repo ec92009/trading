@@ -1,4 +1,4 @@
 alpaca-py
 python-dotenv
-pytz
 matplotlib
+textual
