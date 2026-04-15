@@ -52,12 +52,14 @@ class BotConfig:
     ladder2_pct:      float  = 0.850
     poll_interval:    int    = 30
 
+_P = 348.71   # portfolio value at last rebalance — update if you rebalance again
 BOTS = [
-    BotConfig(symbol="AAPL",    asset_class="stock"),
-    BotConfig(symbol="BTC/USD", asset_class="crypto"),
-    BotConfig(symbol="PLTR", asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
-    BotConfig(symbol="NVDA", asset_class="stock", initial_notional=20.00, ladder_notional=20.00),
-    BotConfig(symbol="TSM",  asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
+    BotConfig(symbol="AAPL",    asset_class="stock",  initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
+    BotConfig(symbol="BTC/USD", asset_class="crypto", initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
+    BotConfig(symbol="PLTR",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
+    BotConfig(symbol="TSM",     asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
+    BotConfig(symbol="NVDA",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
+    BotConfig(symbol="TSLA",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
 ]
 
 # ── Shared clients ────────────────────────────────────────────────────────────
