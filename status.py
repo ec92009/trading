@@ -1,6 +1,7 @@
 """
-Visual portfolio status dashboard.
-Shows current price, entry, floor, and trail trigger for each active bot position.
+Trading bot status dashboard.
+One subplot per asset showing price history vs time,
+with floor as a step function. Y axis centered on entry price.
 """
 
 import os
@@ -9,17 +10,16 @@ import sys
 import matplotlib
 matplotlib.use("MacOSX" if not os.environ.get("SAVE_ONLY") else "Agg")
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
+import matplotlib.dates as mdates
+from datetime import datetime, date
 from pathlib import Path
 from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
 from alpaca.data.historical import StockHistoricalDataClient, CryptoHistoricalDataClient
 from alpaca.data.requests import StockLatestQuoteRequest, CryptoLatestQuoteRequest
 
-load_dotenv(Path(__file__).parent / ".env")
-
-# ── Clients ───────────────────────────────────────────────────────────────────
+HERE = Path(__file__).parent
+load_dotenv(HERE / ".env")
 
 _key    = os.getenv("ALPACA_API_KEY")
 _secret = os.getenv("ALPACA_SECRET_KEY")
@@ -27,9 +27,57 @@ trading     = TradingClient(api_key=_key, secret_key=_secret, paper=True)
 stock_data  = StockHistoricalDataClient(api_key=_key, secret_key=_secret)
 crypto_data = CryptoHistoricalDataClient(api_key=_key, secret_key=_secret)
 
-# ── Data ──────────────────────────────────────────────────────────────────────
+ASSETS = [
+    {"symbol": "AAPL",    "asset_class": "stock",  "color": "#4A90D9"},
+    {"symbol": "BTC/USD", "asset_class": "crypto", "color": "#F7931A"},
+]
 
-def get_price(symbol, asset_class):
+# ── Log parsing ───────────────────────────────────────────────────────────────
+
+def parse_history(symbol: str):
+    """
+    Parse bot.log for the most recent session of this symbol.
+    Returns (times, prices, floors, entry_price).
+    """
+    tag   = symbol.replace("/", "")
+    today = date.today()
+    times, prices, floors = [], [], []
+    entry = None
+
+    with open(HERE / "bot.log") as f:
+        lines = f.readlines()
+
+    # Find the start of the most recent session for this symbol
+    last_start = 0
+    for i, line in enumerate(lines):
+        if f"[{tag}]" in line and "BOT STARTED" in line:
+            last_start = i
+
+    for line in lines[last_start:]:
+        if f"[{tag}]" not in line:
+            continue
+
+        m_ts = re.match(r'(\d{2}:\d{2}:\d{2})', line)
+        if not m_ts:
+            continue
+        dt = datetime.combine(today, datetime.strptime(m_ts.group(1), "%H:%M:%S").time())
+
+        if "Entry" in line and ":" in line and entry is None:
+            m = re.search(r'\$([0-9,]+\.?\d*)', line)
+            if m:
+                entry = float(m.group(1).replace(",", ""))
+            continue
+
+        m_price = re.search(r'price=\$([0-9,]+\.?\d*)', line)
+        m_floor = re.search(r'floor=\$([0-9,]+\.?\d*)', line)
+        if m_price and m_floor:
+            times.append(dt)
+            prices.append(float(m_price.group(1).replace(",", "")))
+            floors.append(float(m_floor.group(1).replace(",", "")))
+
+    return times, prices, floors, entry
+
+def get_live_price(symbol, asset_class):
     if asset_class == "crypto":
         q = crypto_data.get_crypto_latest_quote(
             CryptoLatestQuoteRequest(symbol_or_symbols=symbol)
@@ -41,156 +89,143 @@ def get_price(symbol, asset_class):
     ask, bid = float(q.ask_price or 0), float(q.bid_price or 0)
     return (ask + bid) / 2 if (ask and bid) else ask or bid
 
-def parse_bot_state(symbol):
-    """Extract latest entry, floor, trail_next from bot.log."""
-    log = Path(__file__).parent / "bot.log"
-    tag = symbol.replace("/", "")
-    entry = floor = trail = None
-    with open(log) as f:
-        for line in f:
-            if f"[{tag}]" not in line:
-                continue
-            if "Entry" in line:
-                m = re.search(r'\$([0-9,]+\.?\d*)', line)
-                if m: entry = float(m.group(1).replace(",", ""))
-            elif "Stop loss" in line:
-                m = re.search(r'\$([0-9,]+\.?\d*)', line)
-                if m: floor = float(m.group(1).replace(",", ""))
-            elif "Trail trigger" in line:
-                m = re.search(r'\$([0-9,]+\.?\d*)', line)
-                if m: trail = float(m.group(1).replace(",", ""))
-    return entry, floor, trail
-
-ASSETS = [
-    {"symbol": "AAPL",    "asset_class": "stock",  "label": "AAPL",    "color": "#4A90D9"},
-    {"symbol": "BTC/USD", "asset_class": "crypto", "label": "BTC/USD", "color": "#F7931A"},
-]
+# ── Build chart ───────────────────────────────────────────────────────────────
 
 positions = {p.symbol: p for p in trading.get_all_positions()}
 account   = trading.get_account()
 
-# ── Build data ────────────────────────────────────────────────────────────────
-
-rows = []
-for a in ASSETS:
-    sym   = a["symbol"]
-    tag   = sym.replace("/", "")
-    pos   = positions.get(tag)
-    entry, floor, trail = parse_bot_state(sym)
-    price = get_price(sym, a["asset_class"])
-
-    avg   = float(pos.avg_entry_price) if pos else entry or price
-    mkt   = float(pos.market_value)    if pos else 0.0
-    pl    = float(pos.unrealized_pl)   if pos else 0.0
-    qty   = float(pos.qty)             if pos else 0.0
-
-    rows.append({
-        "label":  a["label"],
-        "color":  a["color"],
-        "price":  price,
-        "entry":  avg,
-        "floor":  floor or avg * 0.95,
-        "trail":  trail or avg * 1.10,
-        "mkt":    mkt,
-        "pl":     pl,
-        "qty":    qty,
-    })
-
-# ── Plot ──────────────────────────────────────────────────────────────────────
-
-fig, axes = plt.subplots(1, len(rows), figsize=(13, 6))
+n     = min(len(ASSETS), 4)
+fig, axes = plt.subplots(1, n, figsize=(6 * n, 5), sharey=False)
 fig.patch.set_facecolor("#0f1117")
-
-if len(rows) == 1:
+if n == 1:
     axes = [axes]
 
-for ax, r in zip(axes, rows):
+for ax, a in zip(axes, ASSETS[:4]):
+    sym        = a["symbol"]
+    tag        = sym.replace("/", "")
+    color      = a["color"]
+    times, prices, floors, entry = parse_history(sym)
+    live_price = get_live_price(sym, a["asset_class"])
+    pos        = positions.get(tag)
+    avg_entry  = float(pos.avg_entry_price) if pos else entry
+
+    # Append live price to history so chart extends to now
+    if times:
+        times.append(datetime.now())
+        prices.append(live_price)
+        floors.append(floors[-1] if floors else (avg_entry * 0.95 if avg_entry else live_price * 0.95))
+
     ax.set_facecolor("#1a1d27")
 
-    floor  = r["floor"]
-    trail  = r["trail"]
-    price  = r["price"]
-    entry  = r["entry"]
+    if not times or avg_entry is None:
+        ax.text(0.5, 0.5, "No data yet", transform=ax.transAxes,
+                color="#888", ha="center", va="center", fontsize=12)
+        ax.set_title(sym, color="white", fontsize=14, fontweight="bold")
+        continue
 
-    # vertical range: floor - 5% to trail + 5%
-    lo = floor  * 0.95
-    hi = trail  * 1.05
-    span = hi - lo
+    # ── Y axis: centered on entry price ──────────────────────────────────────
+    all_vals  = prices + floors + [avg_entry]
+    half_span = max(abs(v - avg_entry) for v in all_vals) * 1.35 or avg_entry * 0.10
+    y_lo      = avg_entry - half_span
+    y_hi      = avg_entry + half_span
+    ax.set_ylim(y_lo, y_hi)
 
-    def pct(v): return (v - lo) / span   # 0–1 within plot range
+    # ── Entry center line ─────────────────────────────────────────────────────
+    ax.axhline(avg_entry, color="#888888", linewidth=0.8, linestyle=":", alpha=0.7)
 
-    # ── Background zones ──────────────────────────────────────────────────────
-    ax.barh(0, pct(floor) - pct(lo),  left=pct(lo),    height=0.6,
-            color="#c0392b", alpha=0.25, zorder=1)   # danger zone
-    ax.barh(0, pct(trail) - pct(floor), left=pct(floor), height=0.6,
-            color="#27ae60", alpha=0.15, zorder=1)   # safe zone
-    ax.barh(0, pct(hi)    - pct(trail), left=pct(trail), height=0.6,
-            color="#2980b9", alpha=0.2,  zorder=1)   # trail zone
+    # ── Floor step function ───────────────────────────────────────────────────
+    if floors:
+        ax.step(times, floors, where="post", color="#e74c3c",
+                linewidth=1.8, linestyle="--", alpha=0.9, label="Floor", zorder=3)
+        # Label the current floor value
+        current_floor = floors[-1]
+        ax.annotate(
+            f"  FLOOR\n  ${current_floor:,.2f}",
+            xy=(times[-1], current_floor),
+            color="#e74c3c", fontsize=8, va="center",
+            fontweight="bold",
+        )
 
-    # ── Key level markers ─────────────────────────────────────────────────────
-    for val, lbl, clr, ls in [
-        (floor,  "FLOOR",   "#e74c3c", "--"),
-        (entry,  "ENTRY",   "#bdc3c7", ":"),
-        (trail,  "TRAIL ▲", "#3498db", "--"),
-    ]:
-        ax.axvline(pct(val), color=clr, linestyle=ls, linewidth=1.5, alpha=0.8, zorder=2)
-        ax.text(pct(val), 0.42, lbl, color=clr, fontsize=7.5, ha="center",
-                fontweight="bold", va="bottom")
-        fmt = f"${val:,.0f}" if val > 999 else f"${val:.2f}"
-        ax.text(pct(val), -0.42, fmt, color=clr, fontsize=7.5, ha="center", va="top")
+    # ── Price line ────────────────────────────────────────────────────────────
+    ax.plot(times, prices, color=color, linewidth=2, zorder=4, label="Price")
 
-    # ── Current price marker ──────────────────────────────────────────────────
-    ax.axvline(pct(price), color=r["color"], linewidth=3, zorder=4)
-    pfmt = f"${price:,.0f}" if price > 999 else f"${price:.2f}"
-    ax.text(pct(price), 0.55, pfmt, color=r["color"], fontsize=11,
-            ha="center", fontweight="bold", va="bottom")
-    ax.text(pct(price), -0.55, "NOW", color=r["color"], fontsize=8,
-            ha="center", va="top", fontweight="bold")
+    # Mark current price
+    ax.plot(times[-1], live_price, "o", color=color, markersize=7, zorder=5)
+    price_fmt = f"${live_price:,.2f}" if live_price < 10000 else f"${live_price:,.0f}"
+    ax.annotate(
+        f"  {price_fmt}",
+        xy=(times[-1], live_price),
+        color=color, fontsize=9, va="center", fontweight="bold",
+    )
+
+    # ── Y axis: dollar labels ─────────────────────────────────────────────────
+    tick_count = 6
+    import numpy as np
+    ticks = np.linspace(y_lo, y_hi, tick_count)
+    ax.set_yticks(ticks)
+    if avg_entry >= 1000:
+        ax.set_yticklabels([f"${v:,.0f}" for v in ticks], color="#aaaaaa", fontsize=8)
+    else:
+        ax.set_yticklabels([f"${v:.2f}" for v in ticks], color="#aaaaaa", fontsize=8)
+    ax.yaxis.set_label_position("left")
+
+    # Mark entry on y axis
+    ax.axhline(avg_entry, color="#555", linewidth=0.5)
+    ax.annotate(
+        f"ENTRY ${avg_entry:,.2f}" if avg_entry >= 1000 else f"ENTRY ${avg_entry:.2f}",
+        xy=(times[0], avg_entry),
+        color="#888888", fontsize=7.5, va="bottom", ha="left", alpha=0.9,
+    )
+
+    # ── X axis: time ──────────────────────────────────────────────────────────
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right",
+             color="#aaaaaa", fontsize=8)
 
     # ── P&L badge ─────────────────────────────────────────────────────────────
-    pl_color = "#2ecc71" if r["pl"] >= 0 else "#e74c3c"
-    pl_sign  = "+" if r["pl"] >= 0 else ""
-    pct_chg  = (price - entry) / entry * 100
-    ax.text(0.98, 0.97,
-            f"{pl_sign}${r['pl']:.2f}  ({pl_sign}{pct_chg:.2f}%)",
+    pl        = float(pos.unrealized_pl) if pos else 0.0
+    pct_chg   = (live_price - avg_entry) / avg_entry * 100
+    pl_sign   = "+" if pl >= 0 else ""
+    pl_color  = "#2ecc71" if pl >= 0 else "#e74c3c"
+    ax.text(0.98, 0.98,
+            f"{pl_sign}${pl:.2f}  ({pl_sign}{pct_chg:.2f}%)",
             transform=ax.transAxes, color=pl_color, fontsize=9,
             ha="right", va="top", fontweight="bold",
-            bbox=dict(facecolor="#1a1d27", edgecolor=pl_color, boxstyle="round,pad=0.3"))
-
-    # ── Market value badge ────────────────────────────────────────────────────
-    ax.text(0.02, 0.97,
-            f"${r['mkt']:.2f}  ({r['qty']:.6f})",
-            transform=ax.transAxes, color="#ecf0f1", fontsize=8,
-            ha="left", va="top",
-            bbox=dict(facecolor="#1a1d27", edgecolor="#555", boxstyle="round,pad=0.3"))
+            bbox=dict(facecolor="#1a1d27", edgecolor=pl_color,
+                      boxstyle="round,pad=0.3", alpha=0.9))
 
     # ── Styling ───────────────────────────────────────────────────────────────
-    ax.set_title(r["label"], color="white", fontsize=16, fontweight="bold", pad=12)
-    ax.set_xlim(0, 1)
-    ax.set_ylim(-0.8, 0.8)
-    ax.axis("off")
+    ax.set_title(sym, color="white", fontsize=14, fontweight="bold", pad=10)
+    ax.tick_params(axis="x", colors="#aaaaaa")
+    ax.tick_params(axis="y", colors="#aaaaaa")
+    for spine in ax.spines.values():
+        spine.set_edgecolor("#333")
+    ax.grid(axis="y", color="#2a2d3a", linewidth=0.5, alpha=0.7)
 
-# ── Account summary footer ────────────────────────────────────────────────────
-total_pl  = sum(r["pl"]  for r in rows)
-total_mkt = sum(r["mkt"] for r in rows)
-cash      = float(account.cash)
+# ── Footer ────────────────────────────────────────────────────────────────────
+
 portfolio = float(account.portfolio_value)
-pl_color  = "#2ecc71" if total_pl >= 0 else "#e74c3c"
+cash      = float(account.cash)
+total_pl  = sum(
+    float(p.unrealized_pl) for p in trading.get_all_positions()
+)
 pl_sign   = "+" if total_pl >= 0 else ""
 
-fig.text(0.5, 0.04,
-         f"Portfolio: ${portfolio:,.2f}   |   "
-         f"Positions: ${total_mkt:.2f}   |   "
-         f"Cash: ${cash:,.2f}   |   "
-         f"P&L: {pl_sign}${total_pl:.2f}",
-         ha="center", color="#aaaaaa", fontsize=10,
-         bbox=dict(facecolor="#0f1117", edgecolor="#333", boxstyle="round,pad=0.5"))
+fig.text(0.5, 0.01,
+         f"Portfolio: ${portfolio:,.2f}   |   Cash: ${cash:,.2f}   |   "
+         f"Total P&L: {pl_sign}${total_pl:.2f}   |   "
+         f"Updated: {datetime.now().strftime('%H:%M:%S')}",
+         ha="center", color="#888", fontsize=9,
+         bbox=dict(facecolor="#0f1117", edgecolor="#333",
+                   boxstyle="round,pad=0.4"))
 
-fig.suptitle("Trading Bot — Live Status", color="white", fontsize=14,
-             fontweight="bold", y=0.97)
-plt.tight_layout(rect=[0, 0.09, 1, 0.93])
+fig.suptitle("Trading Bot — Live Status", color="white",
+             fontsize=13, fontweight="bold", y=0.99)
+plt.tight_layout(rect=[0, 0.06, 1, 0.97])
+
 if os.environ.get("SAVE_ONLY"):
-    out = Path(__file__).parent / "status.png"
+    out = HERE / "status.png"
     plt.savefig(out, dpi=150, bbox_inches="tight", facecolor="#0f1117")
     print(f"Saved to {out}")
 else:
