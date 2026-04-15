@@ -21,6 +21,7 @@ trading/
 ├── .env              # API credentials (not committed)
 ├── requirements.txt  # Python dependencies
 ├── bot.py            # Always-on trading bot (all assets, runs as launchd service)
+├── add_asset.py      # TUI for adding a new asset to the bot
 ├── main.py           # Check account balance
 ├── portfolio.py      # View positions and pending orders
 ├── queue_orders.py   # Place multiple orders at once
@@ -77,6 +78,7 @@ cd ~/Dev/trading && source .venv/bin/activate
 | `python3 queue_orders.py` | Place a batch of orders |
 | `python3 status.py` | Open live visual dashboard |
 | `SAVE_ONLY=1 python3 status.py` | Save dashboard to `status.png` |
+| `python3 add_asset.py` | TUI to add a new asset to the bot |
 
 ---
 
@@ -112,6 +114,23 @@ On startup the bot checks for existing positions and pending orders before buyin
 ---
 
 ## Adding an asset to watch
+
+### Option 1 — TUI (recommended)
+
+```bash
+cd ~/Dev/trading && source .venv/bin/activate && python3 add_asset.py
+```
+
+An interactive terminal app will open showing your current cash and buying power.
+Enter a symbol and investment amount (in `$` or `%` of buying power), confirm,
+and the bot reloads automatically.
+
+- Detects stock vs crypto automatically (`/` in symbol → crypto)
+- Validates symbol isn't already watched, amount is positive and within buying power
+- Writes to `bot.py` and reloads the launchd service on confirm
+- Press `Escape` or **Cancel** to exit without changes
+
+### Option 2 — Edit `bot.py` directly
 
 Open `bot.py` and find the `BOTS` list near the top:
 
