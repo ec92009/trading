@@ -23,6 +23,7 @@ from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
 from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
 from alpaca.data.historical import StockHistoricalDataClient, CryptoHistoricalDataClient
 from alpaca.data.requests import StockLatestQuoteRequest, CryptoLatestQuoteRequest
+import trade_log
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -54,6 +55,10 @@ class BotConfig:
 BOTS = [
     BotConfig(symbol="AAPL",    asset_class="stock"),
     BotConfig(symbol="BTC/USD", asset_class="crypto"),
+    BotConfig(symbol="PLTR", asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
+    BotConfig(symbol="NVDA", asset_class="stock", initial_notional=20.00, ladder_notional=20.00),
+    BotConfig(symbol="TSMC", asset_class="stock", initial_notional=20.00, ladder_notional=20.00),
+    BotConfig(symbol="TSM", asset_class="stock", initial_notional=50.00, ladder_notional=50.00),
 ]
 
 # ── Shared clients ────────────────────────────────────────────────────────────
@@ -120,6 +125,7 @@ class Bot:
             time_in_force=self.tif,
         ))
         self.total_qty += round(notional / self.entry_price, self.qty_precision)
+        trade_log.log_order(self.cfg.symbol, order.id, "BUY", notional)
         self.logger.info(f"BUY ${notional} [{reason}] → {order.status} id={order.id}")
 
     def sell_all(self, reason: str):
@@ -129,6 +135,7 @@ class Bot:
             side=OrderSide.SELL,
             time_in_force=self.tif,
         ))
+        trade_log.log_order(self.cfg.symbol, order.id, "SELL", self.total_qty * self.entry_price)
         self.stopped_out = True
         self.logger.info(f"SELL ALL {self.total_qty} [{reason}] → {order.status} id={order.id}")
 
@@ -151,39 +158,91 @@ class Bot:
 
     # ── Setup ─────────────────────────────────────────────────────────────────
 
-    def _cancel_pending_buys(self):
-        """Cancel any open buy orders for this symbol."""
+    def _alpaca_order_status(self, order_id: str) -> str:
+        """Return Alpaca's current status string for an order, or 'unknown'."""
+        try:
+            o = trading.get_order_by_id(order_id)
+            return str(o.status)   # e.g. 'OrderStatus.FILLED'
+        except Exception:
+            return "unknown"
+
+    def _cancel_open_buys_except(self, keep_id: str | None = None):
+        """Cancel all open buy orders for this symbol, optionally sparing one."""
         orders = trading.get_orders(GetOrdersRequest(
             symbol=self.cfg.symbol,
             status=QueryOrderStatus.OPEN,
         ))
         for o in orders:
-            if str(o.side) == "OrderSide.BUY":
+            if str(o.side) == "OrderSide.BUY" and str(o.id) != keep_id:
                 trading.cancel_order_by_id(o.id)
-                self.logger.info(f"Cancelled stale buy order {o.id}")
+                trade_log.update_order(str(o.id), "cancelled")
+                self.logger.info(f"Cancelled duplicate buy order {o.id}")
 
     def setup(self):
         self.wait_for_market()
         cfg = self.cfg
 
-        # Check for existing position (e.g. from a previous session)
+        # ── 1. Existing filled position → resume monitoring ───────────────────
         positions = {p.symbol: p for p in trading.get_all_positions()}
         existing  = positions.get(cfg.symbol.replace("/", ""))
 
         if existing:
             self.entry_price = float(existing.avg_entry_price)
             self.total_qty   = float(existing.qty)
-            self._cancel_pending_buys()
+            self._cancel_open_buys_except(keep_id=None)
             self.logger.info(
                 f"Resuming existing position: "
-                f"{self.total_qty} shares @ ${self.entry_price:,.2f}"
+                f"{self.total_qty} @ ${self.entry_price:,.2f}"
             )
+
         else:
-            self._cancel_pending_buys()
-            price            = self.get_price()
-            self.entry_price = price
-            self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
-            self.buy(cfg.initial_notional, "initial entry")
+            # ── 2. Check TSV for a pending buy we already queued ──────────────
+            tsv_row = trade_log.get_pending_buy(cfg.symbol)
+
+            if tsv_row:
+                alpaca_status = self._alpaca_order_status(tsv_row["order_id"])
+
+                if "FILLED" in alpaca_status.upper():
+                    # Filled since last run — update TSV, use fill price
+                    o = trading.get_order_by_id(tsv_row["order_id"])
+                    fill_price = float(o.filled_avg_price or self.get_price())
+                    trade_log.update_order(tsv_row["order_id"], "filled", fill_price)
+                    self.entry_price = fill_price
+                    self.total_qty   = float(o.filled_qty or 0)
+                    self._cancel_open_buys_except(keep_id=None)
+                    self.logger.info(
+                        f"TSV buy filled @ ${fill_price:,.2f} — resuming"
+                    )
+
+                elif "CANCELLED" in alpaca_status.upper() or alpaca_status == "unknown":
+                    # Order gone — mark TSV cancelled, place fresh buy
+                    trade_log.update_order(tsv_row["order_id"], "cancelled")
+                    self.logger.info(
+                        f"TSV buy {tsv_row['order_id']} was cancelled — placing fresh order"
+                    )
+                    price            = self.get_price()
+                    self.entry_price = price
+                    self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+                    self.buy(cfg.initial_notional, "initial entry")
+
+                else:
+                    # Still pending on Alpaca — keep it, don't re-queue
+                    self._cancel_open_buys_except(keep_id=tsv_row["order_id"])
+                    price            = self.get_price()
+                    self.entry_price = price   # estimate until fill
+                    self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+                    self.logger.info(
+                        f"TSV buy {tsv_row['order_id']} still pending — "
+                        f"resuming with estimated entry ${price:,.2f}"
+                    )
+
+            else:
+                # ── 3. No TSV record — fresh entry ────────────────────────────
+                self._cancel_open_buys_except(keep_id=None)
+                price            = self.get_price()
+                self.entry_price = price
+                self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+                self.buy(cfg.initial_notional, "initial entry")
 
         self.floor         = round(self.entry_price * cfg.stop_pct,      2)
         self.ladder1_price = round(self.floor * cfg.ladder1_pct,         2)
