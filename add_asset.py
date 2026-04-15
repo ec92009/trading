@@ -188,6 +188,20 @@ Input.-invalid {
     color: #ffffff;
 }
 
+#another-btn {
+    display: none;
+    background: #1a5276;
+    color: #4A90D9;
+    border: solid #4A90D9;
+    margin-right: 2;
+    min-width: 16;
+}
+
+#another-btn:hover {
+    background: #4A90D9;
+    color: #ffffff;
+}
+
 #cancel-btn {
     background: #2a2d3a;
     color: #888888;
@@ -270,8 +284,9 @@ class AddAssetApp(App):
             yield Label("", id="success-msg")
 
             with Horizontal(id="btn-row"):
-                yield Button("Add Asset", id="add-btn", variant="primary")
-                yield Button("Cancel", id="cancel-btn")
+                yield Button("Add Asset",   id="add-btn",     variant="primary")
+                yield Button("Add Another", id="another-btn", variant="primary")
+                yield Button("Cancel",      id="cancel-btn")
 
         yield Footer()
 
@@ -346,18 +361,39 @@ class AddAssetApp(App):
         try:
             add_to_bot(symbol, asset_class, notional)
             reload_service()
+            # Update buying power to reflect reserved funds
+            self._buying_power -= notional
+            self.query_one("#bp-val").update(f"${self._buying_power:,.2f}")
             self.query_one("#success-msg").update(
-                f"✓ {symbol} added (${notional:,.2f}, {asset_class}).\n"
-                f"  Bot reloaded."
+                f"✓ {symbol} added — ${notional:,.2f} ({asset_class}) — bot reloaded."
             )
-            self.query_one("#add-btn").disabled = True
+            self.query_one("#add-btn").display    = False
+            self.query_one("#another-btn").display = True
+            self.query_one("#cancel-btn").label   = "Done"
             self.query_one("#symbol-input").disabled = True
             self.query_one("#amount-input").disabled = True
+            self.query_one("#mode-btn").disabled  = True
         except Exception as e:
             self._error(str(e))
 
     def _error(self, msg: str):
         self.query_one("#error-msg").update(msg)
+
+    @on(Button.Pressed, "#another-btn")
+    def do_another(self):
+        """Reset the form for a new asset."""
+        self.query_one("#symbol-input").value    = ""
+        self.query_one("#amount-input").value    = ""
+        self.query_one("#symbol-input").disabled = False
+        self.query_one("#amount-input").disabled = False
+        self.query_one("#mode-btn").disabled     = False
+        self.query_one("#success-msg").update("")
+        self.query_one("#error-msg").update("")
+        self.query_one("#computed").update("")
+        self.query_one("#add-btn").display       = True
+        self.query_one("#another-btn").display   = False
+        self.query_one("#cancel-btn").label      = "Cancel"
+        self.query_one("#symbol-input").focus()
 
     @on(Button.Pressed, "#cancel-btn")
     def action_cancel(self):
