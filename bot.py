@@ -19,8 +19,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import MarketOrderRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
+from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
+from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
 from alpaca.data.historical import StockHistoricalDataClient, CryptoHistoricalDataClient
 from alpaca.data.requests import StockLatestQuoteRequest, CryptoLatestQuoteRequest
 
@@ -151,24 +151,49 @@ class Bot:
 
     # ── Setup ─────────────────────────────────────────────────────────────────
 
+    def _cancel_pending_buys(self):
+        """Cancel any open buy orders for this symbol."""
+        orders = trading.get_orders(GetOrdersRequest(
+            symbol=self.cfg.symbol,
+            status=QueryOrderStatus.OPEN,
+        ))
+        for o in orders:
+            if str(o.side) == "OrderSide.BUY":
+                trading.cancel_order_by_id(o.id)
+                self.logger.info(f"Cancelled stale buy order {o.id}")
+
     def setup(self):
         self.wait_for_market()
-        price = self.get_price()
-        cfg   = self.cfg
+        cfg = self.cfg
 
-        self.entry_price   = price
-        self.floor         = round(price * cfg.stop_pct,     2)
-        self.ladder1_price = round(self.floor * cfg.ladder1_pct, 2)
-        self.ladder2_price = round(self.floor * cfg.ladder2_pct, 2)
-        self.trail_next    = round(price * cfg.trail_trigger, 2)
-        self.total_qty     = round(cfg.initial_notional / price, self.qty_precision)
+        # Check for existing position (e.g. from a previous session)
+        positions = {p.symbol: p for p in trading.get_all_positions()}
+        existing  = positions.get(cfg.symbol.replace("/", ""))
 
-        self.buy(cfg.initial_notional, "initial entry")
+        if existing:
+            self.entry_price = float(existing.avg_entry_price)
+            self.total_qty   = float(existing.qty)
+            self._cancel_pending_buys()
+            self.logger.info(
+                f"Resuming existing position: "
+                f"{self.total_qty} shares @ ${self.entry_price:,.2f}"
+            )
+        else:
+            self._cancel_pending_buys()
+            price            = self.get_price()
+            self.entry_price = price
+            self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+            self.buy(cfg.initial_notional, "initial entry")
+
+        self.floor         = round(self.entry_price * cfg.stop_pct,      2)
+        self.ladder1_price = round(self.floor * cfg.ladder1_pct,         2)
+        self.ladder2_price = round(self.floor * cfg.ladder2_pct,         2)
+        self.trail_next    = round(self.entry_price * cfg.trail_trigger,  2)
 
         fmt = lambda n: f"${n:,.2f}"
         self.logger.info("=" * 50)
         self.logger.info(f"  {cfg.symbol} BOT STARTED")
-        self.logger.info(f"  Entry          : {fmt(price)}")
+        self.logger.info(f"  Entry          : {fmt(self.entry_price)}")
         self.logger.info(f"  Stop loss      : {fmt(self.floor)}  (×0.95)")
         self.logger.info(f"  Trail trigger  : {fmt(self.trail_next)}  (+10%)")
         self.logger.info(f"  Ladder 1       : {fmt(self.ladder1_price)}  (floor×0.925)")
