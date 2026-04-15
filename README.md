@@ -9,7 +9,8 @@ All trades run against a **paper trading account** (no real money).
 
 - Connects to an Alpaca paper trading account
 - Places market orders (stocks and crypto) using fractional/notional amounts
-- Runs an always-on background bot (`aapl_bot.py`) that monitors a position and enforces trading rules automatically
+- Runs an always-on background bot that monitors multiple positions concurrently and enforces trading rules automatically
+- Displays a live visual dashboard of all positions
 
 ---
 
@@ -17,16 +18,14 @@ All trades run against a **paper trading account** (no real money).
 
 ```
 trading/
-├── .env                  # API credentials (not committed)
-├── requirements.txt      # Python dependencies
-├── main.py               # Check account balance
-├── portfolio.py          # View positions and pending orders
-├── queue_orders.py       # Place multiple orders at once
-├── replace_pltr.py       # Cancel + replace a specific order
-├── buy_pltr.py           # One-off buy script (example)
-├── aapl_bot.py           # Always-on trading bot (see below)
-├── aapl_bot_preview.py   # Preview bot setup without starting monitor loop
-└── aapl_bot.log          # Bot log output (not committed)
+├── .env              # API credentials (not committed)
+├── requirements.txt  # Python dependencies
+├── bot.py            # Always-on trading bot (all assets, runs as launchd service)
+├── main.py           # Check account balance
+├── portfolio.py      # View positions and pending orders
+├── queue_orders.py   # Place multiple orders at once
+├── status.py         # Visual dashboard (price history + floor chart)
+└── bot.log           # Live log output (not committed)
 ```
 
 ---
@@ -42,7 +41,7 @@ trading/
 
 ```bash
 git clone https://github.com/ec92009/trading.git
-cd trading
+cd ~/Dev/trading
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -65,73 +64,133 @@ Get your paper trading API key from:
 
 ## Scripts
 
-### Check account balance
+All scripts must be run from `~/Dev/trading` with the venv active:
+
 ```bash
-python3 main.py
+cd ~/Dev/trading && source .venv/bin/activate
 ```
 
-### View portfolio + pending orders
-```bash
-python3 portfolio.py
+| Script | What it does |
+|---|---|
+| `python3 main.py` | Show account balance |
+| `python3 portfolio.py` | Show positions and pending orders |
+| `python3 queue_orders.py` | Place a batch of orders |
+| `python3 status.py` | Open live visual dashboard |
+| `SAVE_ONLY=1 python3 status.py` | Save dashboard to `status.png` |
+
+---
+
+## Trading Bot (`bot.py`)
+
+A continuously running bot that manages multiple positions concurrently.
+Each asset runs in its own thread with independent state.
+
+### Trading rules (applied to every asset)
+
+| Rule | Description |
+|---|---|
+| **Entry** | Buy initial notional at market on startup |
+| **Stop loss (floor)** | Sell everything if price drops to entry × 0.95 |
+| **Trailing floor** | Once price rises 10%, raise stop to current × 0.95. Re-raise every +5%. Floor only moves up. |
+| **Ladder in — Level 1** | Buy more if price drops to floor × 0.925 |
+| **Ladder in — Level 2** | Buy more if price drops to floor × 0.850 |
+
+> **Note:** Alpaca does not support fractional stop orders. All rules are software-managed —
+> the bot must be running for them to execute.
+
+### Restart safety
+
+On startup the bot checks for existing positions and pending orders before buying:
+- **Existing position found** → resumes monitoring, cancels any stale pending buy orders
+- **No position** → cancels stale orders, places a fresh entry buy
+
+### Market hours
+
+- **Stocks:** the bot uses Alpaca's clock API to sleep until market open (9:30 AM ET). No polling on nights, weekends, or holidays.
+- **Crypto:** trades 24/7, no market hours guard.
+
+---
+
+## Adding an asset to watch
+
+Open `bot.py` and find the `BOTS` list near the top:
+
+```python
+BOTS = [
+    BotConfig(symbol="AAPL",    asset_class="stock"),
+    BotConfig(symbol="BTC/USD", asset_class="crypto"),
+]
 ```
 
-### Place multiple orders
-Edit `queue_orders.py` to define your orders, then:
+Add a new `BotConfig` line for your asset:
+
+```python
+BOTS = [
+    BotConfig(symbol="AAPL",    asset_class="stock"),
+    BotConfig(symbol="BTC/USD", asset_class="crypto"),
+    BotConfig(symbol="NVDA",    asset_class="stock"),   # ← new
+    BotConfig(symbol="ETH/USD", asset_class="crypto"),  # ← new
+]
+```
+
+**`asset_class` values:**
+- `"stock"` — US equities (respects market hours, uses `DAY` orders)
+- `"crypto"` — Crypto pairs like `BTC/USD`, `ETH/USD` (24/7, uses `GTC` orders)
+
+**Optional per-asset overrides** — any `BotConfig` field can be customized:
+
+```python
+BotConfig(
+    symbol="TSLA",
+    asset_class="stock",
+    initial_notional=100.0,   # buy $100 instead of $50
+    ladder_notional=25.0,     # ladder in with $25 each time
+    stop_pct=0.93,            # tighter stop: sell at entry × 0.93
+    trail_trigger=1.15,       # start trailing after +15%
+)
+```
+
+Full list of `BotConfig` fields:
+
+| Field | Default | Description |
+|---|---|---|
+| `symbol` | required | Ticker (`"AAPL"`, `"BTC/USD"`, etc.) |
+| `asset_class` | required | `"stock"` or `"crypto"` |
+| `initial_notional` | `50.0` | Dollar amount for initial buy |
+| `ladder_notional` | `50.0` | Dollar amount for each ladder-in buy |
+| `stop_pct` | `0.95` | Sell all at entry × this value |
+| `trail_trigger` | `1.10` | Activate trailing stop after this gain |
+| `trail_step` | `1.05` | Re-raise floor every additional this % |
+| `trail_stop` | `0.95` | New floor = current price × this value |
+| `ladder1_pct` | `0.925` | First ladder buy at floor × this value |
+| `ladder2_pct` | `0.850` | Second ladder buy at floor × this value |
+| `poll_interval` | `30` | Seconds between price checks |
+
+After editing, reload the background service:
+
 ```bash
-python3 queue_orders.py
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.trading.bot.plist
+launchctl load ~/Library/LaunchAgents/com.trading.bot.plist
 ```
 
 ---
 
-## AAPL Bot (`aapl_bot.py`)
+## Background service (launchd)
 
-A continuously running bot that manages a single AAPL position with four rules:
-
-### Rules
-
-| Rule | Description |
-|---|---|
-| **Entry** | Buy $50 of AAPL at market on startup |
-| **Stop loss (floor)** | Sell everything if price drops to entry × 0.95 |
-| **Trailing floor** | Once price rises 10%, move stop to current × 0.95. Re-raise every +5%. Floor only moves up. |
-| **Ladder in — Level 1** | Buy $50 more if price drops to floor × 0.925 |
-| **Ladder in — Level 2** | Buy $50 more if price drops to floor × 0.850 |
-
-> **Note:** Alpaca does not support fractional stop orders. All rules are implemented in software — the bot must be running for them to execute.
-
-### Market hours
-
-The bot uses Alpaca's clock API to detect market hours. When the market is closed it sleeps until the next open — no polling on nights, weekends, or holidays.
-
-### Run manually
-```bash
-source .venv/bin/activate
-python3 aapl_bot.py
-```
-
-### Run as a background service (launchd, Mac)
-
-A launchd plist is included at:
-```
-~/Library/LaunchAgents/com.trading.aapl-bot.plist
-```
-
-Load it:
-```bash
-launchctl load ~/Library/LaunchAgents/com.trading.aapl-bot.plist
-```
-
-The bot will now start automatically on login and restart if it crashes.
+The bot runs as a launchd agent — starts on login, restarts automatically on crash.
 
 ```bash
+# Start
+launchctl load ~/Library/LaunchAgents/com.trading.bot.plist
+
 # Stop
-launchctl unload ~/Library/LaunchAgents/com.trading.aapl-bot.plist
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.trading.bot.plist
 
-# Check status
-launchctl list | grep aapl
+# Check running
+launchctl list | grep trading
 
-# View live log
-tail -f ~/Dev/trading/aapl_bot.log
+# Watch live log
+tail -f ~/Dev/trading/bot.log
 ```
 
 ---
@@ -140,8 +199,8 @@ tail -f ~/Dev/trading/aapl_bot.log
 
 | Feature | Supported |
 |---|---|
-| Fractional shares | Yes (market orders only) |
-| Crypto (BTC/USD etc.) | Yes, 24/7 |
-| Fractional stop orders | No — use software-managed stops |
+| Fractional shares | Yes (notional market orders) |
+| Crypto (BTC/USD, ETH/USD, etc.) | Yes, 24/7 |
+| Fractional stop orders | No — use software-managed stops (this bot) |
 | Extended hours trading | Limit orders only |
 | Paper trading | Yes, free |
