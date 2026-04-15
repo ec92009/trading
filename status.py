@@ -27,10 +27,29 @@ trading     = TradingClient(api_key=_key, secret_key=_secret, paper=True)
 stock_data  = StockHistoricalDataClient(api_key=_key, secret_key=_secret)
 crypto_data = CryptoHistoricalDataClient(api_key=_key, secret_key=_secret)
 
-ASSETS = [
-    {"symbol": "AAPL",    "asset_class": "stock",  "color": "#4A90D9"},
-    {"symbol": "BTC/USD", "asset_class": "crypto", "color": "#F7931A"},
-]
+# ── Load BOTS list dynamically from bot.py ────────────────────────────────────
+
+def _load_bots() -> list[dict]:
+    """Parse BOTS from bot.py so status.py never needs manual updates."""
+    import importlib.util, sys
+    spec = importlib.util.spec_from_file_location("bot", HERE / "bot.py")
+    mod  = importlib.util.load_from_spec = None  # avoid running __main__
+    # Simple regex parse — avoids executing bot.py
+    text = (HERE / "bot.py").read_text()
+    entries = re.findall(
+        r'BotConfig\s*\(\s*symbol\s*=\s*"([^"]+)"\s*,\s*asset_class\s*=\s*"([^"]+)"',
+        text,
+    )
+    colors = [
+        "#4A90D9", "#F7931A", "#2ecc71", "#e74c3c",
+        "#9b59b6", "#1abc9c", "#f39c12", "#e67e22",
+    ]
+    return [
+        {"symbol": sym, "asset_class": ac, "color": colors[i % len(colors)]}
+        for i, (sym, ac) in enumerate(entries)
+    ]
+
+ASSETS = _load_bots()
 
 # ── Log parsing ───────────────────────────────────────────────────────────────
 
@@ -94,13 +113,20 @@ def get_live_price(symbol, asset_class):
 positions = {p.symbol: p for p in trading.get_all_positions()}
 account   = trading.get_account()
 
-n     = min(len(ASSETS), 4)
-fig, axes = plt.subplots(1, n, figsize=(6 * n, 5), sharey=False)
+total  = len(ASSETS)
+ncols  = min(total, 4)
+nrows  = (total + ncols - 1) // ncols       # ceil division
+fig, axes = plt.subplots(nrows, ncols,
+                         figsize=(6 * ncols, 5 * nrows),
+                         sharey=False, squeeze=False)
 fig.patch.set_facecolor("#0f1117")
-if n == 1:
-    axes = [axes]
+axes_flat = [axes[r][c] for r in range(nrows) for c in range(ncols)]
 
-for ax, a in zip(axes, ASSETS[:4]):
+# Hide any unused subplots in the last row
+for ax in axes_flat[total:]:
+    ax.set_visible(False)
+
+for ax, a in zip(axes_flat, ASSETS):
     sym        = a["symbol"]
     tag        = sym.replace("/", "")
     color      = a["color"]
