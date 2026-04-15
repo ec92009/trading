@@ -560,7 +560,7 @@ def test_credentials() -> dict:
     trading, _stock, _crypto = alpaca_clients()
     account = trading.get_account()
     return {
-        "account_status": str(account.status),
+        "account_status": str(account.status).split(".")[-1].title(),
         "portfolio_value": float(account.portfolio_value),
         "buying_power": float(account.buying_power),
         "cash": float(account.cash),
@@ -645,7 +645,7 @@ def fetch_data() -> dict:
         "portfolio": float(account.portfolio_value),
         "cash": float(account.cash),
         "buying_power": float(account.buying_power),
-        "account_status": str(account.status),
+        "account_status": str(account.status).split(".")[-1].title(),
         "total_pl": sum(float(p.unrealized_pl) for p in positions.values()),
         "updated": datetime.now().strftime("%H:%M:%S"),
         "orders": orders,
@@ -714,10 +714,9 @@ def build_html() -> str:
     body { padding:24px; }
     button,input,select { font:inherit; }
     .shell { width:min(100%, 1520px); margin:0 auto; display:grid; grid-template-columns:minmax(260px, 300px) minmax(0,1fr); gap:20px; }
-    .masthead { grid-column:1 / -1; display:flex; justify-content:space-between; align-items:end; gap:24px; padding-bottom:18px; border-bottom:1px solid var(--line); opacity:0; transform:translateY(10px); animation:rise .55s ease forwards; }
-    .brand-kicker { color:var(--accent); text-transform:uppercase; letter-spacing:.18em; font-size:12px; margin-bottom:10px; }
-    h1 { margin:0; font-size:clamp(32px, 5vw, 60px); line-height:.95; letter-spacing:-.04em; max-width:10ch; }
-    .mast-copy { color:var(--muted); max-width:46ch; line-height:1.45; margin-top:14px; }
+    .masthead { grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center; gap:24px; padding-bottom:12px; border-bottom:1px solid var(--line); opacity:0; transform:translateY(10px); animation:rise .55s ease forwards; }
+    .brand-kicker { color:var(--accent); text-transform:uppercase; letter-spacing:.18em; font-size:13px; font-weight:700; }
+    .stat-sub { color:var(--muted); font-size:12px; margin-top:5px; }
     .top-actions,.btn-row,.service-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .status-pill { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); padding:10px 14px; border-radius:999px; color:var(--muted); background:rgba(255,255,255,.02); transition:.2s ease; }
     .status-pill.running { color:var(--good); border-color:rgba(113,214,173,.35); }
@@ -797,17 +796,13 @@ def build_html() -> str:
 <body>
   <div class="shell">
     <header class="masthead">
-      <div>
-        <div class="brand-kicker">Trading Bot Control Room</div>
-        <h1>Run the whole paper desk from one window.</h1>
-        <div class="mast-copy">Set up Alpaca paper credentials, manage the launchd worker, tune watched assets, and operate the portfolio with live charts, open orders, and trade history.</div>
+      <div class="brand-kicker">Trading Bot Control Room</div>
+      <div class="top-actions">
+        <div class="status-pill notice" id="versionBadge">v0.0</div>
+        <div class="status-pill notice" id="globalStatus">Connecting…</div>
+        <button class="ghost" id="shareBtn">Share</button>
+        <button class="secondary" id="refreshBtn">Refresh Workspace</button>
       </div>
-        <div class="top-actions">
-          <div class="status-pill notice" id="versionBadge">v0.0</div>
-          <div class="status-pill notice" id="globalStatus">Connecting…</div>
-          <button class="ghost" id="shareBtn">Share</button>
-          <button class="secondary" id="refreshBtn">Refresh Workspace</button>
-        </div>
     </header>
 
     <aside class="sidebar">
@@ -817,9 +812,11 @@ def build_html() -> str:
             <div class="section-head">
               <div>
                 <h2>Alpaca Credentials</h2>
-                <div class="section-note">Paper trading keys live in <span class="mono">.env</span> in this repo.</div>
               </div>
-              <div class="collapse-cue">▾</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="credsSummaryPill" class="badge"></span>
+                <div class="collapse-cue">▾</div>
+              </div>
             </div>
           </summary>
           <div class="collapsible-body">
@@ -867,13 +864,16 @@ def build_html() -> str:
           <summary>
             <div class="section-head">
               <div>
-                <h2 id="assetFormTitle">Add Asset</h2>
-                <div class="section-note">Tune the asset config that will be written into <span class="mono">bot.py</span>.</div>
+                <h2>Assets</h2>
               </div>
-              <div class="collapse-cue">▾</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="assetsSummaryPill" class="badge"></span>
+                <div class="collapse-cue">▾</div>
+              </div>
             </div>
           </summary>
           <div class="collapsible-body">
+          <h3 id="assetFormTitle" style="margin:0 0 14px;font-size:14px;letter-spacing:.01em;">Add Asset</h3>
           <form id="assetForm">
             <input type="hidden" id="assetOriginalSymbol" value="" />
             <div class="field"><label for="assetSymbol">Symbol</label><input id="assetSymbol" name="symbol" list="assetHints" placeholder="AAPL, Tesla, BTC/USD" autocomplete="off" /><datalist id="assetHints"></datalist><div class="field-help">Ticker or crypto pair, for example <span class="mono">AAPL</span> or <span class="mono">BTC/USD</span>.</div></div>
@@ -910,7 +910,7 @@ def build_html() -> str:
         <div class="stat"><div class="stat-label">Portfolio</div><div class="stat-value" id="portfolioValue">—</div></div>
         <div class="stat"><div class="stat-label">Cash</div><div class="stat-value" id="cashValue">—</div></div>
         <div class="stat"><div class="stat-label">Buying Power</div><div class="stat-value" id="buyingPowerValue">—</div></div>
-        <div class="stat"><div class="stat-label">Unrealized P&amp;L</div><div class="stat-value" id="plValue">—</div></div>
+        <div class="stat"><div class="stat-label">Unrealized P&amp;L</div><div class="stat-value" id="plValue">—</div><div class="stat-sub" id="plPct"></div></div>
       </section>
 
       <div class="workspace-grid">
@@ -1023,6 +1023,15 @@ def build_html() -> str:
       document.getElementById("apiKey").placeholder = creds.api_key_hint ? `Saved: ${creds.api_key_hint}` : "PK...";
       document.getElementById("secretKey").placeholder = creds.configured ? "Secret already saved" : "Paste your paper secret";
       setNotice("credentialsNotice", creds.configured ? `Credentials saved for ${creds.api_key_hint || "paper account"}.` : "No Alpaca credentials saved yet.", creds.configured ? "good" : "warn");
+      const pill = document.getElementById("credsSummaryPill");
+      if (pill) { pill.textContent = creds.configured ? "Configured" : "Not set"; pill.className = "badge " + (creds.configured ? "good" : "warn"); }
+    }
+    function renderAssetsSummary(state) {
+      const pill = document.getElementById("assetsSummaryPill");
+      if (!pill) return;
+      const count = (state.watched_assets || []).length;
+      pill.textContent = `${count} asset${count !== 1 ? "s" : ""}`;
+      pill.className = "badge " + (count > 0 ? "good" : "warn");
     }
     function renderStats(state) {
       const dash = state.dashboard;
@@ -1032,6 +1041,13 @@ def build_html() -> str:
       const plEl = document.getElementById("plValue");
       plEl.textContent = dash ? signedMoney(dash.total_pl) : "—";
       plEl.style.color = dash ? (Number(dash.total_pl) >= 0 ? "var(--good)" : "var(--bad)") : "var(--text)";
+      const plPctEl = document.getElementById("plPct");
+      if (plPctEl) {
+        if (dash && dash.portfolio > 0) {
+          const pct = (dash.total_pl / dash.portfolio * 100).toFixed(2);
+          plPctEl.textContent = `${Number(pct) >= 0 ? "+" : ""}${pct}% of portfolio`;
+        } else { plPctEl.textContent = ""; }
+      }
       document.getElementById("dashboardFreshness").textContent = dash ? `Account ${dash.account_status} • updated ${dash.updated}` : (state.errors[0] || "Waiting for account data.");
     }
     function applyCollapseDefaults() {
@@ -1175,6 +1191,7 @@ def build_html() -> str:
         renderOrders(state);
         renderTrades(state);
         renderLog(state);
+        renderAssetsSummary(state);
       } catch (error) {
         updateGlobalStatus({ service: { available: false } });
         setNotice("serviceNotice", error.message, "bad");
