@@ -125,11 +125,24 @@ class Bot:
             side=OrderSide.BUY,
             time_in_force=self.tif,
         ))
-        self.total_qty += round(notional / self.entry_price, self.qty_precision)
         trade_log.log_order(self.cfg.symbol, order.id, "BUY", notional)
         self.logger.info(f"BUY ${notional} [{reason}] → {order.status} id={order.id}")
 
+    def refresh_position(self):
+        """Refresh cached position state from Alpaca when a live position exists."""
+        positions = {p.symbol: p for p in trading.get_all_positions()}
+        pos = positions.get(self.cfg.symbol.replace("/", ""))
+        if not pos:
+            return None
+        self.total_qty = float(pos.qty)
+        self.entry_price = float(pos.avg_entry_price)
+        return pos
+
     def sell_all(self, reason: str):
+        pos = self.refresh_position()
+        if not pos or self.total_qty <= 0:
+            self.logger.warning(f"SELL skipped [{reason}] — no live position to close")
+            return
         order = trading.submit_order(MarketOrderRequest(
             symbol=self.cfg.symbol,
             qty=round(self.total_qty, self.qty_precision),
@@ -223,7 +236,7 @@ class Bot:
                     )
                     price            = self.get_price()
                     self.entry_price = price
-                    self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+                    self.total_qty   = 0.0
                     self.buy(cfg.initial_notional, "initial entry")
 
                 else:
@@ -231,7 +244,7 @@ class Bot:
                     self._cancel_open_buys_except(keep_id=tsv_row["order_id"])
                     price            = self.get_price()
                     self.entry_price = price   # estimate until fill
-                    self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+                    self.total_qty   = 0.0
                     self.logger.info(
                         f"TSV buy {tsv_row['order_id']} still pending — "
                         f"resuming with estimated entry ${price:,.2f}"
@@ -242,7 +255,7 @@ class Bot:
                 self._cancel_open_buys_except(keep_id=None)
                 price            = self.get_price()
                 self.entry_price = price
-                self.total_qty   = round(cfg.initial_notional / price, self.qty_precision)
+                self.total_qty   = 0.0
                 self.buy(cfg.initial_notional, "initial entry")
 
         self.floor         = round(self.entry_price * cfg.stop_pct,      2)
@@ -267,6 +280,7 @@ class Bot:
             time.sleep(self.cfg.poll_interval)
             try:
                 self.wait_for_market()
+                self.refresh_position()
                 price = self.get_price()
                 self.logger.info(
                     f"price=${price:,.2f}  floor=${self.floor:,.2f}  "

@@ -49,6 +49,19 @@ def validate_symbol(symbol: str, asset_class: str) -> str | None:
         paper=True,
     )
     try:
+        if asset_class == "crypto":
+            from alpaca.data.historical import CryptoHistoricalDataClient
+            from alpaca.data.requests import CryptoLatestQuoteRequest
+            data = CryptoHistoricalDataClient(
+                api_key=os.getenv("ALPACA_API_KEY"),
+                secret_key=os.getenv("ALPACA_SECRET_KEY"),
+            )
+            quote = data.get_crypto_latest_quote(
+                CryptoLatestQuoteRequest(symbol_or_symbols=symbol)
+            )
+            if symbol not in quote:
+                return f"{symbol} not found on Alpaca."
+            return None
         asset = c.get_asset(symbol)
         if not asset.tradable:
             return f"{symbol} exists but is not tradable."
@@ -77,8 +90,20 @@ def add_to_bot(symbol: str, asset_class: str, notional: float):
 def reload_service():
     uid   = subprocess.check_output(["id", "-u"]).decode().strip()
     plist = Path.home() / "Library/LaunchAgents/com.trading.bot.plist"
-    subprocess.run(["launchctl", "bootout", f"gui/{uid}", str(plist)], capture_output=True)
-    subprocess.run(["launchctl", "load", str(plist)], capture_output=True)
+    bootout = subprocess.run(
+        ["launchctl", "bootout", f"gui/{uid}", str(plist)],
+        capture_output=True,
+        text=True,
+    )
+    load = subprocess.run(
+        ["launchctl", "load", str(plist)],
+        capture_output=True,
+        text=True,
+    )
+    if load.returncode != 0:
+        detail = (load.stderr or load.stdout or "").strip()
+        raise RuntimeError(f"launchctl load failed: {detail or 'unknown error'}")
+    return bootout, load
 
 # ── Asset search ──────────────────────────────────────────────────────────────
 

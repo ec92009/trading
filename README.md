@@ -11,7 +11,7 @@ All trades run against a **paper trading account** (no real money).
 - Places market orders (stocks and crypto) using fractional/notional amounts
 - Runs an always-on background bot that monitors multiple positions concurrently and enforces trading rules automatically
 - Persists order state in a local TSV log so restarts never duplicate buys
-- Displays a live visual dashboard of all positions (HTML web dashboard or matplotlib chart)
+- Displays a live visual dashboard of all positions (unified HTML control panel or matplotlib chart)
 
 ---
 
@@ -27,7 +27,7 @@ trading/
 ├── main.py           # Check account balance
 ├── portfolio.py      # View positions and pending orders
 ├── queue_orders.py   # Place multiple orders at once
-├── dashboard.py      # HTML web dashboard at http://localhost:8080
+├── dashboard.py      # Unified web control panel at http://localhost:8080
 ├── status.py         # matplotlib chart (interactive window or PNG)
 ├── bot.log           # Live log output (not committed)
 └── trades.tsv        # Order state log (not committed)
@@ -80,8 +80,9 @@ cd ~/Dev/trading && source .venv/bin/activate
 | `python3 main.py` | Show account balance |
 | `python3 portfolio.py` | Show positions and pending orders |
 | `python3 queue_orders.py` | Place a batch of orders |
-| `python3 dashboard.py` | Launch HTML web dashboard at http://localhost:8080 |
-| `python3 dashboard.py --no-browser` | Launch dashboard without auto-opening browser |
+| `python3 dashboard.py` | Launch unified control panel at http://localhost:8080 |
+| `python3 dashboard.py --no-browser` | Launch control panel without auto-opening browser |
+| `python3 dashboard.py --no-browser --port 8091` | Launch control panel on another port |
 | `python3 status.py` | Open matplotlib chart window |
 | `SAVE_ONLY=1 python3 status.py` | Save chart to `status.png` |
 | `python3 add_asset.py` | TUI to add a new asset to the bot |
@@ -199,25 +200,43 @@ launchctl load ~/Library/LaunchAgents/com.trading.bot.plist
 
 ---
 
-## Live dashboard
+## Control panel
 
-Two dashboards are available:
+The main GUI is the unified HTML control panel in `dashboard.py`.
+It combines:
+- Alpaca credential setup
+- Credential connection test
+- Asset addition
+- Asset editing and removal
+- Launchd bot start / stop / reload controls
+- LaunchAgent install / repair
+- Live portfolio metrics and charts
+- Open Alpaca orders
+- Recent `trades.tsv` history
+- Recent `bot.log` output
 
-### HTML web dashboard (`dashboard.py`) — recommended
+### Web control panel (`dashboard.py`) — recommended
 
 ```bash
 python3 dashboard.py
 ```
 
-Starts a local HTTP server at **http://localhost:8080** and opens your browser. Shows one Chart.js panel per asset:
+Starts a local HTTP server at **http://localhost:8080** and opens your browser.
+Use `--port 8091` or another port if `8080` is already in use.
+
+The control panel shows one Chart.js panel per watched asset:
 - Price line (color-coded per asset)
 - Floor as a red dashed step function
 - Y axis centered on entry price
-- Live P&L badge per card
-- Portfolio total, cash, P&L in the header
-- **Refresh** button pulls fresh data from Alpaca + `bot.log`
+- Live P&L badge per panel
+- Portfolio total, cash, buying power, and P&L in the workspace header
+- Recent bot log output for quick troubleshooting
 
-Charts are responsive and fill the browser window. Use `--no-browser` to skip auto-opening.
+Use `--no-browser` to skip auto-opening.
+
+### Matplotlib dashboard (`status.py`)
+
+The older matplotlib dashboard is still available if you want a local plot window or PNG output.
 
 ### matplotlib chart (`status.py`)
 
