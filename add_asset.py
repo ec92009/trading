@@ -70,6 +70,7 @@ def reload_service():
 CSS = """
 Screen {
     background: #0f1117;
+    align: center top;
 }
 
 #card {
@@ -78,7 +79,7 @@ Screen {
     background: #1a1d27;
     border: solid #2a2d3a;
     padding: 1 2;
-    margin: 2 auto;
+    margin: 2 0;
 }
 
 #title {
