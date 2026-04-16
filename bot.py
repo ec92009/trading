@@ -75,18 +75,20 @@ crypto_data  = CryptoHistoricalDataClient(api_key=_api_key, secret_key=_secret_k
 
 class Bot:
     def __init__(self, cfg: BotConfig):
-        self.cfg          = cfg
-        self.logger       = logging.getLogger(cfg.symbol.replace("/", ""))
-        self.entry_price  = 0.0
-        self.floor        = 0.0
+        self.cfg           = cfg
+        self.logger        = logging.getLogger(cfg.symbol.replace("/", ""))
+        self.entry_price   = 0.0
+        self.floor         = 0.0
         self.ladder1_price = 0.0
         self.ladder2_price = 0.0
-        self.trail_next   = 0.0
-        self.total_qty    = 0.0
-        self.ladder1_done = False
-        self.ladder2_done = False
-        self.stopped_out  = False
+        self.trail_next    = 0.0
+        self.total_qty     = 0.0
+        self.ladder1_done  = False
+        self.ladder2_done  = False
+        self.stopped_out   = False
+        self.half_stopped  = False   # True after first stop fires (50% sold)
         self.qty_precision = 8 if cfg.asset_class == "crypto" else 6
+        self.all_bots: list["Bot"] = []  # set after all bots are created
 
     # ── Price ─────────────────────────────────────────────────────────────────
 
@@ -152,6 +154,66 @@ class Bot:
         trade_log.log_order(self.cfg.symbol, order.id, "SELL", self.total_qty * self.entry_price)
         self.stopped_out = True
         self.logger.info(f"SELL ALL {self.total_qty} [{reason}] → {order.status} id={order.id}")
+
+    def sell_half(self, reason: str) -> float:
+        """Sell 50% of position. Returns estimated proceeds at current price."""
+        pos = self.refresh_position()
+        if not pos or self.total_qty <= 0:
+            self.logger.warning(f"SELL HALF skipped [{reason}] — no live position")
+            return 0.0
+        half_qty = round(self.total_qty / 2, self.qty_precision)
+        if half_qty <= 0:
+            return 0.0
+        price = self.get_price()
+        order = trading.submit_order(MarketOrderRequest(
+            symbol=self.cfg.symbol,
+            qty=half_qty,
+            side=OrderSide.SELL,
+            time_in_force=self.tif,
+        ))
+        proceeds = round(half_qty * price, 2)
+        trade_log.log_order(self.cfg.symbol, order.id, "SELL", proceeds)
+        self.total_qty = round(self.total_qty - half_qty, self.qty_precision)
+        self.logger.info(
+            f"SELL HALF {half_qty} [{reason}] → {order.status} id={order.id} "
+            f"est. proceeds=${proceeds:,.2f}"
+        )
+        return proceeds
+
+    def redistribute(self, cash: float):
+        """Buy into other active bots proportionally to their current market values."""
+        if cash < 1.0:
+            self.logger.info("REALLOC: proceeds too small, skipping")
+            return
+        others = [b for b in self.all_bots if b is not self and not b.stopped_out]
+        if not others:
+            self.logger.info("REALLOC: no other active bots to redistribute to")
+            return
+        positions = {p.symbol: p for p in trading.get_all_positions()}
+        values = {}
+        for b in others:
+            tag = b.cfg.symbol.replace("/", "")
+            pos = positions.get(tag)
+            values[b] = float(pos.market_value) if pos else b.cfg.initial_notional
+        total = sum(values.values())
+        if total <= 0:
+            return
+        self.logger.info(
+            f"REALLOC: distributing ${cash:.2f} across "
+            f"{len(others)} bots: {[b.cfg.symbol for b in others]}"
+        )
+        for b, val in values.items():
+            notional = round(cash * val / total, 2)
+            if notional < 1.0:
+                continue
+            self.logger.info(
+                f"REALLOC → {b.cfg.symbol}: ${notional:.2f} "
+                f"({val/total*100:.1f}% of peer value)"
+            )
+            try:
+                b.buy(notional, f"realloc from {self.cfg.symbol}")
+            except Exception as exc:
+                self.logger.error(f"REALLOC buy {b.cfg.symbol} failed: {exc}")
 
     # ── Market hours guard (stocks only) ──────────────────────────────────────
 
@@ -288,9 +350,25 @@ class Bot:
                 )
 
                 if price <= self.floor:
-                    self.logger.info(f"FLOOR HIT at ${price:,.2f}")
-                    self.sell_all("stop loss")
-                    break
+                    if not self.half_stopped:
+                        self.logger.info(
+                            f"FLOOR HIT at ${price:,.2f} — selling 50%, reallocating"
+                        )
+                        proceeds = self.sell_half("stop loss 50%")
+                        self.redistribute(proceeds)
+                        self.half_stopped = True
+                        self.floor      = round(price * self.cfg.stop_pct, 2)
+                        self.trail_next = round(price * self.cfg.trail_trigger, 2)
+                        self.logger.info(
+                            f"Remaining 50% continues — new floor=${self.floor:,.2f}, "
+                            f"trail_next=${self.trail_next:,.2f}"
+                        )
+                    else:
+                        self.logger.info(
+                            f"SECOND FLOOR HIT at ${price:,.2f} — selling all remaining"
+                        )
+                        self.sell_all("stop loss final")
+                        break
 
                 if price >= self.trail_next:
                     new_floor = round(price * self.cfg.trail_stop, 2)
@@ -333,7 +411,10 @@ class Bot:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    threads = [threading.Thread(target=Bot(cfg).run, daemon=True) for cfg in BOTS]
+    bots = [Bot(cfg) for cfg in BOTS]
+    for b in bots:
+        b.all_bots = bots  # each bot can see all peers for redistribution
+    threads = [threading.Thread(target=b.run, daemon=True) for b in bots]
     for t in threads:
         t.start()
     for t in threads:
