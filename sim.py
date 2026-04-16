@@ -32,8 +32,9 @@ CASH_COLOR = "#f1d48a"
 ABSORBER_SYMBOL = "BTC-USD"
 BUFFER_LABEL = "BTC Buffer"
 BUFFER_COLOR = "#5b8def"
+FRACTIONAL_SYMBOLS = {ABSORBER_SYMBOL}
 
-_cache: dict | None = None
+_cache: dict[tuple[str | None, str | None, str | None], dict] = {}
 _cache_lock = threading.Lock()
 
 
@@ -56,6 +57,10 @@ def normalize_symbols(items: list[str] | None) -> list[str]:
 
 
 def is_fractional(sym: str) -> bool:
+    return sym in FRACTIONAL_SYMBOLS
+
+
+def is_absorber(sym: str) -> bool:
     return sym == ABSORBER_SYMBOL
 
 
@@ -100,16 +105,17 @@ def _compute_rolling_betas(assets: dict, n: int) -> dict[str, list[float]]:
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 
-def load_data() -> dict:
-    """Download (or return cached) 1 year of daily OHLCV for all assets + SPY."""
-    global _cache
+def load_data(*, period: str = "1y", start: str | None = None, end: str | None = None) -> dict:
+    """Download (or return cached) OHLCV for all assets + SPY over a chosen window."""
+    cache_key = (period, start, end)
     with _cache_lock:
-        if _cache is not None:
-            return _cache
+        if cache_key in _cache:
+            return _cache[cache_key]
         fetch_syms = SYMBOLS + ["SPY"]
         dfs = {}
         for sym in fetch_syms:
-            df = yf.Ticker(sym).history(period="1y")[["Close", "Low", "High"]].dropna()
+            history_kwargs = {"start": start, "end": end} if start or end else {"period": period}
+            df = yf.Ticker(sym).history(**history_kwargs)[["Close", "Low", "High"]].dropna()
             df.index = [d.date() for d in df.index]
             dfs[sym] = df
         common = sorted(set.intersection(*[set(df.index) for df in dfs.values()]))
@@ -127,13 +133,14 @@ def load_data() -> dict:
             display(sym): round(sum(betas[sym]) / n, 2)
             for sym in SYMBOLS
         }
-        _cache = {
+        payload = {
             "dates":     [str(d) for d in common],
             "assets":    assets,
             "betas":     betas,
             "avg_betas": avg_betas,
         }
-        return _cache
+        _cache[cache_key] = payload
+        return payload
 
 
 # ── Simulation ────────────────────────────────────────────────────────────────
@@ -180,57 +187,6 @@ def simulate(cfg: SimConfig, data: dict, chosen_symbols: list[str] | None = None
             spent = qty * price
         return qty, round(dollars - spent, 2)
 
-    def buy_absorber(dollars: float, i: int, source_sym: str | None = None):
-        nonlocal cash_balance
-        if dollars <= 0:
-            return
-        if ABSORBER_SYMBOL in chosen_symbols:
-            price = adata[ABSORBER_SYMBOL]["closes"][i]
-            qty, left = buy_qty(ABSORBER_SYMBOL, dollars, price)
-            if qty > 0:
-                buffer_qty[0] += qty
-                evt(i, BUFFER_LABEL, "REALLOC — bought", price, round(dollars - left, 2),
-                    f"${dollars - left:,.2f} from {display(source_sym) if source_sym else 'allocation'} → "
-                    f"{qty:.4f} sh of {BUFFER_LABEL} at ${price:,.2f}.")
-            cash_balance = round(cash_balance + left, 2)
-            return
-        cash_balance = round(cash_balance + dollars, 2)
-
-    def reconcile_targets(i: int, source_sym: str | None = None):
-        nonlocal cash_balance
-        if ABSORBER_SYMBOL in chosen_symbols:
-            btc_price = adata[ABSORBER_SYMBOL]["closes"][i]
-        for sym in chosen_symbols:
-            if is_fractional(sym):
-                continue
-            target_whole = math.floor(st[sym]["target_qty"])
-            current_whole = math.floor(st[sym]["qty"])
-            needed = max(0, target_whole - current_whole)
-            if needed <= 0:
-                continue
-            price = adata[sym]["closes"][i]
-            required = needed * price
-            if cash_balance < required and ABSORBER_SYMBOL in chosen_symbols and buffer_qty[0] > 0:
-                shortfall = required - cash_balance
-                btc_sell_qty = min(buffer_qty[0], shortfall / btc_price)
-                if btc_sell_qty > 0:
-                    proceeds = round(btc_sell_qty * btc_price, 2)
-                    buffer_qty[0] -= btc_sell_qty
-                    cash_balance = round(cash_balance + proceeds, 2)
-                    evt(i, BUFFER_LABEL, "REALLOC — sold", btc_price, proceeds,
-                        f"Sold {btc_sell_qty:.4f} sh of {BUFFER_LABEL} at ${btc_price:,.2f} "
-                        f"to fund queued whole-share buys.")
-            affordable = min(needed, math.floor(cash_balance / price))
-            if affordable <= 0:
-                continue
-            spend = round(affordable * price, 2)
-            st[sym]["qty"] += affordable
-            cash_balance = round(cash_balance - spend, 2)
-            evt(i, sym, "REALLOC — bought", price, spend,
-                f"${spend:,.2f} from {display(source_sym) if source_sym else 'allocation'} → "
-                f"{affordable:.4f} sh of {display(sym)} at ${price:,.2f} "
-                f"to catch up with queued target volume.")
-
     # Per-asset state
     st: dict[str, dict] = {}
     cash_balance = 0.0
@@ -242,7 +198,6 @@ def simulate(cfg: SimConfig, data: dict, chosen_symbols: list[str] | None = None
         qty, leftover = buy_qty(sym, per, entry)
         st[sym] = {
             "qty":    qty,
-            "target_qty": (per / entry) if not is_fractional(sym) else qty,
             "floor":  round(entry * (1 - fp), 2),
             "t_next": round(entry * (1 + tp), 2),
             "stop_ready_day": 1,
@@ -268,21 +223,185 @@ def simulate(cfg: SimConfig, data: dict, chosen_symbols: list[str] | None = None
             "reason": reason,
         })
 
-    def redistribute(cash_in: float, from_sym: str, i: int) -> str:
+    def buffer_price(i: int) -> float:
+        return adata[ABSORBER_SYMBOL]["closes"][i]
+
+    def total_value(i: int) -> float:
+        buffer_value = buffer_qty[0] * buffer_price(i) if ABSORBER_SYMBOL in chosen_symbols else 0.0
+        return round(
+            cash_balance + buffer_value + sum(st[sym]["qty"] * adata[sym]["closes"][i] for sym in chosen_symbols),
+            2,
+        )
+
+    traded_today: set[str] = set()
+
+    def can_trade(sym: str) -> bool:
+        return sym not in traded_today
+
+    def mark_traded(sym: str):
+        traded_today.add(sym)
+
+    def park_in_buffer(dollars: float, i: int, source_sym: str, action: str, reason: str):
         nonlocal cash_balance
-        others = [s for s in chosen_symbols if s != from_sym]
-        if not others:
-            cash_balance = round(cash_balance + cash_in, 2)
-            return "cash"
-        vals   = {s: st[s]["qty"] * adata[s]["closes"][i] for s in others}
-        total  = sum(vals.values())
-        for s in others:
-            share = cash_in * (vals[s] / total if total > 0 else 1 / len(others))
-            if not is_fractional(s):
-                st[s]["target_qty"] += share / adata[s]["closes"][i]
-        buy_absorber(cash_in, i, from_sym)
-        reconcile_targets(i, from_sym)
-        return "assets"
+        if dollars <= 0:
+            return
+        if ABSORBER_SYMBOL in chosen_symbols and can_trade(ABSORBER_SYMBOL):
+            price = buffer_price(i)
+            qty, left = buy_qty(ABSORBER_SYMBOL, dollars, price)
+            if qty > 0:
+                buffer_qty[0] += qty
+                mark_traded(ABSORBER_SYMBOL)
+                evt(i, BUFFER_LABEL, action, price, round(dollars - left, 2),
+                    f"${dollars - left:,.2f} from {display(source_sym)} → "
+                    f"{qty:.4f} sh of {BUFFER_LABEL} at ${price:,.2f}. {reason}")
+            cash_balance = round(cash_balance + left, 2)
+            return
+        cash_balance = round(cash_balance + dollars, 2)
+
+    def raise_cash(required: float, i: int, reason: str):
+        nonlocal cash_balance
+        if (
+            required <= cash_balance
+            or ABSORBER_SYMBOL not in chosen_symbols
+            or buffer_qty[0] <= 0
+            or not can_trade(ABSORBER_SYMBOL)
+        ):
+            return
+        shortfall = required - cash_balance
+        price = buffer_price(i)
+        btc_sell_qty = min(buffer_qty[0], shortfall / price)
+        if btc_sell_qty <= 0:
+            return
+        proceeds = round(btc_sell_qty * price, 2)
+        buffer_qty[0] -= btc_sell_qty
+        cash_balance = round(cash_balance + proceeds, 2)
+        mark_traded(ABSORBER_SYMBOL)
+        evt(i, BUFFER_LABEL, "REBALANCE — sold", price, proceeds,
+            f"Sold {btc_sell_qty:.4f} sh of {BUFFER_LABEL} at ${price:,.2f} to {reason}")
+
+    def refill_buffer_from_cash(i: int):
+        nonlocal cash_balance
+        if cash_balance <= 0 or ABSORBER_SYMBOL not in chosen_symbols or not can_trade(ABSORBER_SYMBOL):
+            return
+        price = buffer_price(i)
+        qty, left = buy_qty(ABSORBER_SYMBOL, cash_balance, price)
+        spent = round(cash_balance - left, 2)
+        if qty > 0:
+            buffer_qty[0] += qty
+            mark_traded(ABSORBER_SYMBOL)
+            evt(i, BUFFER_LABEL, "REBALANCE — bought", price, spent,
+                f"Moved idle cash into {BUFFER_LABEL}: {qty:.4f} sh at ${price:,.2f}.")
+        cash_balance = left
+
+    def rebalance_portfolio(i: int):
+        nonlocal cash_balance
+        if not chosen_symbols:
+            return
+        target_value = total_value(i) / len(chosen_symbols)
+
+        # Trim overweight positions first so underweights can be funded immediately.
+        for sym in chosen_symbols:
+            if not can_trade(sym):
+                continue
+            price = adata[sym]["closes"][i]
+            current_value = st[sym]["qty"] * price
+            excess = current_value - target_value
+            if excess <= 0:
+                continue
+            if is_absorber(sym):
+                sell_qty = excess / price
+                if sell_qty <= 0:
+                    continue
+                st[sym]["qty"] -= sell_qty
+                buffer_qty[0] += sell_qty
+                mark_traded(sym)
+                evt(i, sym, "REBALANCE — sold", price, excess,
+                    f"Reduced {display(sym)} by {sell_qty:.4f} sh at ${price:,.2f} "
+                    f"to move toward equal-weight target (${target_value:,.2f}).")
+                evt(i, BUFFER_LABEL, "REBALANCE — bought", price, excess,
+                    f"Shifted {sell_qty:.4f} sh from BTC core into {BUFFER_LABEL}.")
+                continue
+            sell_qty = excess / price if is_fractional(sym) else math.floor(excess / price)
+            if sell_qty <= 0:
+                continue
+            proceeds = round(sell_qty * price, 2)
+            st[sym]["qty"] -= sell_qty
+            mark_traded(sym)
+            evt(i, sym, "REBALANCE — sold", price, proceeds,
+                f"Reduced {display(sym)} by {sell_qty:.4f} sh at ${price:,.2f} "
+                f"to move toward equal-weight target (${target_value:,.2f}).")
+            park_in_buffer(proceeds, i, sym, "REBALANCE — bought", "Held for rebalance buys.")
+
+        deficits: list[tuple[float, str]] = []
+        for sym in chosen_symbols:
+            price = adata[sym]["closes"][i]
+            gap = target_value - (st[sym]["qty"] * price)
+            if gap > 0:
+                deficits.append((gap, sym))
+        deficits.sort(reverse=True)
+
+        for _, sym in deficits:
+            if not can_trade(sym):
+                continue
+            price = adata[sym]["closes"][i]
+            current_value = st[sym]["qty"] * price
+            gap = target_value - current_value
+            if gap <= 0:
+                continue
+            if is_absorber(sym):
+                needed_qty = gap / price
+                moved_qty = min(buffer_qty[0], needed_qty)
+                if moved_qty > 0:
+                    moved_value = round(moved_qty * price, 2)
+                    buffer_qty[0] -= moved_qty
+                    st[sym]["qty"] += moved_qty
+                    mark_traded(sym)
+                    evt(i, sym, "REBALANCE — bought", price, moved_value,
+                        f"Moved {moved_qty:.4f} sh from {BUFFER_LABEL} back into BTC core.")
+                remaining_cost = round(max(0.0, gap - moved_qty * price), 2)
+                if remaining_cost <= 0:
+                    continue
+                raise_cash(remaining_cost, i, f"fund BTC core rebalance for {display(sym)}.")
+                spend = min(remaining_cost, cash_balance)
+                if spend <= 0:
+                    continue
+                qty = spend / price
+                st[sym]["qty"] += qty
+                cash_balance = round(cash_balance - spend, 2)
+                mark_traded(sym)
+                evt(i, sym, "REBALANCE — bought", price, spend,
+                    f"Bought {qty:.4f} sh of {display(sym)} at ${price:,.2f} "
+                    f"to restore equal-weight exposure.")
+                continue
+            if is_fractional(sym):
+                required = gap
+                raise_cash(required, i, f"fund {display(sym)} rebalance buys.")
+                spend = min(required, cash_balance)
+                if spend <= 0:
+                    continue
+                qty = spend / price
+                st[sym]["qty"] += qty
+            else:
+                target_shares = math.floor(target_value / price)
+                current_shares = math.floor(st[sym]["qty"])
+                needed = max(0, target_shares - current_shares)
+                if needed <= 0:
+                    continue
+                required = needed * price
+                raise_cash(required, i, f"fund {display(sym)} rebalance buys.")
+                affordable = min(needed, math.floor(cash_balance / price))
+                if affordable <= 0:
+                    continue
+                spend = round(affordable * price, 2)
+                qty = affordable
+                st[sym]["qty"] += affordable
+            cash_balance = round(cash_balance - spend, 2)
+            mark_traded(sym)
+            evt(i, sym, "REBALANCE — bought", price, spend,
+                f"Bought {qty:.4f} sh of {display(sym)} at ${price:,.2f} "
+                f"to restore equal-weight exposure.")
+
+        refill_buffer_from_cash(i)
 
     def snap(i):
         vals = {display(sym): round(st[sym]["qty"] * adata[sym]["closes"][i], 2)
@@ -307,17 +426,19 @@ def simulate(cfg: SimConfig, data: dict, chosen_symbols: list[str] | None = None
     snap(0)
 
     for i in range(1, n):
+        traded_today.clear()
         for sym in chosen_symbols:
             close = adata[sym]["closes"][i]
             low   = adata[sym]["lows"][i]
             s     = st[sym]
 
             # ── Stop ──────────────────────────────────────────────────────────
-            if i >= s["stop_ready_day"] and low <= s["floor"]:
+            if can_trade(sym) and i >= s["stop_ready_day"] and low <= s["floor"]:
                 sp       = s["floor"]
                 sell_qty = s["qty"] * cfg.stop_sell_pct
                 proceeds = round(sell_qty * sp, 2)
                 s["qty"] -= sell_qty
+                mark_traded(sym)
                 old_floor  = s["floor"]
                 fp = floor_pct(sym, i)
                 tp = trigger_pct(sym, i)
@@ -325,13 +446,19 @@ def simulate(cfg: SimConfig, data: dict, chosen_symbols: list[str] | None = None
                 s["t_next"] = round(sp * (1 + tp), 2)
                 s["stop_ready_day"] = i + int(cfg.stop_cooldown_days) + 1
                 b = betas[sym][i]
-                parked = redistribute(proceeds, sym, i)
-                destination = "cash" if parked == "cash" else "other assets"
+                if is_absorber(sym):
+                    buffer_qty[0] += sell_qty
+                    evt(i, BUFFER_LABEL, "STOP — parked", sp, proceeds,
+                        f"Moved {sell_qty:.4f} sh from BTC core into {BUFFER_LABEL} after stop event.")
+                    destination = BUFFER_LABEL
+                else:
+                    park_in_buffer(proceeds, i, sym, "STOP — parked", "Held for end-of-cycle rebalance.")
+                    destination = BUFFER_LABEL if ABSORBER_SYMBOL in chosen_symbols else "cash"
                 evt(i, sym, f"STOP — sold {int(cfg.stop_sell_pct*100)}%", sp, proceeds,
                     f"{display(sym)} low ${low:,.2f} hit floor ${old_floor:,.2f}. "
                     f"Sold {int(cfg.stop_sell_pct*100)}% ({sell_qty:.4f} sh) → ${proceeds:,.2f}. "
                     f"β={b:.2f}: new floor ${s['floor']:,.2f} ({fp*100:.1f}% below), "
-                    f"trail at ${s['t_next']:,.2f}. Proceeds to {destination}. "
+                    f"trail at ${s['t_next']:,.2f}. Proceeds moved to {destination} until rebalance. "
                     f"Next stop eligible in {int(cfg.stop_cooldown_days)} trading day(s).")
                 continue
 
@@ -348,6 +475,7 @@ def simulate(cfg: SimConfig, data: dict, chosen_symbols: list[str] | None = None
                         f"Floor raised ${old_f:,.2f} → ${new_floor:,.2f}. "
                         f"Next trail at ${s['t_next']:,.2f}.")
 
+        rebalance_portfolio(i)
         snap(i)
 
     # ── Buy-and-hold baseline ─────────────────────────────────────────────────

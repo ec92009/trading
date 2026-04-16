@@ -1,33 +1,35 @@
 """
-Generic trading bot — runs multiple symbols concurrently in threads.
-Each symbol gets its own BotConfig with independent state and rules.
+Live portfolio bot.
 
-Rules (same for all symbols):
-- Buy initial notional at market on startup
-- Stop loss: sell all if price drops to entry * 0.95
-- Trailing floor: after +10%, raise stop to current * 0.95; re-raise every +5%
-- Ladder in: buy more at floor * 0.925, buy more at floor * 0.850
-- Stocks: market hours only (DAY orders). Crypto: 24/7 (GTC orders).
+Behavior:
+- Maintain a 5-name basket: TSLA, TSM, NVDA, PLTR, BTC/USD
+- Flatten unmanaged positions (for example AAPL) when the bot starts
+- Watch stock positions during market hours and sell them immediately if they hit
+  their beta-scaled stop floor
+- Rebalance the basket to equal 20% weights five minutes before the stock market
+  close
 """
 
+from __future__ import annotations
+
+import logging
+import math
 import os
 import time
-import logging
-import threading
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+
 from dotenv import load_dotenv
+from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
+from alpaca.data.requests import CryptoLatestQuoteRequest, StockLatestQuoteRequest
 from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
-from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
-from alpaca.data.historical import StockHistoricalDataClient, CryptoHistoricalDataClient
-from alpaca.data.requests import StockLatestQuoteRequest, CryptoLatestQuoteRequest
+from alpaca.trading.enums import OrderSide, QueryOrderStatus, TimeInForce
+from alpaca.trading.requests import GetOrdersRequest, MarketOrderRequest
+
 import trade_log
 
 load_dotenv(Path(__file__).parent / ".env")
-
-# ── Logging ───────────────────────────────────────────────────────────────────
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,61 +38,94 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-# ── Config ────────────────────────────────────────────────────────────────────
 
 @dataclass
 class BotConfig:
-    symbol:           str
-    asset_class:      str    # "stock" or "crypto"
-    initial_notional: float  = 50.0
-    ladder_notional:  float  = 50.0
-    stop_pct:         float  = 0.95
-    trail_trigger:    float  = 1.10
-    trail_step:       float  = 1.05
-    trail_stop:       float  = 0.95
-    ladder1_pct:      float  = 0.925
-    ladder2_pct:      float  = 0.850
-    poll_interval:    int    = 30
+    symbol: str
+    asset_class: str
+    initial_notional: float = 0.0
+    ladder_notional: float = 0.0
+    stop_pct: float = 0.95
+    trail_trigger: float = 1.10
+    target_weight: float = 0.20
+    base_tol: float = 0.0161
+    trail_step: float = 1.0275
+    trail_stop: float = 0.995
+    ladder1_pct: float = 0.925
+    ladder2_pct: float = 0.850
+    poll_interval: int = 30
 
-_P = 348.71   # portfolio value at last rebalance — update if you rebalance again
+
 BOTS = [
-    BotConfig(symbol="AAPL",    asset_class="stock",  initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
-    BotConfig(symbol="BTC/USD", asset_class="crypto", initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
-    BotConfig(symbol="PLTR",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
-    BotConfig(symbol="TSM",     asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
-    BotConfig(symbol="NVDA",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
-    BotConfig(symbol="TSLA",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
+    BotConfig(symbol="TSLA", asset_class="stock"),
+    BotConfig(symbol="TSM", asset_class="stock"),
+    BotConfig(symbol="NVDA", asset_class="stock"),
+    BotConfig(symbol="PLTR", asset_class="stock"),
+    BotConfig(symbol="BTC/USD", asset_class="crypto"),
 ]
 
-# ── Shared clients ────────────────────────────────────────────────────────────
+TARGET_SYMBOLS = {cfg.symbol for cfg in BOTS}
+ABSORBER_SYMBOL = "BTC/USD"
+BETA_WINDOW = 60
 
-_api_key    = os.getenv("ALPACA_API_KEY")
+_api_key = os.getenv("ALPACA_API_KEY")
 _secret_key = os.getenv("ALPACA_SECRET_KEY")
 
-trading      = TradingClient(api_key=_api_key, secret_key=_secret_key, paper=True)
-stock_data   = StockHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
-crypto_data  = CryptoHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
+trading = TradingClient(api_key=_api_key, secret_key=_secret_key, paper=True)
+stock_data = StockHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
+crypto_data = CryptoHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
 
-# ── Bot ───────────────────────────────────────────────────────────────────────
+
+def normalize_symbol(symbol: str) -> str:
+    return symbol.replace("/", "")
+
+
+def yf_symbol(symbol: str) -> str:
+    return "BTC-USD" if symbol == "BTC/USD" else symbol
+
+
+def compute_beta(symbol: str) -> float:
+    import yfinance as yf
+
+    asset_hist = yf.Ticker(yf_symbol(symbol)).history(period="6mo")["Close"].dropna()
+    spy_hist = yf.Ticker("SPY").history(period="6mo")["Close"].dropna()
+    common = asset_hist.index.intersection(spy_hist.index)
+    if len(common) < 6:
+        return 1.0
+    asset_close = asset_hist.loc[common].tail(BETA_WINDOW + 1)
+    spy_close = spy_hist.loc[common].tail(BETA_WINDOW + 1)
+    if len(asset_close) < 6 or len(spy_close) < 6:
+        return 1.0
+    asset_ret = asset_close.pct_change().dropna()
+    spy_ret = spy_close.pct_change().dropna()
+    common_ret = asset_ret.index.intersection(spy_ret.index)
+    if len(common_ret) < 5:
+        return 1.0
+    asset_ret = asset_ret.loc[common_ret]
+    spy_ret = spy_ret.loc[common_ret]
+    am = asset_ret.mean()
+    sm = spy_ret.mean()
+    cov = ((asset_ret - am) * (spy_ret - sm)).mean()
+    var = ((spy_ret - sm) ** 2).mean()
+    raw = cov / var if var > 0 else 1.0
+    return max(0.3, min(4.0, round(float(raw), 3)))
+
 
 class Bot:
     def __init__(self, cfg: BotConfig):
-        self.cfg           = cfg
-        self.logger        = logging.getLogger(cfg.symbol.replace("/", ""))
-        self.entry_price   = 0.0
-        self.floor         = 0.0
-        self.ladder1_price = 0.0
-        self.ladder2_price = 0.0
-        self.trail_next    = 0.0
-        self.total_qty     = 0.0
-        self.ladder1_done  = False
-        self.ladder2_done  = False
-        self.stopped_out   = False
-        self.half_stopped  = False   # True after first stop fires (50% sold)
+        self.cfg = cfg
+        self.logger = logging.getLogger(normalize_symbol(cfg.symbol))
+        self.entry_price = 0.0
+        self.floor = 0.0
+        self.trail_next = 0.0
+        self.total_qty = 0.0
         self.qty_precision = 8 if cfg.asset_class == "crypto" else 6
-        self.all_bots: list["Bot"] = []  # set after all bots are created
+        self.beta = 1.0
+        self.beta_asof: date | None = None
 
-    # ── Price ─────────────────────────────────────────────────────────────────
+    @property
+    def tif(self):
+        return TimeInForce.GTC if self.cfg.asset_class == "crypto" else TimeInForce.DAY
 
     def get_price(self) -> float:
         if self.cfg.asset_class == "crypto":
@@ -105,317 +140,256 @@ class Bot:
         bid = float(q.bid_price or 0)
         return (ask + bid) / 2 if (ask and bid) else ask or bid
 
-    # ── Orders ────────────────────────────────────────────────────────────────
-
-    @property
-    def tif(self):
-        return TimeInForce.GTC if self.cfg.asset_class == "crypto" else TimeInForce.DAY
-
-    def check_buying_power(self, needed: float):
-        """Raise if account buying power is insufficient."""
-        bp = float(trading.get_account().buying_power)
-        if bp < needed:
-            raise RuntimeError(
-                f"Insufficient buying power: need ${needed}, available ${bp:.2f}"
-            )
-
-    def buy(self, notional: float, reason: str):
-        self.check_buying_power(notional)
-        order = trading.submit_order(MarketOrderRequest(
-            symbol=self.cfg.symbol,
-            notional=notional,
-            side=OrderSide.BUY,
-            time_in_force=self.tif,
-        ))
-        trade_log.log_order(self.cfg.symbol, order.id, "BUY", notional)
-        self.logger.info(f"BUY ${notional} [{reason}] → {order.status} id={order.id}")
-
     def refresh_position(self):
-        """Refresh cached position state from Alpaca when a live position exists."""
         positions = {p.symbol: p for p in trading.get_all_positions()}
-        pos = positions.get(self.cfg.symbol.replace("/", ""))
+        pos = positions.get(normalize_symbol(self.cfg.symbol))
         if not pos:
+            self.total_qty = 0.0
             return None
         self.total_qty = float(pos.qty)
         self.entry_price = float(pos.avg_entry_price)
         return pos
 
+    def market_value(self) -> float:
+        pos = self.refresh_position()
+        return float(pos.market_value) if pos else 0.0
+
+    def ensure_beta(self):
+        today = date.today()
+        if self.beta_asof == today:
+            return
+        try:
+            self.beta = compute_beta(self.cfg.symbol)
+            self.beta_asof = today
+        except Exception as exc:
+            self.logger.error(f"BETA ERROR: {exc}")
+            self.beta = 1.0
+            self.beta_asof = today
+
+    def floor_pct(self) -> float:
+        self.ensure_beta()
+        return max(0.005, self.cfg.base_tol * self.beta)
+
+    def reset_risk_levels(self, anchor_price: float):
+        pct = self.floor_pct()
+        self.floor = round(anchor_price * (1 - pct), 2)
+        self.trail_next = round(anchor_price * (1 + pct), 2)
+
+    def buy(self, notional: float, reason: str):
+        if notional < 1.0:
+            return
+        order = trading.submit_order(
+            MarketOrderRequest(
+                symbol=self.cfg.symbol,
+                notional=round(notional, 2),
+                side=OrderSide.BUY,
+                time_in_force=self.tif,
+            )
+        )
+        trade_log.log_order(self.cfg.symbol, order.id, "BUY", notional)
+        self.logger.info(f"BUY ${notional:.2f} [{reason}] → {order.status} id={order.id}")
+
+    def sell_qty(self, qty: float, reason: str):
+        if qty <= 0:
+            return
+        qty = round(qty, self.qty_precision)
+        if qty <= 0:
+            return
+        try:
+            price = self.get_price()
+        except Exception:
+            price = self.entry_price or 0.0
+        order = trading.submit_order(
+            MarketOrderRequest(
+                symbol=self.cfg.symbol,
+                qty=qty,
+                side=OrderSide.SELL,
+                time_in_force=self.tif,
+            )
+        )
+        trade_log.log_order(self.cfg.symbol, order.id, "SELL", qty * price)
+        self.logger.info(f"SELL {qty} [{reason}] → {order.status} id={order.id}")
+
     def sell_all(self, reason: str):
         pos = self.refresh_position()
         if not pos or self.total_qty <= 0:
-            self.logger.warning(f"SELL skipped [{reason}] — no live position to close")
+            self.logger.warning(f"SELL skipped [{reason}] — no live position")
             return
-        order = trading.submit_order(MarketOrderRequest(
-            symbol=self.cfg.symbol,
-            qty=round(self.total_qty, self.qty_precision),
-            side=OrderSide.SELL,
-            time_in_force=self.tif,
-        ))
-        trade_log.log_order(self.cfg.symbol, order.id, "SELL", self.total_qty * self.entry_price)
-        self.stopped_out = True
-        self.logger.info(f"SELL ALL {self.total_qty} [{reason}] → {order.status} id={order.id}")
+        self.sell_qty(self.total_qty, reason)
+        self.floor = 0.0
+        self.trail_next = 0.0
 
-    def sell_half(self, reason: str) -> float:
-        """Sell 50% of position. Returns estimated proceeds at current price."""
+    def sync_from_market(self):
+        pos = self.refresh_position()
+        if not pos:
+            return
+        if self.floor <= 0 or self.trail_next <= 0:
+            try:
+                self.reset_risk_levels(self.get_price())
+            except Exception as exc:
+                self.logger.error(f"SYNC ERROR: {exc}")
+
+    def monitor_stop(self):
+        if self.cfg.asset_class != "stock":
+            return
         pos = self.refresh_position()
         if not pos or self.total_qty <= 0:
-            self.logger.warning(f"SELL HALF skipped [{reason}] — no live position")
-            return 0.0
-        half_qty = round(self.total_qty / 2, self.qty_precision)
-        if half_qty <= 0:
-            return 0.0
+            return
         price = self.get_price()
-        order = trading.submit_order(MarketOrderRequest(
-            symbol=self.cfg.symbol,
-            qty=half_qty,
-            side=OrderSide.SELL,
-            time_in_force=self.tif,
-        ))
-        proceeds = round(half_qty * price, 2)
-        trade_log.log_order(self.cfg.symbol, order.id, "SELL", proceeds)
-        self.total_qty = round(self.total_qty - half_qty, self.qty_precision)
         self.logger.info(
-            f"SELL HALF {half_qty} [{reason}] → {order.status} id={order.id} "
-            f"est. proceeds=${proceeds:,.2f}"
+            f"price=${price:,.2f} floor=${self.floor:,.2f} trail_next=${self.trail_next:,.2f}"
         )
-        return proceeds
-
-    def redistribute(self, cash: float):
-        """Buy into other active bots proportionally to their current market values."""
-        if cash < 1.0:
-            self.logger.info("REALLOC: proceeds too small, skipping")
+        if self.floor > 0 and price <= self.floor:
+            self.logger.info(f"STOP HIT at ${price:,.2f} — exiting position")
+            self.sell_all("stop loss")
             return
-        others = [b for b in self.all_bots if b is not self and not b.stopped_out]
-        if not others:
-            self.logger.info("REALLOC: no other active bots to redistribute to")
-            return
-        positions = {p.symbol: p for p in trading.get_all_positions()}
-        values = {}
-        for b in others:
-            tag = b.cfg.symbol.replace("/", "")
-            pos = positions.get(tag)
-            values[b] = float(pos.market_value) if pos else b.cfg.initial_notional
-        total = sum(values.values())
-        if total <= 0:
-            return
-        self.logger.info(
-            f"REALLOC: distributing ${cash:.2f} across "
-            f"{len(others)} bots: {[b.cfg.symbol for b in others]}"
-        )
-        for b, val in values.items():
-            notional = round(cash * val / total, 2)
-            if notional < 1.0:
-                continue
-            self.logger.info(
-                f"REALLOC → {b.cfg.symbol}: ${notional:.2f} "
-                f"({val/total*100:.1f}% of peer value)"
-            )
-            try:
-                b.buy(notional, f"realloc from {self.cfg.symbol}")
-            except Exception as exc:
-                self.logger.error(f"REALLOC buy {b.cfg.symbol} failed: {exc}")
-
-    # ── Market hours guard (stocks only) ──────────────────────────────────────
-
-    def wait_for_market(self):
-        if self.cfg.asset_class == "crypto":
-            return
-        clock = trading.get_clock()
-        if clock.is_open:
-            return
-        now       = datetime.now(timezone.utc)
-        next_open = clock.next_open.replace(tzinfo=timezone.utc)
-        secs      = max(0, (next_open - now).total_seconds())
-        self.logger.info(
-            f"Market closed. Sleeping {secs/3600:.1f}h until "
-            f"{clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}"
-        )
-        time.sleep(secs + 5)
-
-    # ── Setup ─────────────────────────────────────────────────────────────────
-
-    def _alpaca_order_status(self, order_id: str) -> str:
-        """Return Alpaca's current status string for an order, or 'unknown'."""
-        try:
-            o = trading.get_order_by_id(order_id)
-            return str(o.status)   # e.g. 'OrderStatus.FILLED'
-        except Exception:
-            return "unknown"
-
-    def _cancel_open_buys_except(self, keep_id: str | None = None):
-        """Cancel all open buy orders for this symbol, optionally sparing one."""
-        orders = trading.get_orders(GetOrdersRequest(
-            symbols=[self.cfg.symbol],        # must be a list — symbol= is ignored by SDK
-            status=QueryOrderStatus.OPEN,
-        ))
-        for o in orders:
-            if str(o.side) == "OrderSide.BUY" and str(o.id) != keep_id:
-                trading.cancel_order_by_id(o.id)
-                trade_log.update_order(str(o.id), "cancelled")
-                self.logger.info(f"Cancelled duplicate buy order {o.id}")
-
-    def setup(self):
-        self.wait_for_market()
-        cfg = self.cfg
-
-        # ── 1. Existing filled position → resume monitoring ───────────────────
-        positions = {p.symbol: p for p in trading.get_all_positions()}
-        existing  = positions.get(cfg.symbol.replace("/", ""))
-
-        if existing:
-            self.entry_price = float(existing.avg_entry_price)
-            self.total_qty   = float(existing.qty)
-            self._cancel_open_buys_except(keep_id=None)
-            self.logger.info(
-                f"Resuming existing position: "
-                f"{self.total_qty} @ ${self.entry_price:,.2f}"
-            )
-
-        else:
-            # ── 2. Check TSV for a pending buy we already queued ──────────────
-            tsv_row = trade_log.get_pending_buy(cfg.symbol)
-
-            if tsv_row:
-                alpaca_status = self._alpaca_order_status(tsv_row["order_id"])
-
-                if "FILLED" in alpaca_status.upper():
-                    # Filled since last run — update TSV, use fill price
-                    o = trading.get_order_by_id(tsv_row["order_id"])
-                    fill_price = float(o.filled_avg_price or self.get_price())
-                    trade_log.update_order(tsv_row["order_id"], "filled", fill_price)
-                    self.entry_price = fill_price
-                    self.total_qty   = float(o.filled_qty or 0)
-                    self._cancel_open_buys_except(keep_id=None)
-                    self.logger.info(
-                        f"TSV buy filled @ ${fill_price:,.2f} — resuming"
-                    )
-
-                elif "CANCELLED" in alpaca_status.upper() or alpaca_status == "unknown":
-                    # Order gone — mark TSV cancelled, place fresh buy
-                    trade_log.update_order(tsv_row["order_id"], "cancelled")
-                    self.logger.info(
-                        f"TSV buy {tsv_row['order_id']} was cancelled — placing fresh order"
-                    )
-                    price            = self.get_price()
-                    self.entry_price = price
-                    self.total_qty   = 0.0
-                    self.buy(cfg.initial_notional, "initial entry")
-
-                else:
-                    # Still pending on Alpaca — keep it, don't re-queue
-                    self._cancel_open_buys_except(keep_id=tsv_row["order_id"])
-                    price            = self.get_price()
-                    self.entry_price = price   # estimate until fill
-                    self.total_qty   = 0.0
-                    self.logger.info(
-                        f"TSV buy {tsv_row['order_id']} still pending — "
-                        f"resuming with estimated entry ${price:,.2f}"
-                    )
-
-            else:
-                # ── 3. No TSV record — fresh entry ────────────────────────────
-                self._cancel_open_buys_except(keep_id=None)
-                price            = self.get_price()
-                self.entry_price = price
-                self.total_qty   = 0.0
-                self.buy(cfg.initial_notional, "initial entry")
-
-        self.floor         = round(self.entry_price * cfg.stop_pct,      2)
-        self.ladder1_price = round(self.floor * cfg.ladder1_pct,         2)
-        self.ladder2_price = round(self.floor * cfg.ladder2_pct,         2)
-        self.trail_next    = round(self.entry_price * cfg.trail_trigger,  2)
-
-        fmt = lambda n: f"${n:,.2f}"
-        self.logger.info("=" * 50)
-        self.logger.info(f"  {cfg.symbol} BOT STARTED")
-        self.logger.info(f"  Entry          : {fmt(self.entry_price)}")
-        self.logger.info(f"  Stop loss      : {fmt(self.floor)}  (×0.95)")
-        self.logger.info(f"  Trail trigger  : {fmt(self.trail_next)}  (+10%)")
-        self.logger.info(f"  Ladder 1       : {fmt(self.ladder1_price)}  (floor×0.925)")
-        self.logger.info(f"  Ladder 2       : {fmt(self.ladder2_price)}  (floor×0.850)")
-        self.logger.info("=" * 50)
-
-    # ── Monitor ───────────────────────────────────────────────────────────────
-
-    def monitor(self):
-        while not self.stopped_out:
-            time.sleep(self.cfg.poll_interval)
-            try:
-                self.wait_for_market()
-                self.refresh_position()
-                price = self.get_price()
+        if self.trail_next > 0 and price >= self.trail_next:
+            new_floor = round(price * self.cfg.trail_stop, 2)
+            if new_floor > self.floor:
+                old_floor = self.floor
+                self.floor = new_floor
+                self.trail_next = round(price * self.cfg.trail_step, 2)
                 self.logger.info(
-                    f"price=${price:,.2f}  floor=${self.floor:,.2f}  "
-                    f"trail_next=${self.trail_next:,.2f}"
+                    f"TRAILING: floor ${old_floor:,.2f} → ${self.floor:,.2f}, "
+                    f"next trigger=${self.trail_next:,.2f}"
                 )
 
-                if price <= self.floor:
-                    if not self.half_stopped:
-                        self.logger.info(
-                            f"FLOOR HIT at ${price:,.2f} — selling 50%, reallocating"
-                        )
-                        proceeds = self.sell_half("stop loss 50%")
-                        self.redistribute(proceeds)
-                        self.half_stopped = True
-                        self.floor      = round(price * self.cfg.stop_pct, 2)
-                        self.trail_next = round(price * self.cfg.trail_trigger, 2)
-                        self.logger.info(
-                            f"Remaining 50% continues — new floor=${self.floor:,.2f}, "
-                            f"trail_next=${self.trail_next:,.2f}"
-                        )
-                    else:
-                        self.logger.info(
-                            f"SECOND FLOOR HIT at ${price:,.2f} — selling all remaining"
-                        )
-                        self.sell_all("stop loss final")
-                        break
 
-                if price >= self.trail_next:
-                    new_floor = round(price * self.cfg.trail_stop, 2)
-                    if new_floor > self.floor:
-                        old = self.floor
-                        self.floor      = new_floor
-                        self.trail_next = round(price * self.cfg.trail_step, 2)
-                        self.logger.info(
-                            f"TRAILING: floor ${old:,.2f} → ${self.floor:,.2f}, "
-                            f"next trigger=${self.trail_next:,.2f}"
-                        )
+class PortfolioManager:
+    def __init__(self, bots: list[Bot]):
+        self.bots = bots
+        self.bot_by_symbol = {bot.cfg.symbol: bot for bot in bots}
+        self.logger = logging.getLogger("portfolio")
+        self.last_rebalance_day: date | None = None
 
-                if not self.ladder1_done and price <= self.ladder1_price:
-                    self.logger.info(f"LADDER 1 at ${price:,.2f}")
-                    self.buy(self.cfg.ladder_notional, "ladder 1")
-                    self.ladder1_done = True
+    def market_clock(self):
+        return trading.get_clock()
 
-                if not self.ladder2_done and price <= self.ladder2_price:
-                    self.logger.info(f"LADDER 2 at ${price:,.2f}")
-                    self.buy(self.cfg.ladder_notional, "ladder 2")
-                    self.ladder2_done = True
+    def market_open(self) -> bool:
+        return bool(self.market_clock().is_open)
 
-            except Exception as e:
-                self.logger.error(f"ERROR: {e}")
+    def now_et(self) -> datetime:
+        return self.market_clock().timestamp.replace(tzinfo=timezone.utc).astimezone(
+            self.market_clock().timestamp.tzinfo
+        )
+
+    def should_rebalance(self, now: datetime, next_close: datetime) -> bool:
+        if self.last_rebalance_day == now.date():
+            return False
+        return next_close - now <= timedelta(minutes=5)
+
+    def account_equity(self) -> float:
+        return float(trading.get_account().equity)
+
+    def current_positions(self):
+        return {p.symbol: p for p in trading.get_all_positions()}
+
+    def flatten_unmanaged_positions(self):
+        positions = self.current_positions()
+        for alpaca_symbol, pos in positions.items():
+            live_symbol = "BTC/USD" if alpaca_symbol == "BTCUSD" else alpaca_symbol
+            if live_symbol in TARGET_SYMBOLS:
+                continue
+            qty = float(pos.qty)
+            price = float(pos.current_price)
+            rounded_qty = round(qty, 8 if "/" in live_symbol else 6)
+            if qty <= 0 or rounded_qty <= 0 or qty * price < 1.0:
+                continue
+            asset_class = "crypto" if "USD" in live_symbol and "/" in live_symbol else "stock"
+            tif = TimeInForce.GTC if asset_class == "crypto" else TimeInForce.DAY
+            order = trading.submit_order(
+                MarketOrderRequest(
+                    symbol=live_symbol,
+                    qty=rounded_qty,
+                    side=OrderSide.SELL,
+                    time_in_force=tif,
+                )
+            )
+            trade_log.log_order(live_symbol, order.id, "SELL", qty * price)
+            self.logger.info(f"Flattened unmanaged position {live_symbol} qty={qty}")
+
+    def rebalance_portfolio(self, reason: str):
+        self.logger.info(f"REBALANCE START [{reason}]")
+        equity = self.account_equity()
+        target_value = round(equity / len(self.bots), 2)
+        positions = self.current_positions()
+
+        for bot in self.bots:
+            pos = positions.get(normalize_symbol(bot.cfg.symbol))
+            current_value = float(pos.market_value) if pos else 0.0
+            excess = round(current_value - target_value, 2)
+            if excess <= 1.0:
+                continue
+            price = bot.get_price()
+            qty = excess / price
+            bot.sell_qty(qty, f"rebalance sell to target ${target_value:,.2f}")
+
+        # Give sell orders a moment to settle into available cash.
+        for _ in range(10):
+            open_orders = trading.get_orders(filter=GetOrdersRequest(status=QueryOrderStatus.OPEN))
+            if not any(str(o.side) == "OrderSide.SELL" for o in open_orders):
+                break
+            time.sleep(1)
+
+        positions = self.current_positions()
+        cash = float(trading.get_account().cash)
+
+        for bot in self.bots:
+            pos = positions.get(normalize_symbol(bot.cfg.symbol))
+            current_value = float(pos.market_value) if pos else 0.0
+            deficit = round(target_value - current_value, 2)
+            if deficit <= 1.0 or cash <= 1.0:
+                continue
+            spend = min(deficit, cash)
+            try:
+                bot.buy(spend, f"rebalance buy to target ${target_value:,.2f}")
+                cash = max(0.0, cash - spend)
+            except Exception as exc:
+                self.logger.error(f"REBALANCE BUY FAILED {bot.cfg.symbol}: {exc}")
+
+        time.sleep(2)
+        for bot in self.bots:
+            pos = bot.refresh_position()
+            if pos:
+                bot.reset_risk_levels(bot.get_price())
+        self.last_rebalance_day = self.now_et().date()
+        self.logger.info("REBALANCE END")
+
+    def startup_sync(self):
+        for bot in self.bots:
+            bot.sync_from_market()
+        if self.market_open():
+            try:
+                self.flatten_unmanaged_positions()
+            except Exception as exc:
+                self.logger.error(f"STARTUP FLATTEN ERROR: {exc}")
+            try:
+                self.rebalance_portfolio("startup sync")
+            except Exception as exc:
+                self.logger.error(f"STARTUP REBALANCE ERROR: {exc}")
 
     def run(self):
-        retry_interval = 60
+        self.startup_sync()
         while True:
             try:
-                self.setup()
-                break
-            except RuntimeError as e:
-                self.logger.error(f"SETUP FAILED: {e} — retrying in {retry_interval}s")
-                time.sleep(retry_interval)
-            except Exception as e:
-                self.logger.error(f"SETUP ERROR: {e} — retrying in {retry_interval}s")
-                time.sleep(retry_interval)
-        self.monitor()
+                clock = self.market_clock()
+                now = clock.timestamp
+                if clock.is_open:
+                    for bot in self.bots:
+                        bot.monitor_stop()
+                    if self.should_rebalance(now, clock.next_close):
+                        self.rebalance_portfolio("near close")
+                else:
+                    self.logger.info(
+                        f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}"
+                    )
+                sleep_for = min(cfg.poll_interval for cfg in (bot.cfg for bot in self.bots))
+                time.sleep(sleep_for)
+            except Exception as exc:
+                self.logger.error(f"LOOP ERROR: {exc}")
+                time.sleep(30)
 
-# ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     bots = [Bot(cfg) for cfg in BOTS]
-    for b in bots:
-        b.all_bots = bots  # each bot can see all peers for redistribution
-    threads = [threading.Thread(target=b.run, daemon=True) for b in bots]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
+    PortfolioManager(bots).run()
