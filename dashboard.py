@@ -763,7 +763,7 @@ def build_html() -> str:
     .chart-meta { color:var(--muted); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
     .chart-pl { margin-left:auto; font-weight:700; font-size:13px; }
     .chart-wrap { height:220px; position:relative; margin-top:14px; }
-    .chart-line { position:absolute; left:0; right:0; height:0; border-top-width:1px; border-top-style:dashed; pointer-events:none; opacity:.95; }
+    .chart-line { position:absolute; left:0; right:130px; height:0; border-top-width:1px; border-top-style:dashed; pointer-events:none; }
     .chart-line.stop-line { border-top-color:#ff8f70; }
     .chart-line.trigger-line { border-top-color:#71d6ad; }
     .table-wrap { display:grid; gap:12px; margin-top:14px; }
@@ -784,9 +784,9 @@ def build_html() -> str:
     .badge.bad { color:var(--bad); border-color:rgba(255,143,112,.25); }
     .badge.warn { color:var(--accent); border-color:rgba(216,178,122,.25); }
     .icon-btn { width:38px; height:38px; padding:0; display:inline-flex; align-items:center; justify-content:center; font-size:16px; }
-    .line-chip { position:absolute; right:10px; transform:translateY(-50%); border-radius:999px; padding:3px 8px; font-size:11px; font-family:"IBM Plex Mono", monospace; pointer-events:none; backdrop-filter:blur(4px); }
-    .stop-chip { background:rgba(255,143,112,.16); color:#ffd4ca; border:1px solid rgba(255,143,112,.28); }
-    .trigger-chip { background:rgba(113,214,173,.14); color:#d7ffed; border:1px solid rgba(113,214,173,.26); }
+    .line-chip { position:absolute; right:10px; transform:translateY(-50%); border-radius:999px; padding:3px 8px; font-size:11px; font-family:"IBM Plex Mono", monospace; pointer-events:none; }
+    .stop-chip { background:#2d1a17; color:#ff8f70; border:1px solid rgba(255,143,112,.5); }
+    .trigger-chip { background:#162b21; color:#71d6ad; border:1px solid rgba(113,214,173,.45); }
     @keyframes rise { to { opacity:1; transform:translateY(0); } }
     @media (max-width:1320px) { .workspace-grid { grid-template-columns:minmax(0,1fr) minmax(240px, 320px); } }
     @media (max-width:1200px) { .shell { grid-template-columns:1fr; } .rail { position:static; } .workspace-grid { grid-template-columns:1fr; } }
