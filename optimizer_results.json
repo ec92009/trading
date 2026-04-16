@@ -1,0 +1,250 @@
+{
+  "search": {
+    "initial": 10000.0,
+    "symbols": [
+      "TSLA",
+      "TSMC",
+      "NVDA",
+      "PLTR",
+      "BTC"
+    ],
+    "samples": 4000,
+    "refine_top": 24,
+    "refine_samples": 150,
+    "workers": 8,
+    "seed": 47
+  },
+  "best": {
+    "initial": 10000.0,
+    "final": 133597.13,
+    "return_pct": 1235.97,
+    "max_dd_pct": 5.75,
+    "bh_final": 16642.93,
+    "bh_return_pct": 66.43,
+    "score": 133579.88,
+    "symbols": [
+      "TSLA",
+      "TSMC",
+      "NVDA",
+      "PLTR",
+      "BTC"
+    ],
+    "base_tol": 0.005,
+    "stop_sell_pct": 0.5533,
+    "trail_step": 1.1186,
+    "trail_stop": 0.995,
+    "stop_cooldown_days": 4
+  },
+  "top10": [
+    {
+      "initial": 10000.0,
+      "final": 133597.13,
+      "return_pct": 1235.97,
+      "max_dd_pct": 5.75,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 133579.88,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5533,
+      "trail_step": 1.1186,
+      "trail_stop": 0.995,
+      "stop_cooldown_days": 4
+    },
+    {
+      "initial": 10000.0,
+      "final": 82164.85,
+      "return_pct": 721.65,
+      "max_dd_pct": 4.98,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 82149.91,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5461,
+      "trail_step": 1.0314,
+      "trail_stop": 0.9907,
+      "stop_cooldown_days": 4
+    },
+    {
+      "initial": 10000.0,
+      "final": 80260.21,
+      "return_pct": 702.6,
+      "max_dd_pct": 12.83,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 80221.72,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5132,
+      "trail_step": 1.0453,
+      "trail_stop": 0.995,
+      "stop_cooldown_days": 5
+    },
+    {
+      "initial": 10000.0,
+      "final": 61739.05,
+      "return_pct": 517.39,
+      "max_dd_pct": 7.6,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 61716.25,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5962,
+      "trail_step": 1.0707,
+      "trail_stop": 0.995,
+      "stop_cooldown_days": 9
+    },
+    {
+      "initial": 10000.0,
+      "final": 57196.69,
+      "return_pct": 471.97,
+      "max_dd_pct": 11.54,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 57162.07,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5682,
+      "trail_step": 1.015,
+      "trail_stop": 0.995,
+      "stop_cooldown_days": 14
+    },
+    {
+      "initial": 10000.0,
+      "final": 53379.35,
+      "return_pct": 433.79,
+      "max_dd_pct": 7.63,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 53356.46,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5823,
+      "trail_step": 1.0567,
+      "trail_stop": 0.9906,
+      "stop_cooldown_days": 10
+    },
+    {
+      "initial": 10000.0,
+      "final": 48603.35,
+      "return_pct": 386.03,
+      "max_dd_pct": 10.1,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 48573.05,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5646,
+      "trail_step": 1.0897,
+      "trail_stop": 0.9807,
+      "stop_cooldown_days": 10
+    },
+    {
+      "initial": 10000.0,
+      "final": 48132.4,
+      "return_pct": 381.32,
+      "max_dd_pct": 4.43,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 48119.11,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.5017,
+      "trail_step": 1.0418,
+      "trail_stop": 0.9913,
+      "stop_cooldown_days": 1
+    },
+    {
+      "initial": 10000.0,
+      "final": 47826.4,
+      "return_pct": 378.26,
+      "max_dd_pct": 7.01,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 47805.37,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.507,
+      "trail_step": 1.1442,
+      "trail_stop": 0.99,
+      "stop_cooldown_days": 3
+    },
+    {
+      "initial": 10000.0,
+      "final": 47400.55,
+      "return_pct": 374.01,
+      "max_dd_pct": 5.37,
+      "bh_final": 16642.93,
+      "bh_return_pct": 66.43,
+      "score": 47384.44,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "base_tol": 0.005,
+      "stop_sell_pct": 0.4351,
+      "trail_step": 1.1359,
+      "trail_stop": 0.995,
+      "stop_cooldown_days": 4
+    }
+  ]
+}
