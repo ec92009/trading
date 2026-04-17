@@ -1,0 +1,236 @@
+{
+  "search": {
+    "initial": 10000.0,
+    "symbols": [
+      "TSLA",
+      "TSM",
+      "NVDA",
+      "PLTR",
+      "BTC-USD"
+    ],
+    "step": 0.05,
+    "upper": 0.5,
+    "train_start": "2023-01-01",
+    "train_end": "2024-01-01",
+    "test_start": "2024-01-01",
+    "test_end": "2026-04-01"
+  },
+  "best_train": {
+    "initial": 10000.0,
+    "final": 25928.95,
+    "return_pct": 159.29,
+    "max_dd_pct": 16.66,
+    "bh_final": 24805.43,
+    "bh_return_pct": 148.05,
+    "score": 25878.97,
+    "symbols": [
+      "TSLA",
+      "TSMC",
+      "NVDA",
+      "PLTR",
+      "BTC"
+    ],
+    "down_shift_pct": 0.0,
+    "up_shift_pct": 0.05
+  },
+  "top10_train": [
+    {
+      "initial": 10000.0,
+      "final": 25928.95,
+      "return_pct": 159.29,
+      "max_dd_pct": 16.66,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 25878.97,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.0,
+      "up_shift_pct": 0.05
+    },
+    {
+      "initial": 10000.0,
+      "final": 25810.08,
+      "return_pct": 158.1,
+      "max_dd_pct": 16.69,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 25760.01,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.0,
+      "up_shift_pct": 0.1
+    },
+    {
+      "initial": 10000.0,
+      "final": 25514.92,
+      "return_pct": 155.15,
+      "max_dd_pct": 15.94,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 25467.1,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.05,
+      "up_shift_pct": 0.1
+    },
+    {
+      "initial": 10000.0,
+      "final": 25510.45,
+      "return_pct": 155.1,
+      "max_dd_pct": 15.78,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 25463.11,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.0,
+      "up_shift_pct": 0.0
+    },
+    {
+      "initial": 10000.0,
+      "final": 25264.91,
+      "return_pct": 152.65,
+      "max_dd_pct": 15.37,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 25218.8,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.05,
+      "up_shift_pct": 0.15
+    },
+    {
+      "initial": 10000.0,
+      "final": 25025.67,
+      "return_pct": 150.26,
+      "max_dd_pct": 15.83,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 24978.18,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.05,
+      "up_shift_pct": 0.05
+    },
+    {
+      "initial": 10000.0,
+      "final": 24863.26,
+      "return_pct": 148.63,
+      "max_dd_pct": 15.7,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 24816.16,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.0,
+      "up_shift_pct": 0.25
+    },
+    {
+      "initial": 10000.0,
+      "final": 24855.84,
+      "return_pct": 148.56,
+      "max_dd_pct": 14.78,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 24811.5,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.1,
+      "up_shift_pct": 0.15
+    },
+    {
+      "initial": 10000.0,
+      "final": 24848.68,
+      "return_pct": 148.49,
+      "max_dd_pct": 15.76,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 24801.4,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.05,
+      "up_shift_pct": 0.0
+    },
+    {
+      "initial": 10000.0,
+      "final": 24830.89,
+      "return_pct": 148.31,
+      "max_dd_pct": 15.68,
+      "bh_final": 24805.43,
+      "bh_return_pct": 148.05,
+      "score": 24783.85,
+      "symbols": [
+        "TSLA",
+        "TSMC",
+        "NVDA",
+        "PLTR",
+        "BTC"
+      ],
+      "down_shift_pct": 0.0,
+      "up_shift_pct": 0.15
+    }
+  ],
+  "test": {
+    "optimized": {
+      "down_shift_pct": 0.0,
+      "up_shift_pct": 0.05,
+      "final": 26305.15,
+      "return_pct": 163.05,
+      "max_dd_pct": 30.68,
+      "bh_final": 37781.08,
+      "bh_return_pct": 277.81
+    },
+    "baseline_xy_zero": {
+      "final": 35465.1,
+      "return_pct": 254.65,
+      "max_dd_pct": 30.51,
+      "bh_final": 37781.08,
+      "bh_return_pct": 277.81
+    }
+  }
+}
