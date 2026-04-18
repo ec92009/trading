@@ -7,6 +7,8 @@
 - Decide whether same-day startup rebalance should be allowed again near the close, or whether one rebalance per day is the desired live rule.
 - Handle dust positions more explicitly so tiny leftovers like the residual `AAPL` share do not trigger repeated cleanup attempts.
 - Consider using open-order and filled-order reconciliation before rebalance buys so the bot does not rely on a fixed wait after sells.
+- Investigate the next steps to run a real-money bot against the user's Robinhood account with very limited funds, including broker/API feasibility, order constraints, risk controls, and operational safeguards before any live deployment.
+- Write and validate a cash injection / withdrawal SOP so deposits, withdrawals, and balance changes do not confuse target weights, performance reporting, or rebalance logic.
 
 ## Strategy Validation
 
