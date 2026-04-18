@@ -57,28 +57,22 @@ COLORS = [
 ]
 
 ASSET_DEFAULTS = {
-    "initial_notional": 50.0,
-    "ladder_notional": 50.0,
     "target_weight": 0.20,
-    "stop_pct": 0.95,
-    "trail_trigger": 1.10,
-    "trail_step": 1.05,
-    "trail_stop": 0.95,
-    "ladder1_pct": 0.925,
-    "ladder2_pct": 0.850,
+    "base_tol": 0.0109,
+    "trail_step": 1.0235,
+    "trail_stop": 0.9885,
+    "stop_sell_pct": 0.8342,
+    "stop_cooldown_days": 5,
     "poll_interval": 30,
 }
 
 EDITABLE_FIELDS = [
-    "initial_notional",
-    "ladder_notional",
     "target_weight",
-    "stop_pct",
-    "trail_trigger",
+    "base_tol",
     "trail_step",
     "trail_stop",
-    "ladder1_pct",
-    "ladder2_pct",
+    "stop_sell_pct",
+    "stop_cooldown_days",
     "poll_interval",
 ]
 
@@ -280,15 +274,13 @@ def build_bot_line(config: dict) -> str:
     parts = [
         f'symbol="{config["symbol"]}"',
         f'asset_class="{config["asset_class"]}"',
-        f'initial_notional={format_numeric(float(config["initial_notional"]))}',
-        f'ladder_notional={format_numeric(float(config["ladder_notional"]))}',
     ]
-    for field in EDITABLE_FIELDS[2:]:
+    for field in EDITABLE_FIELDS:
         value = config[field]
         default = ASSET_DEFAULTS[field]
         if float(value) != float(default):
             parts.append(
-                f"{field}={int(value) if field == 'poll_interval' else format_numeric(float(value))}"
+                f"{field}={int(value) if field in {'poll_interval', 'stop_cooldown_days'} else format_numeric(float(value))}"
             )
     return f"    BotConfig({', '.join(parts)}),"
 
@@ -326,29 +318,33 @@ def coerce_asset_config(payload: dict, current_symbol: str | None = None) -> dic
     if error:
         raise RuntimeError(error)
 
-    initial = float(payload.get("initial_notional", "") or 0)
-    ladder = float(payload.get("ladder_notional", "") or initial)
-    if initial <= 0 or ladder <= 0:
-        raise RuntimeError("Initial and ladder notionals must be positive.")
-
     config = {
         "symbol": symbol,
         "asset_class": asset_class,
-        "initial_notional": round(initial, 2),
-        "ladder_notional": round(ladder, 2),
         "target_weight": float(payload.get("target_weight", ASSET_DEFAULTS["target_weight"])),
-        "stop_pct": float(payload.get("stop_pct", ASSET_DEFAULTS["stop_pct"])),
-        "trail_trigger": float(payload.get("trail_trigger", ASSET_DEFAULTS["trail_trigger"])),
+        "base_tol": float(payload.get("base_tol", ASSET_DEFAULTS["base_tol"])),
         "trail_step": float(payload.get("trail_step", ASSET_DEFAULTS["trail_step"])),
         "trail_stop": float(payload.get("trail_stop", ASSET_DEFAULTS["trail_stop"])),
-        "ladder1_pct": float(payload.get("ladder1_pct", ASSET_DEFAULTS["ladder1_pct"])),
-        "ladder2_pct": float(payload.get("ladder2_pct", ASSET_DEFAULTS["ladder2_pct"])),
+        "stop_sell_pct": float(payload.get("stop_sell_pct", ASSET_DEFAULTS["stop_sell_pct"])),
+        "stop_cooldown_days": int(
+            float(payload.get("stop_cooldown_days", ASSET_DEFAULTS["stop_cooldown_days"]))
+        ),
         "poll_interval": int(float(payload.get("poll_interval", ASSET_DEFAULTS["poll_interval"]))),
     }
     if config["poll_interval"] <= 0:
         raise RuntimeError("Poll interval must be positive.")
     if config["target_weight"] < 0:
         raise RuntimeError("Target weight must be non-negative.")
+    if config["base_tol"] <= 0:
+        raise RuntimeError("Base tolerance must be positive.")
+    if not 0 < config["trail_stop"] < 1:
+        raise RuntimeError("Trail floor must be between 0 and 1.")
+    if config["trail_step"] <= 1:
+        raise RuntimeError("Trail step must be greater than 1.")
+    if not 0 < config["stop_sell_pct"] <= 1:
+        raise RuntimeError("Stop sell % must be between 0 and 1.")
+    if config["stop_cooldown_days"] < 0:
+        raise RuntimeError("Stop cooldown days must be non-negative.")
     return config
 
 
@@ -613,7 +609,11 @@ def fetch_data() -> dict:
         assets[sym] = {
             "color": bot["color"],
             "asset_class": bot["asset_class"],
-            "trail_trigger": float(bot["trail_trigger"]),
+            "base_tol": float(bot["base_tol"]),
+            "trail_step": float(bot["trail_step"]),
+            "trail_stop": float(bot["trail_stop"]),
+            "stop_sell_pct": float(bot["stop_sell_pct"]),
+            "stop_cooldown_days": int(bot["stop_cooldown_days"]),
             "times": times,
             "prices": prices,
             "floors": floors,
@@ -882,24 +882,19 @@ def build_html() -> str:
           <form id="assetForm">
             <input type="hidden" id="assetOriginalSymbol" value="" />
             <div class="field"><label for="assetSymbol">Symbol</label><input id="assetSymbol" name="symbol" list="assetHints" placeholder="AAPL, Tesla, BTC/USD" autocomplete="off" /><datalist id="assetHints"></datalist><div class="field-help">Ticker or crypto pair, for example <span class="mono">AAPL</span> or <span class="mono">BTC/USD</span>.</div></div>
-            <div class="field-grid two">
-              <div class="field"><label for="assetInitial">Initial buy ($)</label><input id="assetInitial" name="initial_notional" placeholder="50" /><div class="field-help">Dollar amount for the first entry order.</div></div>
-              <div class="field"><label for="assetLadder">Ladder buy ($)</label><input id="assetLadder" name="ladder_notional" placeholder="50" /><div class="field-help">Dollar amount for each additional buy on weakness.</div></div>
-            </div>
             <div class="field"><label for="targetWeight">Target weight</label><input id="targetWeight" name="target_weight" value="0.20" /><div class="field-help">Portfolio weight used at rebalance. <span class="mono">0.50</span> means 50% of portfolio value.</div></div>
             <div class="field-grid two">
-              <div class="field"><label for="stopPct">Stop multiplier (%)</label><input id="stopPct" name="stop_pct" value="0.95" /><div class="field-help">Exit floor as a fraction of entry. <span class="mono">0.95</span> means 95% of entry, or 5% below.</div></div>
-              <div class="field"><label for="trailTrigger">Trail trigger (%)</label><input id="trailTrigger" name="trail_trigger" value="1.10" /><div class="field-help">Start trailing once price reaches this fraction of entry. <span class="mono">1.10</span> means +10%.</div></div>
+              <div class="field"><label for="baseTol">Base tolerance</label><input id="baseTol" name="base_tol" value="0.0109" /><div class="field-help">Base beta-scaled floor distance. <span class="mono">0.0109</span> means a 1.09% base move before beta scaling.</div></div>
+              <div class="field"><label for="stopSellPct">Stop sell %</label><input id="stopSellPct" name="stop_sell_pct" value="0.8342" /><div class="field-help">Fraction of the position sold on each stop hit. <span class="mono">0.8342</span> means sell 83.42%.</div></div>
             </div>
             <div class="field-grid two">
-              <div class="field"><label for="trailStep">Trail step (%)</label><input id="trailStep" name="trail_step" value="1.05" /><div class="field-help">Re-raise the floor each time price gains this much from the last trigger. <span class="mono">1.05</span> means +5%.</div></div>
-              <div class="field"><label for="trailStop">Trail floor (%)</label><input id="trailStop" name="trail_stop" value="0.95" /><div class="field-help">New stop floor after a trigger, as a fraction of current price. <span class="mono">0.95</span> means 5% below current.</div></div>
+              <div class="field"><label for="trailStep">Trail step</label><input id="trailStep" name="trail_step" value="1.0235" /><div class="field-help">Re-raise the floor after each new trigger. <span class="mono">1.0235</span> means the next trigger is 2.35% above the current anchor.</div></div>
+              <div class="field"><label for="trailStop">Trail floor</label><input id="trailStop" name="trail_stop" value="0.9885" /><div class="field-help">New floor after a trigger, as a fraction of current price. <span class="mono">0.9885</span> means 1.15% below current.</div></div>
             </div>
             <div class="field-grid two">
-              <div class="field"><label for="ladder1Pct">Ladder 1 (%)</label><input id="ladder1Pct" name="ladder1_pct" value="0.925" /><div class="field-help">First add level, measured off the current floor. <span class="mono">0.925</span> means 7.5% below the floor.</div></div>
-              <div class="field"><label for="ladder2Pct">Ladder 2 (%)</label><input id="ladder2Pct" name="ladder2_pct" value="0.850" /><div class="field-help">Second add level, measured off the current floor. <span class="mono">0.850</span> means 15% below the floor.</div></div>
+              <div class="field"><label for="stopCooldownDays">Stop cooldown days</label><input id="stopCooldownDays" name="stop_cooldown_days" value="5" /><div class="field-help">Trading-day cooldown after a stop sale before another stop can fire.</div></div>
+              <div class="field"><label for="pollInterval">Poll interval (seconds)</label><input id="pollInterval" name="poll_interval" value="30" /><div class="field-help">How often the bot checks price and trading rules for this asset.</div></div>
             </div>
-            <div class="field"><label for="pollInterval">Poll interval (seconds)</label><input id="pollInterval" name="poll_interval" value="30" /><div class="field-help">How often the bot checks price and trading rules for this asset.</div></div>
             <div class="btn-row">
               <button class="primary" type="submit" id="assetSubmitBtn">Add Asset</button>
               <button class="ghost" type="button" id="assetResetBtn">Clear</button>
@@ -1070,15 +1065,12 @@ def build_html() -> str:
       document.getElementById("assetFormTitle").textContent = "Add Asset";
       document.getElementById("assetSubmitBtn").textContent = "Add Asset";
       document.getElementById("assetSymbol").value = "";
-      document.getElementById("assetInitial").value = "";
-      document.getElementById("assetLadder").value = "";
       document.getElementById("targetWeight").value = "0.20";
-      document.getElementById("stopPct").value = "0.95";
-      document.getElementById("trailTrigger").value = "1.10";
-      document.getElementById("trailStep").value = "1.05";
-      document.getElementById("trailStop").value = "0.95";
-      document.getElementById("ladder1Pct").value = "0.925";
-      document.getElementById("ladder2Pct").value = "0.850";
+      document.getElementById("baseTol").value = "0.0109";
+      document.getElementById("stopSellPct").value = "0.8342";
+      document.getElementById("trailStep").value = "1.0235";
+      document.getElementById("trailStop").value = "0.9885";
+      document.getElementById("stopCooldownDays").value = "5";
       document.getElementById("pollInterval").value = "30";
       setNotice("assetNotice", "");
     }
@@ -1089,15 +1081,12 @@ def build_html() -> str:
       document.getElementById("assetFormTitle").textContent = `Edit Asset • ${asset.symbol}`;
       document.getElementById("assetSubmitBtn").textContent = "Save Changes";
       document.getElementById("assetSymbol").value = asset.symbol;
-      document.getElementById("assetInitial").value = asset.initial_notional;
-      document.getElementById("assetLadder").value = asset.ladder_notional;
       document.getElementById("targetWeight").value = asset.target_weight;
-      document.getElementById("stopPct").value = asset.stop_pct;
-      document.getElementById("trailTrigger").value = asset.trail_trigger;
+      document.getElementById("baseTol").value = asset.base_tol;
+      document.getElementById("stopSellPct").value = asset.stop_sell_pct;
       document.getElementById("trailStep").value = asset.trail_step;
       document.getElementById("trailStop").value = asset.trail_stop;
-      document.getElementById("ladder1Pct").value = asset.ladder1_pct;
-      document.getElementById("ladder2Pct").value = asset.ladder2_pct;
+      document.getElementById("stopCooldownDays").value = asset.stop_cooldown_days;
       document.getElementById("pollInterval").value = asset.poll_interval;
       setNotice("assetNotice", `Editing ${asset.symbol}.`, "warn");
       const symbolField = document.getElementById("assetSymbol");
@@ -1131,8 +1120,9 @@ def build_html() -> str:
         const entry = asset.entry || asset.live || 1;
         const allVals = [...(asset.prices || []), ...(asset.floors || [])];
         const half = allVals.length ? Math.max(...allVals.map(v => Math.abs(v - entry))) * 1.35 || entry * .1 : entry * .1;
-        const stopValue = asset.floors && asset.floors.length ? Number(asset.floors[asset.floors.length - 1]) : (asset.entry ? Number(asset.entry) * 0.95 : null);
-        const triggerValue = asset.entry ? Number(asset.entry) * Number(asset.trail_trigger || 1.1) : null;
+        const stopValue = asset.floors && asset.floors.length
+          ? Number(asset.floors[asset.floors.length - 1])
+          : (asset.entry ? Number(asset.entry) * (1 - Number(asset.base_tol || 0.0109)) : null);
         const yMin = entry - half;
         const yMax = entry + half;
         const overlay = slab.querySelector(".chart-wrap");
@@ -1150,13 +1140,11 @@ def build_html() -> str:
           overlay.appendChild(chip);
         }
         addLineChip(stopValue, "Stop", "stop-chip", "stop-line");
-        addLineChip(triggerValue, "Trigger", "trigger-chip", "trigger-line");
         const chart = new Chart(slab.querySelector("canvas"), {
           type: "line",
           data: { labels: asset.times, datasets: [
             { label: "Price", data: asset.prices, borderColor: asset.color, borderWidth: 2.2, pointRadius: 0, pointHoverRadius: 4, tension: .22 },
-            { label: "Stop", data: asset.floors, borderColor: "#ff8f70", borderWidth: 1.4, borderDash: [6,5], pointRadius: 0, stepped: "before", tension: 0 },
-            { label: "Trigger", data: (asset.times || []).map(() => triggerValue), borderColor: "#71d6ad", borderWidth: 1.2, borderDash: [3,4], pointRadius: 0, tension: 0 }
+            { label: "Stop", data: asset.floors, borderColor: "#ff8f70", borderWidth: 1.4, borderDash: [6,5], pointRadius: 0, stepped: "before", tension: 0 }
           ] },
           options: { animation: { duration: 220 }, responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false }, plugins: { legend: { display: false }, tooltip: { backgroundColor: "#111417", borderColor: "rgba(255,255,255,.08)", borderWidth: 1, titleColor: "#dfe8df", bodyColor: "#dfe8df", callbacks: { label: ctx => `${ctx.dataset.label}: ${money(ctx.parsed.y)}` } } }, scales: { x: { type: "time", time: { unit: "minute", displayFormats: { minute: "HH:mm" } }, ticks: { color: "#93a09f", maxTicksLimit: 6, maxRotation: 0 }, grid: { color: "rgba(255,255,255,.04)" } }, y: { min: entry - half, max: entry + half, ticks: { color: "#93a09f", maxTicksLimit: 5, callback: value => money(value) }, grid: { color: "rgba(255,255,255,.05)" } } } }
         });

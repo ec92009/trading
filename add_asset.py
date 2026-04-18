@@ -71,14 +71,13 @@ def validate_symbol(symbol: str, asset_class: str) -> str | None:
     except Exception as e:
         return f"Could not validate {symbol}: {e}"
 
-def add_to_bot(symbol: str, asset_class: str, notional: float):
+def add_to_bot(symbol: str, asset_class: str, target_weight: float):
     path = HERE / "bot.py"
     text = path.read_text()
     new_line = (
         f'    BotConfig(symbol="{symbol}", '
         f'asset_class="{asset_class}", '
-        f'initial_notional={notional:.2f}, '
-        f'ladder_notional={notional:.2f}),\n'
+        f'target_weight={target_weight:.4f}),\n'
     )
     pattern = r'(BOTS\s*=\s*\[.*?)(^\])'
     match = re.search(pattern, text, re.MULTILINE | re.DOTALL)
@@ -565,12 +564,13 @@ class AddAssetApp(App):
             return
 
         try:
-            add_to_bot(symbol, asset_class, notional)
+            target_weight = round(notional / self._portfolio, 4) if self._portfolio > 0 else 1.0
+            add_to_bot(symbol, asset_class, target_weight)
             reload_service()
             self._buying_power -= notional
             self.query_one("#bp-val").update(f"${self._buying_power:,.2f}")
             self.query_one("#success-msg").update(
-                f"✓ {symbol} added — ${notional:,.2f} ({asset_class}) — bot reloaded."
+                f"✓ {symbol} added — target {target_weight:.2%} (~${notional:,.2f}, {asset_class}) — bot reloaded."
             )
             self.query_one("#add-btn").display     = False
             self.query_one("#another-btn").display = True

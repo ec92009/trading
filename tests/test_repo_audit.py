@@ -1,4 +1,5 @@
 import importlib
+import json
 import plistlib
 import sys
 import tempfile
@@ -147,7 +148,14 @@ class BotBehaviorTests(unittest.TestCase):
             )
 
             with patch.object(bot, "trade_log", trade_log), patch.object(bot, "trading", fake_trading):
-                b = bot.Bot(bot.BotConfig(symbol="AAPL", asset_class="stock", stop_sell_pct=0.55))
+                b = bot.Bot(
+                    bot.BotConfig(
+                        symbol="AAPL",
+                        asset_class="stock",
+                        stop_sell_pct=0.55,
+                        stop_cooldown_days=3,
+                    )
+                )
                 b.floor = 95.0
                 b.trail_next = 105.0
                 with patch.object(b, "get_price", return_value=94.0):
@@ -176,7 +184,7 @@ class BotBehaviorTests(unittest.TestCase):
                 bot._calendar_cache.clear()
                 self.assertEqual(bot.add_trading_days(date(2026, 1, 16), 1), date(2026, 1, 20))
 
-    def test_portfolio_manager_disables_btc_24x7_by_default(self):
+    def test_portfolio_manager_monitors_btc_24x7_by_default(self):
         with install_alpaca_stubs():
             bot = importlib.import_module("bot")
             importlib.reload(bot)
@@ -188,7 +196,43 @@ class BotBehaviorTests(unittest.TestCase):
                 ]
             )
             self.assertTrue(manager.should_monitor_bot(manager.bot_by_symbol["AAPL"], True))
-            self.assertFalse(manager.should_monitor_bot(manager.bot_by_symbol["BTC/USD"], False))
+            self.assertTrue(manager.should_monitor_bot(manager.bot_by_symbol["BTC/USD"], False))
+
+    def test_run_monitors_crypto_when_equity_market_is_closed(self):
+        with install_alpaca_stubs():
+            bot = importlib.import_module("bot")
+            importlib.reload(bot)
+
+            fake_trading = SimpleNamespace(
+                get_account=Mock(return_value=SimpleNamespace(cash="0", equity="0")),
+                get_all_positions=Mock(return_value=[]),
+                get_orders=Mock(return_value=[]),
+            )
+            with patch.object(bot, "trading", fake_trading):
+                crypto_bot = bot.Bot(bot.BotConfig(symbol="BTC/USD", asset_class="crypto"))
+                manager = bot.PortfolioManager([crypto_bot])
+                fake_clock = SimpleNamespace(
+                    is_open=False,
+                    timestamp=datetime(2026, 4, 18, 10, 0, tzinfo=timezone.utc),
+                    next_close=datetime(2026, 4, 20, 20, 0, tzinfo=timezone.utc),
+                    next_open=datetime(2026, 4, 20, 13, 30, tzinfo=timezone.utc),
+                )
+                with patch.object(manager, "startup_sync"), patch.object(
+                    manager, "market_clock", return_value=fake_clock
+                ), patch.object(
+                    crypto_bot, "monitor_risk", return_value=None
+                ) as monitor_risk, patch.object(
+                    manager, "should_rebalance", return_value=False
+                ), patch.object(
+                    manager.logger, "info"
+                ), patch.object(
+                    manager, "save_state"
+                ), patch.object(
+                    bot.time, "sleep", side_effect=KeyboardInterrupt
+                ):
+                    with self.assertRaises(KeyboardInterrupt):
+                        manager.run()
+                monitor_risk.assert_called_once_with(fake_clock.timestamp.date())
 
     def test_rebalance_uses_target_weights(self):
         with install_alpaca_stubs():
@@ -214,8 +258,6 @@ class BotBehaviorTests(unittest.TestCase):
                 manager = bot.PortfolioManager([tsla, nvda, btc])
                 with patch.object(manager, "now_et", return_value=datetime(2026, 4, 18, 15, 55, tzinfo=timezone.utc)), patch.object(
                     manager, "settle_sell_orders"
-                ), patch.object(manager, "process_pending_buffer_cash"), patch.object(
-                    manager, "cap_buffer_to_live_btc"
                 ), patch.object(bot.time, "sleep"), patch.object(
                     tsla, "get_price", return_value=100.0
                 ), patch.object(
@@ -333,17 +375,16 @@ class DashboardAndStatusTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 bot_path = Path(tmp) / "bot.py"
                 bot_path.write_text(
-                    '_P = 200\n'
                     'BOTS = [\n'
-                    '    BotConfig(symbol="AAPL", asset_class="stock", initial_notional=round(_P*0.10, 2), ladder_notional=25, target_weight=0.35, stop_pct=0.9),\n'
+                    '    BotConfig(symbol="AAPL", asset_class="stock", target_weight=0.35, base_tol=0.009, stop_sell_pct=0.9, stop_cooldown_days=4),\n'
                     ']\n'
                 )
                 bots = dashboard.load_bots(bot_path)
                 self.assertEqual(bots[0]["symbol"], "AAPL")
-                self.assertEqual(bots[0]["initial_notional"], 20.0)
-                self.assertEqual(bots[0]["ladder_notional"], 25.0)
                 self.assertEqual(bots[0]["target_weight"], 0.35)
-                self.assertEqual(bots[0]["stop_pct"], 0.9)
+                self.assertEqual(bots[0]["base_tol"], 0.009)
+                self.assertEqual(bots[0]["stop_sell_pct"], 0.9)
+                self.assertEqual(bots[0]["stop_cooldown_days"], 4)
 
     def test_write_bots_updates_asset_lines(self):
         with install_alpaca_stubs():
@@ -352,24 +393,20 @@ class DashboardAndStatusTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 bot_path = Path(tmp) / "bot.py"
                 bot_path.write_text(
-                    '_P = 200\n'
                     'BOTS = [\n'
-                    '    BotConfig(symbol="AAPL", asset_class="stock", initial_notional=20, ladder_notional=20),\n'
+                    '    BotConfig(symbol="AAPL", asset_class="stock", target_weight=0.2),\n'
                     ']\n'
                 )
                 dashboard.write_bots(
                     [{
                         "symbol": "TSLA",
                         "asset_class": "stock",
-                        "initial_notional": 35.0,
-                        "ladder_notional": 15.0,
                         "target_weight": 0.50,
-                        "stop_pct": 0.9,
-                        "trail_trigger": 1.1,
+                        "base_tol": 0.0123,
                         "trail_step": 1.05,
                         "trail_stop": 0.95,
-                        "ladder1_pct": 0.925,
-                        "ladder2_pct": 0.85,
+                        "stop_sell_pct": 0.9,
+                        "stop_cooldown_days": 4,
                         "poll_interval": 45,
                     }],
                     bot_path,
@@ -377,6 +414,9 @@ class DashboardAndStatusTests(unittest.TestCase):
                 text = bot_path.read_text()
                 self.assertIn('symbol="TSLA"', text)
                 self.assertIn("target_weight=0.5", text)
+                self.assertIn("base_tol=0.0123", text)
+                self.assertIn("stop_sell_pct=0.9", text)
+                self.assertIn("stop_cooldown_days=4", text)
                 self.assertIn("poll_interval=45", text)
                 self.assertNotIn('symbol="AAPL"', text)
 
@@ -392,6 +432,14 @@ class DashboardAndStatusTests(unittest.TestCase):
                     self.assertIn("LaunchAgent installed", message)
                     self.assertEqual(data["Label"], "com.trading.bot")
                     self.assertEqual(data["ProgramArguments"][1], str(dashboard.BOT_PATH))
+
+
+class ArtifactGuardrailTests(unittest.TestCase):
+    def test_bot_refit_artifact_does_not_mark_train_winner_as_recommended(self):
+        payload = json.loads(Path("bot_refit_results.json").read_text())
+        self.assertNotIn("recommended_bot_config", payload)
+        self.assertIn("live_default_policy", payload)
+        self.assertFalse(payload["live_default_policy"]["auto_promote"])
 
 
 if __name__ == "__main__":

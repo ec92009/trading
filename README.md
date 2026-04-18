@@ -8,7 +8,7 @@ All trades run against a **paper trading account** (no real money).
 - [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md): current sandbox strategy mechanics
 - [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md): research results, pitfalls, and current conclusion
 - [TODO.md](/Users/ecohen/Dev/trading/TODO.md): active follow-up work
-- [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json): latest full-history production refit for live bot parameters
+- [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json): latest full-history production refit artifact, with an explicit do-not-auto-promote policy
 
 Use this `README` for setup and operational scripts. For current strategy behavior and research conclusions, prefer the docs above.
 
@@ -121,7 +121,9 @@ Current live target weights:
 
 Important:
 
-- the live bot and the sandbox simulator are related but not identical
+- the repo now assumes Alpaca is the live broker path for the foreseeable future
+- fractional stock trading is treated as a normal default capability, not an edge-case experiment
+- the live bot and the sandbox simulator are related but not identical, but the default simulator path now matches live stock sizing more closely by using fractional stock math
 - the current sandbox mechanics are documented in [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md)
 - the latest research conclusions are documented in [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md)
 
@@ -133,7 +135,7 @@ Important:
 | **Stop floor** | Use beta-scaled stop floors and sell `stop_sell_pct` of a position when price breaks the floor |
 | **Trailing floor** | Raise the floor and next trigger as price moves up |
 | **Cooldown** | After a stop, block another stop sale for `N` trading days |
-| **BTC buffer** | Park stop-sale and rebalance-sale proceeds in BTC when possible |
+| **Cash buffer** | Keep stop-sale and rebalance-sale proceeds in cash until rebalance redeploys them |
 | **Rebalance** | Rebalance once per trading day, five minutes before the stock-market close, toward target weights |
 
 > **Note:** Alpaca does not support broker-native fractional stop orders for this setup. The logic is software-managed, so the bot must be running for stops, trails, and rebalances to happen.
@@ -152,7 +154,7 @@ The TSV log prevents duplicate buys if the bot restarts multiple times before a 
 ### Market hours
 
 - **Stocks:** the bot uses Alpaca's clock API to sleep until market open. No polling on nights, weekends, or market holidays.
-- **Crypto:** `BTC/USD` is in the basket and buffer accounting, but live `BTC` stop/trail management is currently still gated by `MANAGE_BTC_24X7 = False`.
+- **Crypto:** crypto symbols remain eligible for off-hours risk monitoring, and the live bot now keeps `MANAGE_CRYPTO_24X7 = True`.
 
 ---
 
@@ -170,7 +172,7 @@ and the bot reloads automatically.
 
 - Detects stock vs crypto automatically (`/` in symbol → crypto)
 - Validates symbol isn't already watched, amount is positive and within buying power
-- Writes to `bot.py` and reloads the launchd service on confirm
+- Converts the requested dollar amount into a target weight using current portfolio size, writes that to `bot.py`, and reloads the launchd service on confirm
 - Press `Escape` or **Cancel** to exit without changes
 
 ### Option 2 — Edit `bot.py` directly
@@ -212,18 +214,12 @@ Full list of `BotConfig` fields:
 |---|---|---|
 | `symbol` | required | Ticker (`"AAPL"`, `"BTC/USD"`, etc.) |
 | `asset_class` | required | `"stock"` or `"crypto"` |
-| `initial_notional` | `0.0` | Legacy field for initial buy sizing |
-| `ladder_notional` | `0.0` | Legacy field, mostly superseded by rebalance sizing |
 | `target_weight` | `0.20` | Portfolio target weight used by rebalance |
-| `stop_pct` | `0.95` | Legacy field retained for compatibility |
-| `trail_trigger` | `1.10` | Legacy field retained for compatibility |
-| `trail_step` | `1.0321` | Re-raise floor every additional this % |
-| `trail_stop` | `0.9879` | New floor = current price × this value |
-| `base_tol` | `0.0035` | Base beta-scaled floor distance |
-| `stop_sell_pct` | `0.8383` | Fraction of a position sold on each stop hit |
-| `stop_cooldown_days` | `3` | Trading-day cooldown after a stop |
-| `ladder1_pct` | `0.925` | Legacy field retained for compatibility |
-| `ladder2_pct` | `0.850` | Legacy field retained for compatibility |
+| `base_tol` | `0.0109` | Base beta-scaled floor distance |
+| `trail_step` | `1.0235` | Re-raise floor every additional this % |
+| `trail_stop` | `0.9885` | New floor = current price × this value |
+| `stop_sell_pct` | `0.8342` | Fraction of a position sold on each stop hit |
+| `stop_cooldown_days` | `5` | Trading-day cooldown after a stop |
 | `poll_interval` | `30` | Seconds between price checks |
 
 After editing, reload the background service:

@@ -5,7 +5,7 @@ Behavior:
 - Maintain a 5-name basket: TSLA, TSM, NVDA, PLTR, BTC/USD
 - Flatten unmanaged positions (for example AAPL) when the bot starts
 - Watch stock positions during market hours and apply beta-scaled stops/trails
-- Park stop-sale and rebalance-sale proceeds into a BTC buffer when possible
+- Keep stop-sale and rebalance-sale proceeds in cash
 - Rebalance the basket to target weights five minutes before the stock market
   close: TSLA 50%, TSM/NVDA/PLTR/BTC 12.5% each
 """
@@ -43,18 +43,12 @@ logging.basicConfig(
 class BotConfig:
     symbol: str
     asset_class: str
-    initial_notional: float = 0.0
-    ladder_notional: float = 0.0
-    stop_pct: float = 0.95
-    trail_trigger: float = 1.10
     target_weight: float = 0.20
-    base_tol: float = 0.0035
-    trail_step: float = 1.0321
-    trail_stop: float = 0.9879
-    ladder1_pct: float = 0.925
-    ladder2_pct: float = 0.850
-    stop_sell_pct: float = 0.8383
-    stop_cooldown_days: int = 3
+    base_tol: float = 0.0109
+    trail_step: float = 1.0235
+    trail_stop: float = 0.9885
+    stop_sell_pct: float = 0.8342
+    stop_cooldown_days: int = 5
     poll_interval: int = 30
 
 
@@ -67,14 +61,12 @@ BOTS = [
 ]
 
 TARGET_SYMBOLS = {cfg.symbol for cfg in BOTS}
-ABSORBER_SYMBOL = "BTC/USD"
 BETA_WINDOW = 60
 STATE_PATH = Path(__file__).parent / "bot_state.json"
 
-# We keep BTC in the basket and use it as the buffer asset, but we do not run
-# BTC stop/trail logic 24x7 yet. That keeps the portfolio on the stock-session
-# clock until we decide how much weekend and overnight BTC churn we want.
-MANAGE_BTC_24X7 = False
+# Crypto holdings still need live risk monitoring even when the equity market
+# is closed.
+MANAGE_CRYPTO_24X7 = True
 _calendar_cache: dict[tuple[date, date], list[date]] = {}
 
 _api_key = os.getenv("ALPACA_API_KEY")
@@ -362,8 +354,6 @@ class PortfolioManager:
         self.bot_by_symbol = {bot.cfg.symbol: bot for bot in bots}
         self.logger = logging.getLogger("portfolio")
         self.last_rebalance_day: date | None = None
-        self.buffer_qty = 0.0
-        self.pending_buffer_cash = 0.0
 
     def market_clock(self):
         return trading.get_clock()
@@ -387,13 +377,8 @@ class PortfolioManager:
     def current_positions(self):
         return {p.symbol: p for p in trading.get_all_positions()}
 
-    def absorber_bot(self) -> Bot | None:
-        return self.bot_by_symbol.get(ABSORBER_SYMBOL)
-
     def state_payload(self) -> dict:
         return {
-            "buffer_qty": self.buffer_qty,
-            "pending_buffer_cash": self.pending_buffer_cash,
             "last_rebalance_day": self.last_rebalance_day.isoformat() if self.last_rebalance_day else None,
             "bots": {bot.cfg.symbol: bot.export_state() for bot in self.bots},
         }
@@ -409,21 +394,11 @@ class PortfolioManager:
         except Exception as exc:
             self.logger.error(f"STATE LOAD ERROR: {exc}")
             return
-        self.buffer_qty = float(payload.get("buffer_qty") or 0.0)
-        self.pending_buffer_cash = float(payload.get("pending_buffer_cash") or 0.0)
         last_rebalance_day = payload.get("last_rebalance_day")
         self.last_rebalance_day = date.fromisoformat(last_rebalance_day) if last_rebalance_day else None
         bot_states = payload.get("bots") or {}
         for bot in self.bots:
             bot.load_state(bot_states.get(bot.cfg.symbol))
-
-    def cap_buffer_to_live_btc(self):
-        absorber = self.absorber_bot()
-        if absorber is None:
-            self.buffer_qty = 0.0
-            return
-        absorber.refresh_position()
-        self.buffer_qty = max(0.0, min(self.buffer_qty, absorber.total_qty))
 
     def can_trade(self, bot: Bot, trade_day: date) -> bool:
         return not bot.traded_on(trade_day)
@@ -431,69 +406,14 @@ class PortfolioManager:
     def settle_sell_orders(self):
         for _ in range(10):
             open_orders = trading.get_orders(filter=GetOrdersRequest(status=QueryOrderStatus.OPEN))
-            if not any(str(o.side) == "OrderSide.SELL" for o in open_orders):
+            if not any(o.side == OrderSide.SELL for o in open_orders):
                 break
             time.sleep(1)
-
-    def queue_buffer_cash(self, proceeds: float, reason: str):
-        if proceeds <= 0:
-            return
-        self.pending_buffer_cash = round(self.pending_buffer_cash + proceeds, 2)
-        self.logger.info(
-            f"Queued ${proceeds:,.2f} for BTC buffer [{reason}] "
-            f"(pending=${self.pending_buffer_cash:,.2f})"
-        )
-
-    def process_pending_buffer_cash(self, trade_day: date):
-        absorber = self.absorber_bot()
-        if absorber is None or self.pending_buffer_cash <= 1.0:
-            return
-        if not self.can_trade(absorber, trade_day):
-            return
-        cash = float(trading.get_account().cash)
-        spend = min(cash, self.pending_buffer_cash)
-        if spend <= 1.0:
-            return
-        try:
-            est_qty = absorber.estimate_qty(spend)
-            absorber.buy(spend, "park proceeds in BTC buffer", trade_day=trade_day)
-            self.buffer_qty += est_qty
-            self.pending_buffer_cash = round(max(0.0, self.pending_buffer_cash - spend), 2)
-            self.logger.info(
-                f"BTC BUFFER BUY ${spend:,.2f} ≈ {est_qty:.8f} BTC "
-                f"(buffer={self.buffer_qty:.8f}, pending=${self.pending_buffer_cash:,.2f})"
-            )
-        except Exception as exc:
-            self.logger.error(f"BTC BUFFER BUY FAILED: {exc}")
-
-    def raise_cash_from_buffer(self, required: float, trade_day: date, reason: str):
-        absorber = self.absorber_bot()
-        cash = float(trading.get_account().cash)
-        if (
-            absorber is None
-            or required <= cash
-            or self.buffer_qty <= 0
-            or not self.can_trade(absorber, trade_day)
-        ):
-            return
-        price = absorber.get_price()
-        if price <= 0:
-            return
-        shortfall = required - cash
-        sell_qty = min(self.buffer_qty, round(shortfall / price, absorber.qty_precision))
-        if sell_qty <= 0:
-            return
-        absorber.sell_qty(sell_qty, reason, trade_day=trade_day)
-        self.buffer_qty = max(0.0, self.buffer_qty - sell_qty)
-        self.logger.info(
-            f"BTC BUFFER SELL {sell_qty:.8f} for [{reason}] "
-            f"(buffer={self.buffer_qty:.8f})"
-        )
 
     def should_monitor_bot(self, bot: Bot, market_is_open: bool) -> bool:
         if bot.cfg.asset_class == "stock":
             return market_is_open
-        return MANAGE_BTC_24X7
+        return MANAGE_CRYPTO_24X7
 
     def flatten_unmanaged_positions(self):
         positions = self.current_positions()
@@ -539,33 +459,18 @@ class PortfolioManager:
             bot.refresh_position()
             price = bot.get_price()
             current_value = bot.total_qty * price
-            if bot.cfg.symbol == ABSORBER_SYMBOL:
-                core_qty = max(0.0, bot.total_qty - self.buffer_qty)
-                current_value = core_qty * price
             excess = round(current_value - target_value, 2)
             if excess <= 1.0 or not self.can_trade(bot, trade_day):
-                continue
-            if bot.cfg.symbol == ABSORBER_SYMBOL:
-                core_qty = max(0.0, bot.total_qty - self.buffer_qty)
-                move_qty = min(core_qty, round(excess / price, bot.qty_precision))
-                if move_qty <= 0:
-                    continue
-                self.buffer_qty += move_qty
-                bot.mark_traded(trade_day)
-                self.logger.info(
-                    f"BTC CORE -> BUFFER {move_qty:.8f} at ${price:,.2f} "
-                    f"to target ${target_value:,.2f}"
-                )
                 continue
             qty = round(excess / price, bot.qty_precision)
             if qty <= 0:
                 continue
             bot.sell_qty(qty, f"rebalance sell to target ${target_value:,.2f}", trade_day=trade_day)
-            self.queue_buffer_cash(round(qty * price, 2), f"rebalance sell {bot.cfg.symbol}")
+            self.logger.info(
+                f"CASH BUFFER +${round(qty * price, 2):,.2f} [rebalance sell {bot.cfg.symbol}]"
+            )
 
         self.settle_sell_orders()
-        self.process_pending_buffer_cash(trade_day)
-        self.cap_buffer_to_live_btc()
 
         deficits: list[tuple[float, Bot]] = []
         for bot in self.bots:
@@ -573,8 +478,6 @@ class PortfolioManager:
             bot.refresh_position()
             price = bot.get_price()
             current_value = bot.total_qty * price
-            if bot.cfg.symbol == ABSORBER_SYMBOL:
-                current_value = max(0.0, bot.total_qty - self.buffer_qty) * price
             deficit = round(target_value - current_value, 2)
             if deficit > 1.0:
                 deficits.append((deficit, bot))
@@ -582,31 +485,8 @@ class PortfolioManager:
 
         for deficit, bot in deficits:
             target_value = target_value_by_symbol[bot.cfg.symbol]
-            price = bot.get_price()
-            if bot.cfg.symbol == ABSORBER_SYMBOL:
-                moved_qty = min(self.buffer_qty, round(deficit / price, bot.qty_precision))
-                if moved_qty > 0:
-                    self.buffer_qty -= moved_qty
-                    bot.mark_traded(trade_day)
-                    self.logger.info(
-                        f"BTC BUFFER -> CORE {moved_qty:.8f} at ${price:,.2f} "
-                        f"toward ${target_value:,.2f}"
-                    )
-                remaining = round(max(0.0, deficit - moved_qty * price), 2)
-                if remaining <= 1.0:
-                    continue
-                spend = min(remaining, float(trading.get_account().cash))
-                if spend <= 1.0:
-                    continue
-                try:
-                    bot.buy(spend, f"rebalance buy to target ${target_value:,.2f}", trade_day=trade_day)
-                except Exception as exc:
-                    self.logger.error(f"REBALANCE BUY FAILED {bot.cfg.symbol}: {exc}")
-                continue
             if not self.can_trade(bot, trade_day):
                 continue
-            self.raise_cash_from_buffer(deficit, trade_day, f"fund {bot.cfg.symbol} rebalance buy")
-            self.settle_sell_orders()
             cash = float(trading.get_account().cash)
             spend = min(deficit, cash)
             if spend <= 1.0:
@@ -621,7 +501,6 @@ class PortfolioManager:
             pos = bot.refresh_position()
             if pos:
                 bot.reset_risk_levels(bot.get_price())
-        self.cap_buffer_to_live_btc()
         self.last_rebalance_day = trade_day
         self.save_state()
         self.logger.info("REBALANCE END")
@@ -630,7 +509,6 @@ class PortfolioManager:
         self.load_state()
         for bot in self.bots:
             bot.sync_from_market()
-        self.cap_buffer_to_live_btc()
         if self.market_open():
             try:
                 self.flatten_unmanaged_positions()
@@ -648,17 +526,19 @@ class PortfolioManager:
             try:
                 clock = self.market_clock()
                 now = clock.timestamp
-                if clock.is_open:
-                    for bot in self.bots:
-                        if not self.should_monitor_bot(bot, clock.is_open):
-                            continue
-                        event = bot.monitor_risk(now.date())
-                        if event and event["action"] == "stop":
-                            self.queue_buffer_cash(event["proceeds"], f"stop sell {event['symbol']}")
-                    self.process_pending_buffer_cash(now.date())
-                    if self.should_rebalance(now, clock.next_close):
+                monitored_any = False
+                for bot in self.bots:
+                    if not self.should_monitor_bot(bot, clock.is_open):
+                        continue
+                    monitored_any = True
+                    event = bot.monitor_risk(now.date())
+                    if event and event["action"] == "stop":
+                        self.logger.info(
+                            f"CASH BUFFER +${event['proceeds']:,.2f} [stop sell {event['symbol']}]"
+                        )
+                if monitored_any and self.should_rebalance(now, clock.next_close):
                         self.rebalance_portfolio("near close")
-                else:
+                if not clock.is_open:
                     self.logger.info(
                         f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}"
                     )

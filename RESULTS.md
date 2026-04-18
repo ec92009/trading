@@ -26,51 +26,58 @@ Core basket:
 
 The benchmark results below are the most trustworthy strategy comparison results in the repo. The production refit is useful for live deployment, but it is in-sample and not a fair measure of out-of-sample edge.
 
+Current engine note:
+
+- the simulator now executes stop sells on the next tradable bar using the worse of the stop floor and the next tradable open
+- the default simulator path now uses fractional stock sizing to better match the live bot's notional stock orders
+- the default simulator path now assumes Alpaca-style settlement: crypto proceeds settle immediately, while stock sale proceeds release on the next trading day
+- the default simulator path now blocks tiny churn with explicit minimum rebalance and minimum order notionals
+- the benchmark and refit artifacts cited below were rerun after those changes
+
 ## Main Results
 
-### 1. Pure Rebalance Is Out
+### 1. Buy-And-Hold Still Leads On The Corrected Holdout
 
-Hourly rebalance-only underperformed buy-and-hold on the 9-quarter holdout.
+Under the current Alpaca-aligned realism model, buy-and-hold still beat both tested active variants on the `2024-01-02` through `2026-03-31` holdout.
 
 Latest friction-enabled holdout result from [hourly_strategy_results.json](/Users/ecohen/Dev/trading/hourly_strategy_results.json):
 
-- final: `$35,068.97`
-- return: `+250.69%`
-- max drawdown: `30.75%`
-- buy-and-hold: `$37,304.73`
+- buy-and-hold: `$29,108.90`
+- rebalance-only: `$26,399.08`
+- stop/trigger + rebalance: `$25,045.13`
 
 Conclusion:
 
-- pure rebalance is not the best path for this repo
+- the corrected engine no longer shows a strong active edge over passive hold-and-sit
 
-### 2. Stop / Trigger + Rebalance Is The Best Tested Strategy So Far
+### 2. Stop / Trigger Lost Its Earlier Edge After The Realism Sprint
 
 Current best 2023-trained hourly config for the benchmark routine:
 
-- `base_tol = 0.0109`
-- `stop_sell_pct = 0.8342`
-- `trail_step = 1.0235`
-- `trail_stop = 0.9885`
+- `base_tol = 0.0348`
+- `stop_sell_pct = 0.1158`
+- `trail_step = 1.0080`
+- `trail_stop = 0.9691`
 - `stop_cooldown_days = 5`
 
 Latest friction-enabled 9-quarter holdout:
 
-- final: `$127,661.11`
-- return: `+1176.61%`
-- max drawdown: `28.33%`
-- turnover: `$10,739,015.09`
-- buy-and-hold: `$37,304.73`
+- final: `$25,045.13`
+- return: `+150.45%`
+- max drawdown: `38.59%`
+- turnover: `$304,236.17`
+- buy-and-hold: `$29,108.90`
 
 Interpretation:
 
-- this remains the strongest sandbox result
-- it is still high-turnover and should be treated cautiously
+- the earlier stop/trigger outperformance was largely an engine artifact
+- after next-bar stops, minimum trade thresholds, and Alpaca-style settlement, the optimized stop variant no longer beats either buy-and-hold or rebalance-only on holdout
+- turnover is still materially higher than the simpler rebalance path
 
 Important scope note:
 
-- this benchmark result comes from the earlier equal-weight benchmark regime
-- the current live profile now uses `TSLA 50%` and `TSM/NVDA/PLTR/BTC 12.5%` each
-- we have not yet rerun the full 2023 / 9-quarter benchmark under the new live weights
+- this benchmark was rerun under the current live profile of `TSLA 50%` and `TSM/NVDA/PLTR/BTC 12.5%` each
+- it is the current best apples-to-apples benchmark in the repo
 
 ### 3. Weight Shifting Did Not Help
 
@@ -96,8 +103,8 @@ We tested the baseline with and without beta scaling.
 
 Result:
 
-- beta scaling did not strictly win the long holdout every time
-- but it materially reduced churn and made the system calmer
+- beta scaling remains useful as a stabilizing mechanic inside the current simulator
+- but it should not be mistaken for proof that the active strategy beats passive exposure
 
 Conclusion:
 
@@ -105,33 +112,27 @@ Conclusion:
 
 ## Buffer Findings
 
-### BTC Buffer
-
-The current main sandbox strategy uses BTC as both:
-
-- a core asset
-- the temporary buffer for stop and rebalance proceeds
-
-This produced strong but not obviously impossible backtest behavior.
-
 ### Cash Buffer
 
-We tested a cash-buffer variant where proceeds stayed in cash instead of being auto-parked into BTC.
+We retested the strategy with a plain cash buffer, so proceeds stayed in cash instead of being auto-parked into BTC.
 
 Result:
 
-- the optimizer found absurdly strong outcomes
-- e.g. one run reached tens of billions of dollars on a `$10k` start
-- turnover exploded into obviously unrealistic territory
+- after the realism sprint, the same cash-buffer structure no longer produced absurd benchmark numbers
+- updated live-weight holdout:
+- rebalance-only: `$26,399.08`
+- stop/trigger + rebalance: `$25,045.13`
+- updated full-history refit best train: `$61,204.53`
 
 Interpretation:
 
-- this is almost certainly a backtest pathology
-- removing BTC as the volatile absorber made the frictionless assumptions easier to exploit, not more realistic
+- the earlier cash-buffer explosions were mostly engine artifacts
+- the corrected model is far more believable, but it also removes the illusion of a huge active edge
 
 Conclusion:
 
-- cash buffer is not currently trusted
+- cash buffer is still the right live structure for simplicity and cleaner exposure
+- but under the corrected engine it does not currently justify an aggressive active strategy on benchmark evidence alone
 
 ## Friction Model
 
@@ -154,9 +155,8 @@ Why:
 
 Important note:
 
-- pure rebalance behaved as expected under friction and got slightly worse
-- the stop/trigger strategy kept the same event counts but finished higher under the current friction implementation, which is unusual
-- that can happen in a path-dependent system because costs perturb quantities and cash balances, but it is still a result to treat carefully
+- first-pass friction is now sitting on top of more realistic execution and settlement assumptions
+- the exact return numbers still should not be over-interpreted, but they are much less obviously fantasy-driven than before
 
 Conclusion:
 
@@ -186,26 +186,29 @@ After the benchmark work, we added a separate full-history refit flow for live d
 Current production refit artifact:
 
 - [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json)
+- the artifact now keeps the in-sample winner under `best_train` only and adds an explicit `live_default_policy.auto_promote = false`
 
 Search setup:
 
 - train: `2023-01-01` through `2026-04-01`
 - target weights: `TSLA 50%`, `TSM/NVDA/PLTR/BTC 12.5%` each
+- buffer mode: `cash`
 - same first-pass friction model as the benchmark optimizer
 
-Current recommended bot parameters from that refit:
+Current optimizer winner from that refit:
 
-- `base_tol = 0.0035`
-- `stop_sell_pct = 0.8383`
-- `trail_step = 1.0321`
-- `trail_stop = 0.9879`
-- `stop_cooldown_days = 3`
+- `base_tol = 0.0348`
+- `stop_sell_pct = 0.1158`
+- `trail_step = 1.0080`
+- `trail_stop = 0.9691`
+- `stop_cooldown_days = 5`
 
 Important caution:
 
 - the full-history refit is in-sample only
-- its raw train result is absurdly strong and obviously not something to trust as evidence by itself
+- its raw train result is now far more sane than the old pathological artifact, but it still underperforms buy-and-hold on the same full-history window
 - it is useful as a parameter-generation step for the live bot, not as a replacement for the 2023 / 9-quarter benchmark
+- because the holdout still does not beat buy-and-hold, the live bot defaults should stay conservative and should not auto-promote the in-sample refit winner
 
 ## Major Hiccups And Fixes
 
@@ -216,14 +219,14 @@ Early hourly stop/trigger results were far too strong to trust.
 Main causes we found:
 
 - using data in a way that did not properly account for stock splits
-- BTC core / BTC buffer accounting errors
+- BTC core / BTC buffer accounting errors in the earlier BTC-buffer engine
 - over-generous frictionless trade assumptions
 
 Fixes:
 
 - switched to Alpaca adjusted stock bars
-- corrected BTC core vs buffer accounting
-- separated stock-session rebalance from BTC 24x7 monitoring
+- corrected BTC core vs buffer accounting in the earlier engine, then later removed buffer-via-BTC entirely in favor of cash
+- separated stock-session rebalance from crypto 24x7 monitoring
 - later added first-pass friction
 
 ### 2. Rebalance Frequency Was Too Aggressive
@@ -280,14 +283,14 @@ The live bot in [bot.py](/Users/ecohen/Dev/trading/bot.py) has been updated to a
 
 - partial stop sells
 - trading-day cooldown
-- BTC buffer bookkeeping
+- cash-buffer bookkeeping
 - end-of-day rebalance
 
 But the live bot is still not identical to the simulator.
 
 Key current difference:
 
-- `BTC` does not yet run live stop/trail logic 24x7 in the bot
+- the live bot now monitors crypto 24x7 and keeps proceeds in cash rather than parking them into BTC
 
 See [TODO.md](/Users/ecohen/Dev/trading/TODO.md) for remaining live-bot decisions.
 
@@ -301,14 +304,14 @@ Best practical strategy currently trusted in this repo:
 - beta-scaled stop floors
 - trailing floor raises
 - partial stop sales
-- BTC buffer
+- cash buffer
 - daily rebalance near the close
 
 Things currently not recommended:
 
 - pure rebalance as the main strategy
 - weight shifting
-- cash buffer as a trusted improvement
+- cash-buffer optimizer output as a trusted improvement
 
 ## Confidence / Caution
 

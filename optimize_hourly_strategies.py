@@ -149,8 +149,15 @@ def main() -> None:
             "train_end": "2024-01-01",
             "test_start": "2024-01-02",
             "test_end": "2026-04-01",
-            "frequency": "hourly_stock_session",
+            "frequency": "hourly_stock_rebalance_crypto_24x7",
+            "buffer_mode": "cash",
             "friction": FRICTION,
+            "execution_assumptions": {
+                "fractional_stocks": True,
+                "min_rebalance_notional": rebalance_only_cfg.min_rebalance_notional,
+                "min_order_notional": rebalance_only_cfg.min_order_notional,
+                "stock_settlement_days": rebalance_only_cfg.stock_settlement_days,
+            },
         },
         "rebalance_only": {
             "train": asdict(rebalance_only_train),

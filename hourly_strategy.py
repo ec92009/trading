@@ -31,7 +31,7 @@ ET = ZoneInfo("America/New_York")
 HERE = Path(__file__).parent
 load_dotenv(HERE / ".env")
 CACHE_DIR = HERE / ".cache" / "hourly_data"
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 
 DEFAULT_SYMBOLS = ["TSLA", "TSM", "NVDA", "PLTR", "BTC/USD"]
 DEFAULT_TARGET_WEIGHTS = {
@@ -60,11 +60,19 @@ def display(sym: str) -> str:
 
 
 def is_fractional(sym: str) -> bool:
-    return sym in FRACTIONAL_SYMBOLS
+    return is_crypto_symbol(sym) or sym in FRACTIONAL_SYMBOLS
+
+
+def is_crypto_symbol(sym: str) -> bool:
+    return "/" in sym
 
 
 def is_absorber(sym: str) -> bool:
     return sym == ABSORBER_SYMBOL
+
+
+def trades_24x7(sym: str) -> bool:
+    return is_crypto_symbol(sym)
 
 
 def _utc(ts: str) -> datetime:
@@ -126,28 +134,33 @@ def _compute_rolling_betas(assets: dict, symbols: list[str], n: int) -> dict[str
 
 def _fill_to_union(
     union: list[str],
-    source_rows: dict[str, tuple[float, float, float]],
+    source_rows: dict[str, tuple[float, float, float, float]],
 ) -> dict[str, list[float]]:
+    opens: list[float] = []
     closes: list[float] = []
     lows: list[float] = []
     highs: list[float] = []
     first_row = source_rows[min(source_rows)] if source_rows else None
     if first_row is None:
         raise ValueError("Cannot fill empty source rows")
+    last_open = None
     last_close = None
     for ts in union:
         row = source_rows.get(ts)
         if row is not None:
-            close, low, high = row
+            open_, close, low, high = row
+            last_open = open_
             last_close = close
         elif last_close is not None:
-            close = low = high = last_close
+            open_ = close = low = high = last_close
         else:
-            close = low = high = first_row[0]
+            open_ = last_open = first_row[0]
+            close = low = high = first_row[1]
+        opens.append(round(open_, 4))
         closes.append(round(close, 4))
         lows.append(round(low, 4))
         highs.append(round(high, 4))
-    return {"closes": closes, "lows": lows, "highs": highs}
+    return {"opens": opens, "closes": closes, "lows": lows, "highs": highs}
 
 
 def load_hourly_data(
@@ -171,16 +184,17 @@ def load_hourly_data(
         except Exception:
             pass
 
-    stock_symbols = [sym for sym in symbols if sym != ABSORBER_SYMBOL]
+    stock_symbols = [sym for sym in symbols if not is_crypto_symbol(sym)]
+    crypto_symbols = [sym for sym in symbols if is_crypto_symbol(sym)]
     stock_fetch = stock_symbols + ["SPY"]
     start_dt = datetime.fromisoformat(f"{start}T00:00:00+00:00")
     end_dt = datetime.fromisoformat(f"{end}T00:00:00+00:00")
 
-    raw: dict[str, dict[str, tuple[float, float, float]]] = {}
+    raw: dict[str, dict[str, tuple[float, float, float, float]]] = {}
     stock_union: set[str] = set()
 
     for sym in stock_fetch:
-        rows: dict[str, tuple[float, float, float]] = {}
+        rows: dict[str, tuple[float, float, float, float]] = {}
         for chunk_start, chunk_end in _chunk_ranges(start_dt, end_dt):
             stock_res = _stock_data.get_stock_bars(
                 StockBarsRequest(
@@ -194,30 +208,42 @@ def load_hourly_data(
             for bar in stock_res.data.get(sym, []):
                 if not _stock_session_bar(bar.timestamp):
                     continue
-                rows[_ts_key(bar.timestamp)] = (float(bar.close), float(bar.low), float(bar.high))
+                rows[_ts_key(bar.timestamp)] = (
+                    float(bar.open),
+                    float(bar.close),
+                    float(bar.low),
+                    float(bar.high),
+                )
         raw[sym] = rows
         stock_union.update(rows)
 
-    if ABSORBER_SYMBOL in symbols:
+    crypto_union: set[str] = set()
+    for sym in crypto_symbols:
         rows = {}
         for chunk_start, chunk_end in _chunk_ranges(start_dt, end_dt):
             crypto_res = _crypto_data.get_crypto_bars(
                 CryptoBarsRequest(
-                    symbol_or_symbols=ABSORBER_SYMBOL,
+                    symbol_or_symbols=sym,
                     timeframe=TimeFrame.Hour,
                     start=chunk_start,
                     end=chunk_end,
                 )
             )
-            for bar in crypto_res.data.get(ABSORBER_SYMBOL, []):
-                rows[_ts_key(bar.timestamp)] = (float(bar.close), float(bar.low), float(bar.high))
-        raw[ABSORBER_SYMBOL] = rows
+            for bar in crypto_res.data.get(sym, []):
+                rows[_ts_key(bar.timestamp)] = (
+                    float(bar.open),
+                    float(bar.close),
+                    float(bar.low),
+                    float(bar.high),
+                )
+        raw[sym] = rows
+        crypto_union.update(rows)
 
-    union = sorted(stock_union | (set(raw[ABSORBER_SYMBOL]) if ABSORBER_SYMBOL in symbols else set()))
+    union = sorted(stock_union | crypto_union)
     stock_timestamps = sorted(stock_union)
 
     assets: dict[str, dict] = {}
-    for sym in stock_fetch + ([ABSORBER_SYMBOL] if ABSORBER_SYMBOL in symbols else []):
+    for sym in stock_fetch + crypto_symbols:
         assets[sym] = _fill_to_union(union, raw[sym])
 
     beta_assets: dict[str, dict] = {sym: {"closes": []} for sym in symbols + ["SPY"]}
@@ -284,6 +310,10 @@ def load_hourly_data(
 class HourlyConfig:
     initial: float = 10_000.0
     target_weights: dict[str, float] | None = None
+    fractional_stocks: bool = True
+    min_rebalance_notional: float = 25.0
+    min_order_notional: float = 25.0
+    stock_settlement_days: int = 1
     base_tol: float = 0.02
     trail_step: float = 1.02
     trail_stop: float = 0.99
@@ -342,8 +372,22 @@ def simulate_hourly(
     def trigger_pct(sym: str, i: int) -> float:
         return max(0.005, cfg.base_tol * betas[sym][i])
 
+    def tradable_on_bar(sym: str, i: int) -> bool:
+        return trades_24x7(sym) or timestamps[i] in stock_timestamps
+
+    def asset_open(sym: str, i: int) -> float:
+        return assets[sym].get("opens", assets[sym]["closes"])[i]
+
+    def uses_fractional_shares(sym: str) -> bool:
+        return is_fractional(sym) or (cfg.fractional_stocks and not is_crypto_symbol(sym))
+
+    def next_settlement_day(day: str, sym: str) -> str:
+        if is_crypto_symbol(sym):
+            return day
+        return next_trading_day(day, max(1, cfg.stock_settlement_days))
+
     def slippage_bps(sym: str) -> float:
-        return cfg.crypto_slippage_bps if is_absorber(sym) else cfg.stock_slippage_bps
+        return cfg.crypto_slippage_bps if is_crypto_symbol(sym) else cfg.stock_slippage_bps
 
     def exec_price(sym: str, price: float, side: str) -> float:
         slip = slippage_bps(sym) / 10_000
@@ -364,9 +408,14 @@ def simulate_hourly(
         if dollars <= 0:
             return 0.0, 0.0
         fill_price = exec_price(sym, price, "buy")
-        if is_fractional(sym):
+        if uses_fractional_shares(sym):
+            if not is_crypto_symbol(sym):
+                per_share = fill_price + cfg.equity_cat_per_share
+                qty = dollars / per_share if per_share > 0 else 0.0
+                spent = qty * fill_price + equity_buy_fee(qty)
+                return qty, round(dollars - spent, 2)
             qty = dollars / fill_price
-            qty *= 1 - (cfg.crypto_taker_fee_bps / 10_000) if is_absorber(sym) else 1.0
+            qty *= 1 - (cfg.crypto_taker_fee_bps / 10_000) if is_crypto_symbol(sym) else 1.0
             return qty, 0.0
         per_share = fill_price + cfg.equity_cat_per_share
         qty = math.floor(dollars / per_share)
@@ -376,15 +425,15 @@ def simulate_hourly(
     def sell_proceeds(sym: str, qty: float, price: float) -> tuple[float, float]:
         fill_price = exec_price(sym, price, "sell")
         gross = qty * fill_price
-        if is_absorber(sym):
+        if is_crypto_symbol(sym):
             fee = gross * (cfg.crypto_taker_fee_bps / 10_000)
             return round(gross - fee, 2), fill_price
         fee = equity_sell_fee(qty, gross)
         return round(gross - fee, 2), fill_price
 
     st: dict[str, dict[str, float | str]] = {}
-    cash = 0.0
-    buffer_qty = [0.0]
+    settled_cash = 0.0
+    unsettled_cash: dict[str, float] = {}
     for sym in symbols:
         entry = assets[sym]["closes"][0]
         fp = floor_pct(sym, 0)
@@ -396,12 +445,7 @@ def simulate_hourly(
             "t_next": round(entry * (1 + tp), 2),
             "stop_ready_day": trading_days[0],
         }
-        cash = round(cash + leftover, 2)
-
-    if cash > 0 and ABSORBER_SYMBOL in symbols:
-        qty, leftover = buy_qty(ABSORBER_SYMBOL, cash, assets[ABSORBER_SYMBOL]["closes"][0])
-        buffer_qty[0] += qty
-        cash = leftover
+        settled_cash = round(settled_cash + leftover, 2)
 
     events: list[dict] = []
     history: list[dict] = []
@@ -425,70 +469,72 @@ def simulate_hourly(
             }
         )
 
-    def buffer_price(i: int) -> float:
-        return assets[ABSORBER_SYMBOL]["closes"][i]
+    def unsettled_total() -> float:
+        return round(sum(unsettled_cash.values()), 2)
 
     def total_value(i: int) -> float:
-        buffer_value = buffer_qty[0] * buffer_price(i) if ABSORBER_SYMBOL in symbols else 0.0
-        return round(cash + buffer_value + sum(st[sym]["qty"] * assets[sym]["closes"][i] for sym in symbols), 2)
+        return round(
+            settled_cash + unsettled_total() + sum(st[sym]["qty"] * assets[sym]["closes"][i] for sym in symbols),
+            2,
+        )
 
     traded_this_bar: set[str] = set()
+    next_trade_after: dict[str, list[int | None]] = {}
+    for sym in symbols:
+        nxt: int | None = None
+        series: list[int | None] = [None] * len(timestamps)
+        for i in range(len(timestamps) - 1, -1, -1):
+            series[i] = nxt
+            if tradable_on_bar(sym, i):
+                nxt = i
+        next_trade_after[sym] = series
+    pending_stops: dict[str, dict[str, float | int | str | bool]] = {}
 
     def can_trade(sym: str) -> bool:
-        return sym not in traded_this_bar
+        return sym not in traded_this_bar and sym not in pending_stops
 
     def mark_traded(sym: str):
         traded_this_bar.add(sym)
 
+    def settle_cash_if_ready(i: int):
+        nonlocal settled_cash
+        trade_day = bar_day[i]
+        released_days = [day for day in unsettled_cash if day <= trade_day]
+        if not released_days:
+            return
+        released = round(sum(unsettled_cash.pop(day, 0.0) for day in released_days), 2)
+        if released <= 0:
+            return
+        settled_cash = round(settled_cash + released, 2)
+        evt(i, "CASH", "SETTLEMENT — released", None, released, f"Released settled cash for {trade_day}.")
+
     def park_in_buffer(dollars: float, i: int, source_sym: str, reason: str):
-        nonlocal cash, turnover
+        nonlocal settled_cash
         if dollars <= 0:
             return
-        if ABSORBER_SYMBOL in symbols and can_trade(ABSORBER_SYMBOL):
-            price = buffer_price(i)
-            qty, left = buy_qty(ABSORBER_SYMBOL, dollars, price)
-            spent = round(dollars - left, 2)
-            if qty > 0:
-                buffer_qty[0] += qty
-                mark_traded(ABSORBER_SYMBOL)
-                turnover += spent
-                evt(i, ABSORBER_SYMBOL, "BUFFER — bought", exec_price(ABSORBER_SYMBOL, price, "buy"), spent, reason)
-            cash = round(cash + left, 2)
+        if is_crypto_symbol(source_sym):
+            settled_cash = round(settled_cash + dollars, 2)
+            evt(i, source_sym, "BUFFER — settled cash", None, dollars, reason)
             return
-        cash = round(cash + dollars, 2)
+        release_day = next_settlement_day(bar_day[i], source_sym)
+        unsettled_cash[release_day] = round(unsettled_cash.get(release_day, 0.0) + dollars, 2)
+        evt(
+            i,
+            source_sym,
+            "BUFFER — unsettled cash",
+            None,
+            dollars,
+            f"{reason} Funds release on {release_day}.",
+        )
 
     def raise_cash(required: float, i: int, reason: str):
-        nonlocal cash, turnover
-        if required <= cash or ABSORBER_SYMBOL not in symbols or buffer_qty[0] <= 0 or not can_trade(ABSORBER_SYMBOL):
-            return
-        shortfall = required - cash
-        price = buffer_price(i)
-        btc_sell_qty = min(buffer_qty[0], shortfall / max(exec_price(ABSORBER_SYMBOL, price, "sell"), 1e-9))
-        if btc_sell_qty <= 0:
-            return
-        proceeds, fill_price = sell_proceeds(ABSORBER_SYMBOL, btc_sell_qty, price)
-        buffer_qty[0] -= btc_sell_qty
-        cash = round(cash + proceeds, 2)
-        turnover += proceeds
-        mark_traded(ABSORBER_SYMBOL)
-        evt(i, ABSORBER_SYMBOL, "BUFFER — sold", fill_price, proceeds, reason)
+        return
 
     def refill_buffer_from_cash(i: int):
-        nonlocal cash, turnover
-        if cash <= 0 or ABSORBER_SYMBOL not in symbols or not can_trade(ABSORBER_SYMBOL):
-            return
-        price = buffer_price(i)
-        qty, left = buy_qty(ABSORBER_SYMBOL, cash, price)
-        spent = round(cash - left, 2)
-        if qty > 0:
-            buffer_qty[0] += qty
-            turnover += spent
-            mark_traded(ABSORBER_SYMBOL)
-            evt(i, ABSORBER_SYMBOL, "BUFFER — bought", exec_price(ABSORBER_SYMBOL, price, "buy"), spent, "Moved idle cash into BTC buffer.")
-        cash = left
+        return
 
     def rebalance_portfolio(i: int):
-        nonlocal cash, turnover, rebalance_count
+        nonlocal settled_cash, turnover, rebalance_count
         total = total_value(i)
         did_trade = False
 
@@ -498,40 +544,27 @@ def simulate_hourly(
             price = assets[sym]["closes"][i]
             target_value = total * target_weights[sym]
             current_value = st[sym]["qty"] * price
-            if is_absorber(sym):
-                current_value = max(0.0, st[sym]["qty"] - buffer_qty[0]) * price
             excess = current_value - target_value
-            if excess <= 0:
+            if excess < cfg.min_rebalance_notional:
                 continue
-            if is_absorber(sym):
-                core_qty = max(0.0, st[sym]["qty"] - buffer_qty[0])
-                sell_qty = min(core_qty, excess / price)
-                if sell_qty <= 0:
-                    continue
-                st[sym]["qty"] -= sell_qty
-                buffer_qty[0] += sell_qty
-                mark_traded(sym)
-                did_trade = True
-                evt(i, sym, "REBALANCE — sold", exec_price(sym, price, "sell"), excess, "Moved BTC core into BTC buffer.")
-                continue
-            sell_qty = excess / price if is_fractional(sym) else math.floor(excess / price)
+            sell_qty = excess / price if uses_fractional_shares(sym) else math.floor(excess / price)
             if sell_qty <= 0:
                 continue
             proceeds, fill_price = sell_proceeds(sym, sell_qty, price)
+            if proceeds < cfg.min_order_notional:
+                continue
             st[sym]["qty"] -= sell_qty
             turnover += proceeds
             mark_traded(sym)
             did_trade = True
             evt(i, sym, "REBALANCE — sold", fill_price, proceeds, "Trimmed overweight position.")
-            park_in_buffer(proceeds, i, sym, "Parked rebalance proceeds in BTC buffer.")
+            park_in_buffer(proceeds, i, sym, "Held rebalance proceeds in cash buffer.")
 
         deficits: list[tuple[float, str]] = []
         for sym in symbols:
             price = assets[sym]["closes"][i]
             target_value = total * target_weights[sym]
             current_value = st[sym]["qty"] * price
-            if is_absorber(sym):
-                current_value = max(0.0, st[sym]["qty"] - buffer_qty[0]) * price
             gap = target_value - current_value
             if gap > 0:
                 deficits.append((gap, sym))
@@ -543,43 +576,20 @@ def simulate_hourly(
             price = assets[sym]["closes"][i]
             target_value = total * target_weights[sym]
             current_value = st[sym]["qty"] * price
-            if is_absorber(sym):
-                current_value = max(0.0, st[sym]["qty"] - buffer_qty[0]) * price
             gap = target_value - current_value
-            if gap <= 0:
+            if gap < cfg.min_rebalance_notional:
                 continue
-            if is_absorber(sym):
-                needed_qty = gap / price
-                moved_qty = min(buffer_qty[0], needed_qty)
-                if moved_qty > 0:
-                    moved_value = round(moved_qty * price, 2)
-                    buffer_qty[0] -= moved_qty
-                    st[sym]["qty"] += moved_qty
-                    mark_traded(sym)
-                    did_trade = True
-                    evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), moved_value, "Moved BTC buffer back toward target BTC weight.")
-                remaining_cost = round(max(0.0, gap - moved_qty * price), 2)
-                if remaining_cost <= 0:
-                    continue
-                raise_cash(remaining_cost, i, "Fund BTC rebalance.")
-                spend = min(remaining_cost, cash)
-                if spend <= 0:
-                    continue
-                qty = (spend / exec_price(sym, price, "buy")) * (1 - cfg.crypto_taker_fee_bps / 10_000)
-                st[sym]["qty"] += qty
-                cash = round(cash - spend, 2)
-                turnover += spend
-                mark_traded(sym)
-                did_trade = True
-                evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), spend, "Restored target BTC exposure.")
-                continue
-            if is_fractional(sym):
+            if uses_fractional_shares(sym):
                 required = gap
                 raise_cash(required, i, f"Fund {display(sym)} rebalance.")
-                spend = min(required, cash)
-                if spend <= 0:
+                spend = min(required, settled_cash)
+                if spend < cfg.min_order_notional:
                     continue
-                qty = spend / exec_price(sym, price, "buy")
+                if is_crypto_symbol(sym):
+                    qty = spend / exec_price(sym, price, "buy")
+                else:
+                    per_share = exec_price(sym, price, "buy") + cfg.equity_cat_per_share
+                    qty = spend / per_share if per_share > 0 else 0.0
             else:
                 target_shares = math.floor(target_value / (exec_price(sym, price, "buy") + cfg.equity_cat_per_share))
                 current_shares = math.floor(st[sym]["qty"])
@@ -588,19 +598,22 @@ def simulate_hourly(
                     continue
                 required = needed * exec_price(sym, price, "buy") + equity_buy_fee(needed)
                 raise_cash(required, i, f"Fund {display(sym)} rebalance.")
-                affordable = min(needed, math.floor(cash / (exec_price(sym, price, "buy") + cfg.equity_cat_per_share)))
+                affordable = min(
+                    needed,
+                    math.floor(settled_cash / (exec_price(sym, price, "buy") + cfg.equity_cat_per_share)),
+                )
                 if affordable <= 0:
                     continue
                 qty = affordable
                 spend = round(qty * exec_price(sym, price, "buy") + equity_buy_fee(qty), 2)
+                if spend < cfg.min_order_notional:
+                    continue
             st[sym]["qty"] += qty
-            cash = round(cash - spend, 2)
+            settled_cash = round(settled_cash - spend, 2)
             turnover += spend
             mark_traded(sym)
             did_trade = True
             evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), spend, "Restored target-weight exposure.")
-
-        refill_buffer_from_cash(i)
         if did_trade:
             rebalance_count += 1
 
@@ -610,44 +623,88 @@ def simulate_hourly(
         if not record_events:
             return
         vals = {display(sym): round(st[sym]["qty"] * assets[sym]["closes"][i], 2) for sym in symbols}
-        if ABSORBER_SYMBOL in symbols and buffer_qty[0] > 0:
-            vals["BTC Buffer"] = round(buffer_qty[0] * assets[ABSORBER_SYMBOL]["closes"][i], 2)
-        vals["Cash"] = round(cash, 2)
+        vals["Cash"] = round(settled_cash, 2)
+        vals["Unsettled Cash"] = unsettled_total()
         history.append({"date": timestamps[i], "assets": vals, "total": total})
+
+    def execute_pending_stop(i: int, sym: str, pending: dict[str, float | int | str | bool]):
+        nonlocal turnover, stop_count
+        s = st[sym]
+        sell_qty = min(float(pending["qty"]), float(s["qty"]))
+        pending_stops.pop(sym, None)
+        if sell_qty <= 0:
+            return
+        stop_reference = float(pending["trigger_floor"])
+        fill_reference = assets[sym]["closes"][i] if pending.get("terminal_fallback") else asset_open(sym, i)
+        stop_anchor = min(stop_reference, fill_reference)
+        proceeds, fill_price = sell_proceeds(sym, sell_qty, stop_anchor)
+        s["qty"] -= sell_qty
+        mark_traded(sym)
+        fp = floor_pct(sym, i)
+        tp = trigger_pct(sym, i)
+        s["floor"] = round(stop_anchor * (1 - fp), 2)
+        s["t_next"] = round(stop_anchor * (1 + tp), 2)
+        s["stop_ready_day"] = next_trading_day(bar_day[i], cfg.stop_cooldown_days + 1)
+        park_in_buffer(proceeds, i, sym, "Held for rebalance in cash buffer.")
+        turnover += proceeds
+        stop_count += 1
+        reference_label = "close" if pending.get("terminal_fallback") else "open"
+        evt(
+            i,
+            sym,
+            "STOP — sold",
+            fill_price,
+            proceeds,
+            f"Triggered on {pending['triggered_at']} after low ${float(pending['trigger_low']):,.2f} "
+            f"breached floor ${float(pending['trigger_floor']):,.2f}; executed at next tradable "
+            f"{reference_label} reference ${fill_reference:,.2f}.",
+        )
 
     for sym in symbols:
         entry = assets[sym]["closes"][0]
         evt(0, sym, "BUY", entry, round(cfg.initial * target_weights[sym], 2), "Initial purchase.")
-    snap(0)
+        snap(0)
 
     for i in range(1, len(timestamps)):
         traded_this_bar.clear()
+        settle_cash_if_ready(i)
+        for sym in symbols:
+            pending = pending_stops.get(sym)
+            if not pending or pending["execute_i"] != i:
+                continue
+            execute_pending_stop(i, sym, pending)
         if cfg.enable_risk_controls:
             for sym in symbols:
-                if sym != ABSORBER_SYMBOL and timestamps[i] not in stock_timestamps:
+                if not tradable_on_bar(sym, i):
                     continue
                 close = assets[sym]["closes"][i]
                 low = assets[sym]["lows"][i]
                 s = st[sym]
                 if can_trade(sym) and bar_day[i] >= s["stop_ready_day"] and low <= s["floor"]:
-                    stop_count += 1
-                    sp = s["floor"]
                     sell_qty = s["qty"] * cfg.stop_sell_pct
-                    proceeds, fill_price = sell_proceeds(sym, sell_qty, sp)
-                    s["qty"] -= sell_qty
-                    mark_traded(sym)
-                    fp = floor_pct(sym, i)
-                    tp = trigger_pct(sym, i)
-                    old_floor = s["floor"]
-                    s["floor"] = round(sp * (1 - fp), 2)
-                    s["t_next"] = round(sp * (1 + tp), 2)
-                    s["stop_ready_day"] = next_trading_day(bar_day[i], cfg.stop_cooldown_days + 1)
-                    if is_absorber(sym):
-                        buffer_qty[0] += sell_qty
-                    else:
-                        park_in_buffer(proceeds, i, sym, "Held for rebalance after stop.")
-                    turnover += proceeds
-                    evt(i, sym, "STOP — sold", fill_price, proceeds, f"Low ${low:,.2f} hit floor ${old_floor:,.2f}.")
+                    if sell_qty * float(s["floor"]) < cfg.min_order_notional:
+                        continue
+                    execute_i = next_trade_after[sym][i]
+                    terminal_fallback = execute_i is None
+                    if execute_i is None:
+                        execute_i = i
+                    pending_stops[sym] = {
+                        "qty": sell_qty,
+                        "trigger_floor": s["floor"],
+                        "trigger_low": low,
+                        "triggered_at": timestamps[i],
+                        "execute_i": execute_i,
+                        "terminal_fallback": terminal_fallback,
+                    }
+                    exec_label = "current close" if terminal_fallback else "next tradable open"
+                    evt(
+                        i,
+                        sym,
+                        "STOP — armed",
+                        s["floor"],
+                        None,
+                        f"Low ${low:,.2f} breached floor ${float(s['floor']):,.2f}; scheduled for {exec_label}.",
+                    )
                     continue
                 if close >= s["t_next"]:
                     new_floor = round(close * cfg.trail_stop, 2)
@@ -657,6 +714,11 @@ def simulate_hourly(
                         s["floor"] = new_floor
                         s["t_next"] = round(close * cfg.trail_step, 2)
                         evt(i, sym, "TRAIL — floor raised", close, None, f"Floor ${old_floor:,.2f} -> ${new_floor:,.2f}.")
+
+        for sym in list(pending_stops):
+            pending = pending_stops.get(sym)
+            if pending and pending.get("terminal_fallback") and pending["execute_i"] == i:
+                execute_pending_stop(i, sym, pending)
 
         if cfg.rebalance_every_bars > 0 and timestamps[i] in rebalance_timestamps:
             rebalance_portfolio(i)

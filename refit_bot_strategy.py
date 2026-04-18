@@ -40,18 +40,6 @@ def main() -> None:
     candidates = [sample_cfg(args.initial, rng) for _ in range(args.samples)]
     ranked = sorted((eval_cfg(cfg, train) for cfg in candidates), key=lambda r: (r.score, r.final), reverse=True)
     best = ranked[0]
-    best_cfg = HourlyConfig(
-        initial=args.initial,
-        base_tol=best.base_tol,
-        stop_sell_pct=best.stop_sell_pct,
-        trail_step=best.trail_step,
-        trail_stop=best.trail_stop,
-        stop_cooldown_days=best.stop_cooldown_days,
-        rebalance_every_bars=best.rebalance_every_bars,
-        enable_risk_controls=True,
-        **FRICTION,
-    )
-
     payload = {
         "search": {
             "symbols": DEFAULT_SYMBOLS,
@@ -61,17 +49,23 @@ def main() -> None:
             "seed": args.seed,
             "train_start": args.train_start,
             "train_end": args.train_end,
-            "frequency": "hourly_stock_session",
+            "frequency": "hourly_stock_rebalance_crypto_24x7",
+            "buffer_mode": "cash",
             "friction": FRICTION,
+            "execution_assumptions": {
+                "fractional_stocks": True,
+                "min_rebalance_notional": 25.0,
+                "min_order_notional": 25.0,
+                "stock_settlement_days": 1,
+            },
         },
         "best_train": asdict(best),
-        "recommended_bot_config": {
-            "base_tol": best_cfg.base_tol,
-            "stop_sell_pct": best_cfg.stop_sell_pct,
-            "trail_step": best_cfg.trail_step,
-            "trail_stop": best_cfg.trail_stop,
-            "stop_cooldown_days": best_cfg.stop_cooldown_days,
-            "target_weights": DEFAULT_TARGET_WEIGHTS,
+        "live_default_policy": {
+            "auto_promote": False,
+            "reason": (
+                "Full-history refit results are in-sample only. Keep live defaults on a separately "
+                "maintained holdout-validated config instead of auto-promoting the best_train winner."
+            ),
         },
         "top10_train": [asdict(r) for r in ranked[:10]],
     }
