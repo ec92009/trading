@@ -3,6 +3,7 @@ import plistlib
 import sys
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from unittest.mock import Mock, patch
@@ -39,6 +40,10 @@ def install_alpaca_stubs():
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
+    class GetCalendarRequest:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
     class StockLatestQuoteRequest:
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
@@ -53,6 +58,7 @@ def install_alpaca_stubs():
     trading_client.TradingClient = TradingClient
     trading_requests.MarketOrderRequest = MarketOrderRequest
     trading_requests.GetOrdersRequest = GetOrdersRequest
+    trading_requests.GetCalendarRequest = GetCalendarRequest
     trading_enums.OrderSide = SimpleNamespace(BUY="BUY", SELL="SELL")
     trading_enums.TimeInForce = SimpleNamespace(GTC="GTC", DAY="DAY")
     trading_enums.QueryOrderStatus = SimpleNamespace(OPEN="OPEN")
@@ -118,6 +124,71 @@ class BotBehaviorTests(unittest.TestCase):
                 self.assertEqual(b.total_qty, 2.25)
                 self.assertEqual(b.entry_price, 101.5)
                 trade_log.log_order.assert_called_once()
+
+    def test_monitor_risk_sells_partial_position_and_sets_cooldown(self):
+        with install_alpaca_stubs():
+            bot = importlib.import_module("bot")
+            importlib.reload(bot)
+
+            trade_log = SimpleNamespace(log_order=Mock())
+            fake_trading = SimpleNamespace(
+                get_all_positions=Mock(
+                    return_value=[SimpleNamespace(symbol="AAPL", qty="10", avg_entry_price="100")]
+                ),
+                submit_order=Mock(return_value=SimpleNamespace(status="accepted", id="sell-2")),
+                get_calendar=Mock(
+                    return_value=[
+                        SimpleNamespace(date=date(2026, 4, 20)),
+                        SimpleNamespace(date=date(2026, 4, 21)),
+                        SimpleNamespace(date=date(2026, 4, 22)),
+                        SimpleNamespace(date=date(2026, 4, 23)),
+                    ]
+                ),
+            )
+
+            with patch.object(bot, "trade_log", trade_log), patch.object(bot, "trading", fake_trading):
+                b = bot.Bot(bot.BotConfig(symbol="AAPL", asset_class="stock", stop_sell_pct=0.55))
+                b.floor = 95.0
+                b.trail_next = 105.0
+                with patch.object(b, "get_price", return_value=94.0):
+                    event = b.monitor_risk(date(2026, 4, 17))
+                request = fake_trading.submit_order.call_args.args[0]
+                self.assertEqual(request.qty, 5.5)
+                self.assertEqual(event["proceeds"], 522.5)
+                self.assertEqual(b.stop_ready_on, date(2026, 4, 23))
+                trade_log.log_order.assert_called_once()
+
+    def test_add_trading_days_uses_market_calendar(self):
+        with install_alpaca_stubs():
+            bot = importlib.import_module("bot")
+            importlib.reload(bot)
+
+            fake_trading = SimpleNamespace(
+                get_calendar=Mock(
+                    return_value=[
+                        SimpleNamespace(date=date(2026, 1, 20)),
+                        SimpleNamespace(date=date(2026, 1, 21)),
+                        SimpleNamespace(date=date(2026, 1, 22)),
+                    ]
+                )
+            )
+            with patch.object(bot, "trading", fake_trading):
+                bot._calendar_cache.clear()
+                self.assertEqual(bot.add_trading_days(date(2026, 1, 16), 1), date(2026, 1, 20))
+
+    def test_portfolio_manager_disables_btc_24x7_by_default(self):
+        with install_alpaca_stubs():
+            bot = importlib.import_module("bot")
+            importlib.reload(bot)
+
+            manager = bot.PortfolioManager(
+                [
+                    bot.Bot(bot.BotConfig(symbol="AAPL", asset_class="stock")),
+                    bot.Bot(bot.BotConfig(symbol="BTC/USD", asset_class="crypto")),
+                ]
+            )
+            self.assertTrue(manager.should_monitor_bot(manager.bot_by_symbol["AAPL"], True))
+            self.assertFalse(manager.should_monitor_bot(manager.bot_by_symbol["BTC/USD"], False))
 
 
 class AddAssetTests(unittest.TestCase):

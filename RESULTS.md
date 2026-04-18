@@ -1,0 +1,276 @@
+# RESULTS.md
+
+Research results and lessons learned for `~/Dev/trading`.
+
+This file is the current research handoff. It focuses on:
+
+- what we tested
+- what worked and what did not
+- the main hiccups we encountered
+- the current conclusion
+
+## Scope
+
+Most recent work focused on the hourly Alpaca-backed sandbox strategy over:
+
+- train: `2023-01-01` through `2023-12-31`
+- holdout: `2024-01-02` through `2026-03-31`
+
+Core basket:
+
+- `TSLA`
+- `TSM`
+- `NVDA`
+- `PLTR`
+- `BTC/USD`
+
+## Main Results
+
+### 1. Pure Rebalance Is Out
+
+Hourly rebalance-only underperformed buy-and-hold on the 9-quarter holdout.
+
+Latest friction-enabled holdout result from [hourly_strategy_results.json](/Users/ecohen/Dev/trading/hourly_strategy_results.json):
+
+- final: `$35,068.97`
+- return: `+250.69%`
+- max drawdown: `30.75%`
+- buy-and-hold: `$37,304.73`
+
+Conclusion:
+
+- pure rebalance is not the best path for this repo
+
+### 2. Stop / Trigger + Rebalance Is The Best Tested Strategy So Far
+
+Current best 2023-trained hourly config:
+
+- `base_tol = 0.0109`
+- `stop_sell_pct = 0.8342`
+- `trail_step = 1.0235`
+- `trail_stop = 0.9885`
+- `stop_cooldown_days = 5`
+
+Latest friction-enabled 9-quarter holdout:
+
+- final: `$127,661.11`
+- return: `+1176.61%`
+- max drawdown: `28.33%`
+- turnover: `$10,739,015.09`
+- buy-and-hold: `$37,304.73`
+
+Interpretation:
+
+- this remains the strongest sandbox result
+- it is still high-turnover and should be treated cautiously
+
+### 3. Weight Shifting Did Not Help
+
+We tested a variant where stop hits reduced target weight and upper triggers increased target weight, with rebalance only at the close.
+
+Files:
+
+- [weight_shift_strategy.py](/Users/ecohen/Dev/trading/weight_shift_strategy.py)
+- [optimize_weight_shift.py](/Users/ecohen/Dev/trading/optimize_weight_shift.py)
+
+Result:
+
+- trained variants could look good in-sample
+- on holdout, they underperformed the simpler baseline
+
+Conclusion:
+
+- weight shifting is not part of the current recommendation
+
+### 4. Beta Scaling Stayed In
+
+We tested the baseline with and without beta scaling.
+
+Result:
+
+- beta scaling did not strictly win the long holdout every time
+- but it materially reduced churn and made the system calmer
+
+Conclusion:
+
+- keep beta scaling for now
+
+## Buffer Findings
+
+### BTC Buffer
+
+The current main sandbox strategy uses BTC as both:
+
+- a core asset
+- the temporary buffer for stop and rebalance proceeds
+
+This produced strong but not obviously impossible backtest behavior.
+
+### Cash Buffer
+
+We tested a cash-buffer variant where proceeds stayed in cash instead of being auto-parked into BTC.
+
+Result:
+
+- the optimizer found absurdly strong outcomes
+- e.g. one run reached tens of billions of dollars on a `$10k` start
+- turnover exploded into obviously unrealistic territory
+
+Interpretation:
+
+- this is almost certainly a backtest pathology
+- removing BTC as the volatile absorber made the frictionless assumptions easier to exploit, not more realistic
+
+Conclusion:
+
+- cash buffer is not currently trusted
+
+## Friction Model
+
+We added a first-pass friction model to the hourly simulator in [hourly_strategy.py](/Users/ecohen/Dev/trading/hourly_strategy.py) and optimizer in [optimize_hourly_strategies.py](/Users/ecohen/Dev/trading/optimize_hourly_strategies.py).
+
+Current assumptions:
+
+- stock slippage: `5 bps`
+- crypto slippage: `10 bps`
+- crypto taker fee: `25 bps`
+- equity SEC sell fee rate: `0.00002060`
+- equity TAF: `0.000195/share`, capped at `$9.79`
+- equity CAT: `0.000046/share`
+
+Why:
+
+- Alpaca stock trading is generally commission-free, but regulatory fees still apply
+- Alpaca crypto trading is not fee-free
+- real execution is not frictionless even when commissions are zero
+
+Important note:
+
+- pure rebalance behaved as expected under friction and got slightly worse
+- the stop/trigger strategy kept the same event counts but finished higher under the current friction implementation, which is unusual
+- that can happen in a path-dependent system because costs perturb quantities and cash balances, but it is still a result to treat carefully
+
+Conclusion:
+
+- keep the friction model
+- do not over-interpret the exact uplift from the current implementation
+
+## Major Hiccups And Fixes
+
+### 1. Unrealistic Hourly Results From Early Engine Versions
+
+Early hourly stop/trigger results were far too strong to trust.
+
+Main causes we found:
+
+- using data in a way that did not properly account for stock splits
+- BTC core / BTC buffer accounting errors
+- over-generous frictionless trade assumptions
+
+Fixes:
+
+- switched to Alpaca adjusted stock bars
+- corrected BTC core vs buffer accounting
+- separated stock-session rebalance from BTC 24x7 monitoring
+- later added first-pass friction
+
+### 2. Rebalance Frequency Was Too Aggressive
+
+An early version rebalanced too often intraday, which created extreme churn and unrealistic turnover.
+
+Fix:
+
+- changed rebalance to once per trading day, on the last stock-session bar
+
+### 3. Live Bot And Simulator Were Not Identical
+
+We found an important behavior gap:
+
+- live bot blocks same-day re-entry after a trade
+- simulator originally only blocked repeat trades within the same bar
+
+This matters because same-day close re-entry can materially change outcomes.
+
+Fix:
+
+- we made the difference explicit in analysis
+- we compared both policies side by side instead of assuming they matched
+
+Result:
+
+- in the Jan-Feb 2024 comparison, the same-day guard reduced turnover a lot and slightly improved final value in that short window
+- we still kept the no-same-day-guard simulator path as the default research branch for the 2023/9Q routine unless otherwise specified
+
+### 4. Reporting Window End-Boundary Artifacts
+
+A chart for the first few weeks of 2024 was inconsistent with an earlier one.
+
+Cause:
+
+- too-tight data cutoff at the end of the reporting window
+
+Fix:
+
+- reload with a buffer beyond the visible display window before computing end-of-day values
+
+### 5. Cooldown Semantics Needed Clarification
+
+We clarified that the live bot cooldown is in trading days, not calendar days.
+
+Current live behavior:
+
+- after a stop, skip the next `N` trading sessions
+- become stop-eligible again on the following trading session
+
+## Live Bot Status
+
+The live bot in [bot.py](/Users/ecohen/Dev/trading/bot.py) has been updated to align more closely with the current best practical strategy:
+
+- partial stop sells
+- trading-day cooldown
+- BTC buffer bookkeeping
+- end-of-day rebalance
+
+But the live bot is still not identical to the simulator.
+
+Key current difference:
+
+- `BTC` does not yet run live stop/trail logic 24x7 in the bot
+
+See [TODO.md](/Users/ecohen/Dev/trading/TODO.md) for remaining live-bot decisions.
+
+## Current Conclusion
+
+Best practical strategy currently trusted in this repo:
+
+- 5-asset basket
+- equal-weight start
+- beta-scaled stop floors
+- trailing floor raises
+- partial stop sales
+- BTC buffer
+- daily rebalance near the close
+
+Things currently not recommended:
+
+- pure rebalance as the main strategy
+- weight shifting
+- cash buffer as a trusted improvement
+
+## Confidence / Caution
+
+What we believe:
+
+- the stop/trigger + rebalance structure is the strongest idea tested so far
+- the repo is in much better shape than the first hourly experiments
+
+What we do not yet believe:
+
+- that the highest raw backtest outputs should be treated as deployable at face value
+- that a frictionless or near-frictionless replay is enough evidence for live deployment
+
+Next sensible validation steps:
+
+- add repeatable walk-forward validation
+- add more realistic execution assumptions if needed
+- compare BTC-buffer and cash-buffer only under tightly constrained, realism-focused rules

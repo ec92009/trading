@@ -3,6 +3,14 @@
 Algorithmic paper trading bot using the [Alpaca](https://alpaca.markets) API.
 All trades run against a **paper trading account** (no real money).
 
+## Current docs
+
+- [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md): current sandbox strategy mechanics
+- [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md): research results, pitfalls, and current conclusion
+- [TODO.md](/Users/ecohen/Dev/trading/TODO.md): active follow-up work
+
+Use this `README` for setup and operational scripts. For current strategy behavior and research conclusions, prefer the docs above.
+
 ---
 
 ## What this project does
@@ -93,6 +101,12 @@ cd ~/Dev/trading && source .venv/bin/activate
 
 A continuously running bot that manages multiple positions concurrently.
 Each asset runs in its own thread with independent state.
+
+Important:
+
+- the live bot and the sandbox simulator are related but not identical
+- the current research strategy is documented in [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md)
+- the latest research conclusions are documented in [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md)
 
 ### Trading rules (applied to every asset)
 
