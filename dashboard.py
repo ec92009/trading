@@ -59,6 +59,7 @@ COLORS = [
 ASSET_DEFAULTS = {
     "initial_notional": 50.0,
     "ladder_notional": 50.0,
+    "target_weight": 0.20,
     "stop_pct": 0.95,
     "trail_trigger": 1.10,
     "trail_step": 1.05,
@@ -71,6 +72,7 @@ ASSET_DEFAULTS = {
 EDITABLE_FIELDS = [
     "initial_notional",
     "ladder_notional",
+    "target_weight",
     "stop_pct",
     "trail_trigger",
     "trail_step",
@@ -334,6 +336,7 @@ def coerce_asset_config(payload: dict, current_symbol: str | None = None) -> dic
         "asset_class": asset_class,
         "initial_notional": round(initial, 2),
         "ladder_notional": round(ladder, 2),
+        "target_weight": float(payload.get("target_weight", ASSET_DEFAULTS["target_weight"])),
         "stop_pct": float(payload.get("stop_pct", ASSET_DEFAULTS["stop_pct"])),
         "trail_trigger": float(payload.get("trail_trigger", ASSET_DEFAULTS["trail_trigger"])),
         "trail_step": float(payload.get("trail_step", ASSET_DEFAULTS["trail_step"])),
@@ -344,6 +347,8 @@ def coerce_asset_config(payload: dict, current_symbol: str | None = None) -> dic
     }
     if config["poll_interval"] <= 0:
         raise RuntimeError("Poll interval must be positive.")
+    if config["target_weight"] < 0:
+        raise RuntimeError("Target weight must be non-negative.")
     return config
 
 
@@ -881,6 +886,7 @@ def build_html() -> str:
               <div class="field"><label for="assetInitial">Initial buy ($)</label><input id="assetInitial" name="initial_notional" placeholder="50" /><div class="field-help">Dollar amount for the first entry order.</div></div>
               <div class="field"><label for="assetLadder">Ladder buy ($)</label><input id="assetLadder" name="ladder_notional" placeholder="50" /><div class="field-help">Dollar amount for each additional buy on weakness.</div></div>
             </div>
+            <div class="field"><label for="targetWeight">Target weight</label><input id="targetWeight" name="target_weight" value="0.20" /><div class="field-help">Portfolio weight used at rebalance. <span class="mono">0.50</span> means 50% of portfolio value.</div></div>
             <div class="field-grid two">
               <div class="field"><label for="stopPct">Stop multiplier (%)</label><input id="stopPct" name="stop_pct" value="0.95" /><div class="field-help">Exit floor as a fraction of entry. <span class="mono">0.95</span> means 95% of entry, or 5% below.</div></div>
               <div class="field"><label for="trailTrigger">Trail trigger (%)</label><input id="trailTrigger" name="trail_trigger" value="1.10" /><div class="field-help">Start trailing once price reaches this fraction of entry. <span class="mono">1.10</span> means +10%.</div></div>
@@ -1066,6 +1072,7 @@ def build_html() -> str:
       document.getElementById("assetSymbol").value = "";
       document.getElementById("assetInitial").value = "";
       document.getElementById("assetLadder").value = "";
+      document.getElementById("targetWeight").value = "0.20";
       document.getElementById("stopPct").value = "0.95";
       document.getElementById("trailTrigger").value = "1.10";
       document.getElementById("trailStep").value = "1.05";
@@ -1084,6 +1091,7 @@ def build_html() -> str:
       document.getElementById("assetSymbol").value = asset.symbol;
       document.getElementById("assetInitial").value = asset.initial_notional;
       document.getElementById("assetLadder").value = asset.ladder_notional;
+      document.getElementById("targetWeight").value = asset.target_weight;
       document.getElementById("stopPct").value = asset.stop_pct;
       document.getElementById("trailTrigger").value = asset.trail_trigger;
       document.getElementById("trailStep").value = asset.trail_step;

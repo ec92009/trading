@@ -9,3 +9,5 @@ venv/
 .DS_Store
 *.png
 trades.tsv
+bot_state.json
+.cache/

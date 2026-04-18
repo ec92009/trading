@@ -10,11 +10,8 @@
 
 ## Strategy Validation
 
+- Rerun the benchmark `2023` / 9-quarter routine under the current `TSLA 50%` live weight profile so the live allocation has a clean holdout record too.
 - Compare corrected fractional-stock results directly against whole-share results on the same train/test windows.
 - Add a repeatable walk-forward validation flow instead of one-off date-range experiments.
 - Add turnover and event-count summaries to optimizer output so extreme results are easier to sanity-check.
 - Decide whether optimizer output should continue to overwrite `optimizer_results.json` or whether date-stamped result files would be better.
-
-## Documentation
-
-- Document the live bot's new behavior separately from the sandbox simulator behavior so the two are not confused.

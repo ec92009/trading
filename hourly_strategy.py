@@ -10,6 +10,8 @@ Alpaca historical bars so the comparison stays clean.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import os
 from bisect import bisect_left
@@ -28,8 +30,17 @@ from alpaca.data.timeframe import TimeFrame
 ET = ZoneInfo("America/New_York")
 HERE = Path(__file__).parent
 load_dotenv(HERE / ".env")
+CACHE_DIR = HERE / ".cache" / "hourly_data"
+CACHE_VERSION = 1
 
 DEFAULT_SYMBOLS = ["TSLA", "TSM", "NVDA", "PLTR", "BTC/USD"]
+DEFAULT_TARGET_WEIGHTS = {
+    "TSLA": 0.50,
+    "TSM": 0.125,
+    "NVDA": 0.125,
+    "PLTR": 0.125,
+    "BTC/USD": 0.125,
+}
 ABSORBER_SYMBOL = "BTC/USD"
 FRACTIONAL_SYMBOLS = {ABSORBER_SYMBOL}
 DISPLAY_LABELS = {"TSM": "TSMC", "BTC/USD": "BTC"}
@@ -67,6 +78,12 @@ def _ts_key(dt: datetime) -> str:
 def _stock_session_bar(dt: datetime) -> bool:
     et = dt.astimezone(ET)
     return et.weekday() < 5 and et.hour in REGULAR_HOURLY_STARTS_ET
+
+
+def _disk_cache_path(symbols: list[str], start: str, end: str) -> Path:
+    cache_key = "|".join([str(CACHE_VERSION), ",".join(symbols), start, end])
+    digest = hashlib.sha256(cache_key.encode()).hexdigest()[:16]
+    return CACHE_DIR / f"{start}_{end}_{digest}.json"
 
 
 def _chunk_ranges(start_dt: datetime, end_dt: datetime, days: int = 120) -> list[tuple[datetime, datetime]]:
@@ -144,6 +161,15 @@ def load_hourly_data(
     with _cache_lock:
         if cache_key in _cache:
             return _cache[cache_key]
+    disk_path = _disk_cache_path(symbols, start, end)
+    if disk_path.exists():
+        try:
+            payload = json.loads(disk_path.read_text())
+            with _cache_lock:
+                _cache[cache_key] = payload
+            return payload
+        except Exception:
+            pass
 
     stock_symbols = [sym for sym in symbols if sym != ABSORBER_SYMBOL]
     stock_fetch = stock_symbols + ["SPY"]
@@ -247,6 +273,8 @@ def load_hourly_data(
             for sym in symbols
         },
     }
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    disk_path.write_text(json.dumps(payload))
     with _cache_lock:
         _cache[cache_key] = payload
     return payload
@@ -255,6 +283,7 @@ def load_hourly_data(
 @dataclass
 class HourlyConfig:
     initial: float = 10_000.0
+    target_weights: dict[str, float] | None = None
     base_tol: float = 0.02
     trail_step: float = 1.02
     trail_stop: float = 0.99
@@ -284,7 +313,19 @@ def simulate_hourly(
     rebalance_timestamps = set(data["rebalance_timestamps"])
     assets = data["assets"]
     betas = data["betas"]
-    per = cfg.initial / len(symbols)
+    def normalized_target_weights() -> dict[str, float]:
+        if cfg.target_weights is not None:
+            raw = {sym: float(cfg.target_weights.get(sym, 0.0)) for sym in symbols}
+        elif set(symbols).issubset(DEFAULT_TARGET_WEIGHTS):
+            raw = {sym: DEFAULT_TARGET_WEIGHTS[sym] for sym in symbols}
+        else:
+            raw = {sym: 1.0 for sym in symbols}
+        total = sum(max(0.0, weight) for weight in raw.values())
+        if total <= 0:
+            return {sym: 1 / len(symbols) for sym in symbols}
+        return {sym: max(0.0, raw[sym]) / total for sym in symbols}
+
+    target_weights = normalized_target_weights()
     trading_days = data["trading_days"]
     day_index = {day: i for i, day in enumerate(trading_days)}
     bar_day = [_utc(ts).astimezone(ET).date().isoformat() for ts in timestamps]
@@ -348,7 +389,7 @@ def simulate_hourly(
         entry = assets[sym]["closes"][0]
         fp = floor_pct(sym, 0)
         tp = trigger_pct(sym, 0)
-        qty, leftover = buy_qty(sym, per, entry)
+        qty, leftover = buy_qty(sym, cfg.initial * target_weights[sym], entry)
         st[sym] = {
             "qty": qty,
             "floor": round(entry * (1 - fp), 2),
@@ -448,13 +489,14 @@ def simulate_hourly(
 
     def rebalance_portfolio(i: int):
         nonlocal cash, turnover, rebalance_count
-        target_value = total_value(i) / len(symbols)
+        total = total_value(i)
         did_trade = False
 
         for sym in symbols:
             if not can_trade(sym):
                 continue
             price = assets[sym]["closes"][i]
+            target_value = total * target_weights[sym]
             current_value = st[sym]["qty"] * price
             if is_absorber(sym):
                 current_value = max(0.0, st[sym]["qty"] - buffer_qty[0]) * price
@@ -486,6 +528,7 @@ def simulate_hourly(
         deficits: list[tuple[float, str]] = []
         for sym in symbols:
             price = assets[sym]["closes"][i]
+            target_value = total * target_weights[sym]
             current_value = st[sym]["qty"] * price
             if is_absorber(sym):
                 current_value = max(0.0, st[sym]["qty"] - buffer_qty[0]) * price
@@ -498,6 +541,7 @@ def simulate_hourly(
             if not can_trade(sym):
                 continue
             price = assets[sym]["closes"][i]
+            target_value = total * target_weights[sym]
             current_value = st[sym]["qty"] * price
             if is_absorber(sym):
                 current_value = max(0.0, st[sym]["qty"] - buffer_qty[0]) * price
@@ -513,7 +557,7 @@ def simulate_hourly(
                     st[sym]["qty"] += moved_qty
                     mark_traded(sym)
                     did_trade = True
-                    evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), moved_value, "Moved BTC buffer back into core BTC.")
+                    evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), moved_value, "Moved BTC buffer back toward target BTC weight.")
                 remaining_cost = round(max(0.0, gap - moved_qty * price), 2)
                 if remaining_cost <= 0:
                     continue
@@ -527,7 +571,7 @@ def simulate_hourly(
                 turnover += spend
                 mark_traded(sym)
                 did_trade = True
-                evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), spend, "Restored equal BTC exposure.")
+                evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), spend, "Restored target BTC exposure.")
                 continue
             if is_fractional(sym):
                 required = gap
@@ -554,7 +598,7 @@ def simulate_hourly(
             turnover += spend
             mark_traded(sym)
             did_trade = True
-            evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), spend, "Restored equal-weight exposure.")
+            evt(i, sym, "REBALANCE — bought", exec_price(sym, price, "buy"), spend, "Restored target-weight exposure.")
 
         refill_buffer_from_cash(i)
         if did_trade:
@@ -573,7 +617,7 @@ def simulate_hourly(
 
     for sym in symbols:
         entry = assets[sym]["closes"][0]
-        evt(0, sym, "BUY", entry, per, "Initial purchase.")
+        evt(0, sym, "BUY", entry, round(cfg.initial * target_weights[sym], 2), "Initial purchase.")
     snap(0)
 
     for i in range(1, len(timestamps)):
@@ -620,7 +664,7 @@ def simulate_hourly(
 
     init_qtys: dict[str, float] = {}
     for sym in symbols:
-        qty, _ = buy_qty(sym, per, assets[sym]["closes"][0])
+        qty, _ = buy_qty(sym, cfg.initial * target_weights[sym], assets[sym]["closes"][0])
         init_qtys[sym] = qty
     bh = [round(sum(init_qtys[s] * assets[s]["closes"][i] for s in symbols), 2) for i in range(len(timestamps))]
     totals = totals_over_time if totals_over_time else [cfg.initial]

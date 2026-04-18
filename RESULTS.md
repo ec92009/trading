@@ -11,10 +11,10 @@ This file is the current research handoff. It focuses on:
 
 ## Scope
 
-Most recent work focused on the hourly Alpaca-backed sandbox strategy over:
+The repo now has two distinct research modes that should not be confused:
 
-- train: `2023-01-01` through `2023-12-31`
-- holdout: `2024-01-02` through `2026-03-31`
+- benchmark mode: train on `2023-01-01` through `2023-12-31`, then test on the 9-quarter holdout `2024-01-02` through `2026-03-31`
+- production-refit mode: fit on all available history through `2026-04-01` to generate live bot defaults after the benchmark work is already understood
 
 Core basket:
 
@@ -23,6 +23,8 @@ Core basket:
 - `NVDA`
 - `PLTR`
 - `BTC/USD`
+
+The benchmark results below are the most trustworthy strategy comparison results in the repo. The production refit is useful for live deployment, but it is in-sample and not a fair measure of out-of-sample edge.
 
 ## Main Results
 
@@ -43,7 +45,7 @@ Conclusion:
 
 ### 2. Stop / Trigger + Rebalance Is The Best Tested Strategy So Far
 
-Current best 2023-trained hourly config:
+Current best 2023-trained hourly config for the benchmark routine:
 
 - `base_tol = 0.0109`
 - `stop_sell_pct = 0.8342`
@@ -63,6 +65,12 @@ Interpretation:
 
 - this remains the strongest sandbox result
 - it is still high-turnover and should be treated cautiously
+
+Important scope note:
+
+- this benchmark result comes from the earlier equal-weight benchmark regime
+- the current live profile now uses `TSLA 50%` and `TSM/NVDA/PLTR/BTC 12.5%` each
+- we have not yet rerun the full 2023 / 9-quarter benchmark under the new live weights
 
 ### 3. Weight Shifting Did Not Help
 
@@ -155,6 +163,50 @@ Conclusion:
 - keep the friction model
 - do not over-interpret the exact uplift from the current implementation
 
+## Data Caching
+
+The hourly simulator originally cached market data only in memory, so every new script run asked Alpaca for the same bars again.
+
+Fix:
+
+- added a persistent disk cache in [hourly_strategy.py](/Users/ecohen/Dev/trading/hourly_strategy.py)
+- raw hourly bars are now stored under `.cache/hourly_data/`
+- cache files are local-only and ignored by git
+
+Result:
+
+- reruns are much faster
+- research is more reproducible
+- we do not keep hammering Alpaca for the same 2023-2026 data on every process start
+
+## Production Refit
+
+After the benchmark work, we added a separate full-history refit flow for live deployment in [refit_bot_strategy.py](/Users/ecohen/Dev/trading/refit_bot_strategy.py).
+
+Current production refit artifact:
+
+- [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json)
+
+Search setup:
+
+- train: `2023-01-01` through `2026-04-01`
+- target weights: `TSLA 50%`, `TSM/NVDA/PLTR/BTC 12.5%` each
+- same first-pass friction model as the benchmark optimizer
+
+Current recommended bot parameters from that refit:
+
+- `base_tol = 0.0035`
+- `stop_sell_pct = 0.8383`
+- `trail_step = 1.0321`
+- `trail_stop = 0.9879`
+- `stop_cooldown_days = 3`
+
+Important caution:
+
+- the full-history refit is in-sample only
+- its raw train result is absurdly strong and obviously not something to trust as evidence by itself
+- it is useful as a parameter-generation step for the live bot, not as a replacement for the 2023 / 9-quarter benchmark
+
 ## Major Hiccups And Fixes
 
 ### 1. Unrealistic Hourly Results From Early Engine Versions
@@ -244,7 +296,8 @@ See [TODO.md](/Users/ecohen/Dev/trading/TODO.md) for remaining live-bot decision
 Best practical strategy currently trusted in this repo:
 
 - 5-asset basket
-- equal-weight start
+- weighted target profile
+- `TSLA 50%`, `TSM/NVDA/PLTR/BTC 12.5%` each in the current live profile
 - beta-scaled stop floors
 - trailing floor raises
 - partial stop sales
@@ -263,14 +316,17 @@ What we believe:
 
 - the stop/trigger + rebalance structure is the strongest idea tested so far
 - the repo is in much better shape than the first hourly experiments
+- the disk cache and explicit production-refit flow make the research loop much more reproducible
 
 What we do not yet believe:
 
 - that the highest raw backtest outputs should be treated as deployable at face value
 - that a frictionless or near-frictionless replay is enough evidence for live deployment
+- that the full-history refit should be treated like out-of-sample proof
 
 Next sensible validation steps:
 
+- rerun the 2023 / 9-quarter benchmark under the new weighted live profile
 - add repeatable walk-forward validation
 - add more realistic execution assumptions if needed
 - compare BTC-buffer and cash-buffer only under tightly constrained, realism-focused rules

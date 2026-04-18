@@ -13,7 +13,7 @@ import random
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from hourly_strategy import DEFAULT_SYMBOLS, HourlyConfig, load_hourly_data, simulate_hourly
+from hourly_strategy import DEFAULT_SYMBOLS, DEFAULT_TARGET_WEIGHTS, HourlyConfig, load_hourly_data, simulate_hourly
 
 HERE = Path(__file__).parent
 RESULT_PATH = HERE / "hourly_strategy_results.json"
@@ -79,6 +79,7 @@ def eval_cfg(cfg: HourlyConfig, data: dict) -> HourlyEval:
 def sample_cfg(initial: float, rng: random.Random) -> HourlyConfig:
     return HourlyConfig(
         initial=initial,
+        target_weights=DEFAULT_TARGET_WEIGHTS,
         base_tol=round(rng.uniform(0.003, 0.04), 4),
         stop_sell_pct=round(rng.uniform(0.10, 0.90), 4),
         trail_step=round(rng.uniform(1.005, 1.06), 4),
@@ -111,6 +112,7 @@ def main() -> None:
 
     rebalance_only_cfg = HourlyConfig(
         initial=args.initial,
+        target_weights=DEFAULT_TARGET_WEIGHTS,
         rebalance_every_bars=1,
         enable_risk_controls=False,
         **FRICTION,
@@ -124,6 +126,7 @@ def main() -> None:
     best = ranked[0]
     best_cfg = HourlyConfig(
         initial=args.initial,
+        target_weights=DEFAULT_TARGET_WEIGHTS,
         base_tol=best.base_tol,
         stop_sell_pct=best.stop_sell_pct,
         trail_step=best.trail_step,
@@ -141,6 +144,7 @@ def main() -> None:
             "initial": args.initial,
             "samples": args.samples,
             "seed": args.seed,
+            "target_weights": DEFAULT_TARGET_WEIGHTS,
             "train_start": "2023-01-01",
             "train_end": "2024-01-01",
             "test_start": "2024-01-02",

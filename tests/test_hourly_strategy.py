@@ -141,6 +141,18 @@ class HourlyStrategyTests(unittest.TestCase):
         costly = simulate_hourly(costly_cfg, data, chosen_symbols=["AAA", "BBB", "BTC/USD"])
         self.assertLess(costly["summary"]["final"], base["summary"]["final"])
 
+    def test_custom_target_weights_change_initial_allocation(self):
+        data = make_data()
+        cfg = HourlyConfig(
+            initial=1200.0,
+            target_weights={"AAA": 0.5, "BBB": 0.25, "BTC/USD": 0.25},
+            enable_risk_controls=False,
+        )
+        result = simulate_hourly(cfg, data, chosen_symbols=["AAA", "BBB", "BTC/USD"])
+        first_assets = result["history"][0]["assets"]
+        self.assertGreater(first_assets["AAA"], first_assets["BBB"])
+        self.assertEqual(first_assets["BBB"], first_assets["BTC"] if "BTC" in first_assets else first_assets["BTC/USD"])
+
 
 if __name__ == "__main__":
     unittest.main()

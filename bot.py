@@ -6,8 +6,8 @@ Behavior:
 - Flatten unmanaged positions (for example AAPL) when the bot starts
 - Watch stock positions during market hours and apply beta-scaled stops/trails
 - Park stop-sale and rebalance-sale proceeds into a BTC buffer when possible
-- Rebalance the basket to equal 20% weights five minutes before the stock market
-  close
+- Rebalance the basket to target weights five minutes before the stock market
+  close: TSLA 50%, TSM/NVDA/PLTR/BTC 12.5% each
 """
 
 from __future__ import annotations
@@ -48,22 +48,22 @@ class BotConfig:
     stop_pct: float = 0.95
     trail_trigger: float = 1.10
     target_weight: float = 0.20
-    base_tol: float = 0.0161
-    trail_step: float = 1.0275
-    trail_stop: float = 0.995
+    base_tol: float = 0.0035
+    trail_step: float = 1.0321
+    trail_stop: float = 0.9879
     ladder1_pct: float = 0.925
     ladder2_pct: float = 0.850
-    stop_sell_pct: float = 0.55
+    stop_sell_pct: float = 0.8383
     stop_cooldown_days: int = 3
     poll_interval: int = 30
 
 
 BOTS = [
-    BotConfig(symbol="TSLA", asset_class="stock"),
-    BotConfig(symbol="TSM", asset_class="stock"),
-    BotConfig(symbol="NVDA", asset_class="stock"),
-    BotConfig(symbol="PLTR", asset_class="stock"),
-    BotConfig(symbol="BTC/USD", asset_class="crypto"),
+    BotConfig(symbol="TSLA", asset_class="stock", target_weight=0.50),
+    BotConfig(symbol="TSM", asset_class="stock", target_weight=0.125),
+    BotConfig(symbol="NVDA", asset_class="stock", target_weight=0.125),
+    BotConfig(symbol="PLTR", asset_class="stock", target_weight=0.125),
+    BotConfig(symbol="BTC/USD", asset_class="crypto", target_weight=0.125),
 ]
 
 TARGET_SYMBOLS = {cfg.symbol for cfg in BOTS}
@@ -523,9 +523,19 @@ class PortfolioManager:
         self.logger.info(f"REBALANCE START [{reason}]")
         trade_day = self.now_et().date()
         equity = self.account_equity()
-        target_value = round(equity / len(self.bots), 2)
+        total_weight = sum(max(0.0, bot.cfg.target_weight) for bot in self.bots)
+        if total_weight <= 0:
+            total_weight = len(self.bots)
+        target_value_by_symbol = {
+            bot.cfg.symbol: round(
+                equity * (max(0.0, bot.cfg.target_weight) / total_weight if total_weight else 0.0),
+                2,
+            )
+            for bot in self.bots
+        }
 
         for bot in self.bots:
+            target_value = target_value_by_symbol[bot.cfg.symbol]
             bot.refresh_position()
             price = bot.get_price()
             current_value = bot.total_qty * price
@@ -559,6 +569,7 @@ class PortfolioManager:
 
         deficits: list[tuple[float, Bot]] = []
         for bot in self.bots:
+            target_value = target_value_by_symbol[bot.cfg.symbol]
             bot.refresh_position()
             price = bot.get_price()
             current_value = bot.total_qty * price
@@ -570,6 +581,7 @@ class PortfolioManager:
         deficits.sort(key=lambda item: item[0], reverse=True)
 
         for deficit, bot in deficits:
+            target_value = target_value_by_symbol[bot.cfg.symbol]
             price = bot.get_price()
             if bot.cfg.symbol == ABSORBER_SYMBOL:
                 moved_qty = min(self.buffer_qty, round(deficit / price, bot.qty_precision))

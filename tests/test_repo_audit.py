@@ -3,7 +3,7 @@ import plistlib
 import sys
 import tempfile
 import unittest
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from unittest.mock import Mock, patch
@@ -190,6 +190,50 @@ class BotBehaviorTests(unittest.TestCase):
             self.assertTrue(manager.should_monitor_bot(manager.bot_by_symbol["AAPL"], True))
             self.assertFalse(manager.should_monitor_bot(manager.bot_by_symbol["BTC/USD"], False))
 
+    def test_rebalance_uses_target_weights(self):
+        with install_alpaca_stubs():
+            bot = importlib.import_module("bot")
+            importlib.reload(bot)
+
+            trade_log = SimpleNamespace(log_order=Mock())
+            fake_trading = SimpleNamespace(
+                get_account=Mock(return_value=SimpleNamespace(equity="1000", cash="0")),
+                get_all_positions=Mock(
+                    return_value=[
+                        SimpleNamespace(symbol="TSLA", qty="5", avg_entry_price="100", market_value="500"),
+                        SimpleNamespace(symbol="NVDA", qty="3", avg_entry_price="100", market_value="300"),
+                        SimpleNamespace(symbol="BTCUSD", qty="1.25", avg_entry_price="100", market_value="125"),
+                    ]
+                ),
+                get_orders=Mock(return_value=[]),
+            )
+            with patch.object(bot, "trade_log", trade_log), patch.object(bot, "trading", fake_trading):
+                tsla = bot.Bot(bot.BotConfig(symbol="TSLA", asset_class="stock", target_weight=0.50))
+                nvda = bot.Bot(bot.BotConfig(symbol="NVDA", asset_class="stock", target_weight=0.25))
+                btc = bot.Bot(bot.BotConfig(symbol="BTC/USD", asset_class="crypto", target_weight=0.25))
+                manager = bot.PortfolioManager([tsla, nvda, btc])
+                with patch.object(manager, "now_et", return_value=datetime(2026, 4, 18, 15, 55, tzinfo=timezone.utc)), patch.object(
+                    manager, "settle_sell_orders"
+                ), patch.object(manager, "process_pending_buffer_cash"), patch.object(
+                    manager, "cap_buffer_to_live_btc"
+                ), patch.object(bot.time, "sleep"), patch.object(
+                    tsla, "get_price", return_value=100.0
+                ), patch.object(
+                    nvda, "get_price", return_value=100.0
+                ), patch.object(
+                    btc, "get_price", return_value=100.0
+                ), patch.object(
+                    tsla, "buy"
+                ) as tsla_buy, patch.object(
+                    nvda, "buy"
+                ) as nvda_buy, patch.object(
+                    nvda, "sell_qty"
+                ) as nvda_sell:
+                    manager.rebalance_portfolio("test")
+                tsla_buy.assert_not_called()
+                nvda_buy.assert_not_called()
+                nvda_sell.assert_called_once()
+
 
 class AddAssetTests(unittest.TestCase):
     def test_validate_symbol_uses_crypto_quote_lookup(self):
@@ -291,13 +335,14 @@ class DashboardAndStatusTests(unittest.TestCase):
                 bot_path.write_text(
                     '_P = 200\n'
                     'BOTS = [\n'
-                    '    BotConfig(symbol="AAPL", asset_class="stock", initial_notional=round(_P*0.10, 2), ladder_notional=25, stop_pct=0.9),\n'
+                    '    BotConfig(symbol="AAPL", asset_class="stock", initial_notional=round(_P*0.10, 2), ladder_notional=25, target_weight=0.35, stop_pct=0.9),\n'
                     ']\n'
                 )
                 bots = dashboard.load_bots(bot_path)
                 self.assertEqual(bots[0]["symbol"], "AAPL")
                 self.assertEqual(bots[0]["initial_notional"], 20.0)
                 self.assertEqual(bots[0]["ladder_notional"], 25.0)
+                self.assertEqual(bots[0]["target_weight"], 0.35)
                 self.assertEqual(bots[0]["stop_pct"], 0.9)
 
     def test_write_bots_updates_asset_lines(self):
@@ -318,6 +363,7 @@ class DashboardAndStatusTests(unittest.TestCase):
                         "asset_class": "stock",
                         "initial_notional": 35.0,
                         "ladder_notional": 15.0,
+                        "target_weight": 0.50,
                         "stop_pct": 0.9,
                         "trail_trigger": 1.1,
                         "trail_step": 1.05,
@@ -330,6 +376,7 @@ class DashboardAndStatusTests(unittest.TestCase):
                 )
                 text = bot_path.read_text()
                 self.assertIn('symbol="TSLA"', text)
+                self.assertIn("target_weight=0.5", text)
                 self.assertIn("poll_interval=45", text)
                 self.assertNotIn('symbol="AAPL"', text)
 

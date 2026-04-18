@@ -8,6 +8,7 @@ All trades run against a **paper trading account** (no real money).
 - [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md): current sandbox strategy mechanics
 - [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md): research results, pitfalls, and current conclusion
 - [TODO.md](/Users/ecohen/Dev/trading/TODO.md): active follow-up work
+- [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json): latest full-history production refit for live bot parameters
 
 Use this `README` for setup and operational scripts. For current strategy behavior and research conclusions, prefer the docs above.
 
@@ -37,6 +38,7 @@ trading/
 ├── queue_orders.py   # Place multiple orders at once
 ├── dashboard.py      # Unified web control panel at http://localhost:8080
 ├── status.py         # matplotlib chart (interactive window or PNG)
+├── .cache/           # Local raw hourly market-data cache (not committed)
 ├── bot.log           # Live log output (not committed)
 └── trades.tsv        # Order state log (not committed)
 ```
@@ -94,32 +96,47 @@ cd ~/Dev/trading && source .venv/bin/activate
 | `python3 status.py` | Open matplotlib chart window |
 | `SAVE_ONLY=1 python3 status.py` | Save chart to `status.png` |
 | `python3 add_asset.py` | TUI to add a new asset to the bot |
+| `python3 optimize_hourly_strategies.py` | Run the benchmark `2023` train / `2024-2026Q1` holdout optimizer |
+| `python3 refit_bot_strategy.py` | Refit the current strategy on all available history for live bot defaults |
 
 ---
 
 ## Trading Bot (`bot.py`)
 
-A continuously running bot that manages multiple positions concurrently.
-Each asset runs in its own thread with independent state.
+A continuously running paper-trading bot that manages the current 5-name basket:
+
+- `TSLA`
+- `TSM`
+- `NVDA`
+- `PLTR`
+- `BTC/USD`
+
+Current live target weights:
+
+- `TSLA`: `50%`
+- `TSM`: `12.5%`
+- `NVDA`: `12.5%`
+- `PLTR`: `12.5%`
+- `BTC/USD`: `12.5%`
 
 Important:
 
 - the live bot and the sandbox simulator are related but not identical
-- the current research strategy is documented in [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md)
+- the current sandbox mechanics are documented in [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md)
 - the latest research conclusions are documented in [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md)
 
-### Trading rules (applied to every asset)
+### Live behavior
 
-| Rule | Description |
+| Behavior | Description |
 |---|---|
-| **Entry** | Buy initial notional at market on startup |
-| **Stop loss (floor)** | Sell everything if price drops to entry × 0.95 |
-| **Trailing floor** | Once price rises 10%, raise stop to current × 0.95. Re-raise every +5%. Floor only moves up. |
-| **Ladder in — Level 1** | Buy more if price drops to floor × 0.925 |
-| **Ladder in — Level 2** | Buy more if price drops to floor × 0.850 |
+| **Entry / sync** | On startup, flatten unmanaged positions, resume managed ones, and optionally do a startup rebalance |
+| **Stop floor** | Use beta-scaled stop floors and sell `stop_sell_pct` of a position when price breaks the floor |
+| **Trailing floor** | Raise the floor and next trigger as price moves up |
+| **Cooldown** | After a stop, block another stop sale for `N` trading days |
+| **BTC buffer** | Park stop-sale and rebalance-sale proceeds in BTC when possible |
+| **Rebalance** | Rebalance once per trading day, five minutes before the stock-market close, toward target weights |
 
-> **Note:** Alpaca does not support fractional stop orders. All rules are software-managed —
-> the bot must be running for them to execute.
+> **Note:** Alpaca does not support broker-native fractional stop orders for this setup. The logic is software-managed, so the bot must be running for stops, trails, and rebalances to happen.
 
 ### Restart safety
 
@@ -134,8 +151,8 @@ The TSV log prevents duplicate buys if the bot restarts multiple times before a 
 
 ### Market hours
 
-- **Stocks:** the bot uses Alpaca's clock API to sleep until market open (9:30 AM ET). No polling on nights, weekends, or holidays.
-- **Crypto:** trades 24/7, no market hours guard.
+- **Stocks:** the bot uses Alpaca's clock API to sleep until market open. No polling on nights, weekends, or market holidays.
+- **Crypto:** `BTC/USD` is in the basket and buffer accounting, but live `BTC` stop/trail management is currently still gated by `MANAGE_BTC_24X7 = False`.
 
 ---
 
@@ -158,15 +175,15 @@ and the bot reloads automatically.
 
 ### Option 2 — Edit `bot.py` directly
 
-Open `bot.py` and find the `BOTS` list near the top. A typical setup sizes each position as a fraction of total portfolio value:
+Open `bot.py` and find the `BOTS` list near the top. The current setup uses explicit target weights:
 
 ```python
-_P = 348.71   # portfolio value at last rebalance
 BOTS = [
-    BotConfig(symbol="AAPL",    asset_class="stock",  initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
-    BotConfig(symbol="BTC/USD", asset_class="crypto", initial_notional=round(_P*0.10, 2), ladder_notional=round(_P*0.10, 2)),
-    BotConfig(symbol="PLTR",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
-    BotConfig(symbol="NVDA",    asset_class="stock",  initial_notional=round(_P*0.20, 2), ladder_notional=round(_P*0.20, 2)),
+    BotConfig(symbol="TSLA", asset_class="stock", target_weight=0.50),
+    BotConfig(symbol="TSM", asset_class="stock", target_weight=0.125),
+    BotConfig(symbol="NVDA", asset_class="stock", target_weight=0.125),
+    BotConfig(symbol="PLTR", asset_class="stock", target_weight=0.125),
+    BotConfig(symbol="BTC/USD", asset_class="crypto", target_weight=0.125),
 ]
 ```
 
@@ -182,10 +199,10 @@ Add a new `BotConfig` line for any asset you want to track.
 BotConfig(
     symbol="TSLA",
     asset_class="stock",
-    initial_notional=100.0,   # buy $100 instead of $50
-    ladder_notional=25.0,     # ladder in with $25 each time
-    stop_pct=0.93,            # tighter stop: sell at entry × 0.93
-    trail_trigger=1.15,       # start trailing after +15%
+    target_weight=0.40,       # set a custom rebalance target
+    base_tol=0.0040,          # widen or tighten beta-scaled floors
+    stop_sell_pct=0.75,       # sell 75% on each stop hit
+    stop_cooldown_days=4,     # wait 4 trading days before another stop sale
 )
 ```
 
@@ -195,14 +212,18 @@ Full list of `BotConfig` fields:
 |---|---|---|
 | `symbol` | required | Ticker (`"AAPL"`, `"BTC/USD"`, etc.) |
 | `asset_class` | required | `"stock"` or `"crypto"` |
-| `initial_notional` | `50.0` | Dollar amount for initial buy |
-| `ladder_notional` | `50.0` | Dollar amount for each ladder-in buy |
-| `stop_pct` | `0.95` | Sell all at entry × this value |
-| `trail_trigger` | `1.10` | Activate trailing stop after this gain |
-| `trail_step` | `1.05` | Re-raise floor every additional this % |
-| `trail_stop` | `0.95` | New floor = current price × this value |
-| `ladder1_pct` | `0.925` | First ladder buy at floor × this value |
-| `ladder2_pct` | `0.850` | Second ladder buy at floor × this value |
+| `initial_notional` | `0.0` | Legacy field for initial buy sizing |
+| `ladder_notional` | `0.0` | Legacy field, mostly superseded by rebalance sizing |
+| `target_weight` | `0.20` | Portfolio target weight used by rebalance |
+| `stop_pct` | `0.95` | Legacy field retained for compatibility |
+| `trail_trigger` | `1.10` | Legacy field retained for compatibility |
+| `trail_step` | `1.0321` | Re-raise floor every additional this % |
+| `trail_stop` | `0.9879` | New floor = current price × this value |
+| `base_tol` | `0.0035` | Base beta-scaled floor distance |
+| `stop_sell_pct` | `0.8383` | Fraction of a position sold on each stop hit |
+| `stop_cooldown_days` | `3` | Trading-day cooldown after a stop |
+| `ladder1_pct` | `0.925` | Legacy field retained for compatibility |
+| `ladder2_pct` | `0.850` | Legacy field retained for compatibility |
 | `poll_interval` | `30` | Seconds between price checks |
 
 After editing, reload the background service:
