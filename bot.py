@@ -15,12 +15,12 @@ from __future__ import annotations
 import json
 import logging
 import os
+import threading
 import time
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from dotenv import load_dotenv
 from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
 from alpaca.data.requests import CryptoLatestQuoteRequest, StockLatestQuoteRequest
 from alpaca.trading.client import TradingClient
@@ -28,13 +28,12 @@ from alpaca.trading.enums import OrderSide, QueryOrderStatus, TimeInForce
 from alpaca.trading.requests import GetCalendarRequest, GetOrdersRequest, MarketOrderRequest
 
 import trade_log
-
-load_dotenv(Path(__file__).parent / ".env")
+from alpaca_env import load_alpaca_credentials
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(message)s",
-    datefmt="%H:%M:%S",
+    datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[logging.StreamHandler()],
 )
 
@@ -62,15 +61,22 @@ BOTS = [
 
 TARGET_SYMBOLS = {cfg.symbol for cfg in BOTS}
 BETA_WINDOW = 60
-STATE_PATH = Path(__file__).parent / "bot_state.json"
+VERSION_PATH = Path(__file__).parent / "VERSION"
+BOT_FILE_SUFFIX = (os.getenv("BOT_LOG_SUFFIX") or "").strip()
+STATE_PATH = Path(__file__).parent / (f"bot_state_{BOT_FILE_SUFFIX}.json" if BOT_FILE_SUFFIX else "bot_state.json")
+DECISION_LOG_PATH = Path(__file__).parent / (f"bot_decisions_{BOT_FILE_SUFFIX}.jsonl" if BOT_FILE_SUFFIX else "bot_decisions.jsonl")
+LIVE_REBALANCE_ONLY = True
 
 # Crypto holdings still need live risk monitoring even when the equity market
 # is closed.
 MANAGE_CRYPTO_24X7 = True
 _calendar_cache: dict[tuple[date, date], list[date]] = {}
+_decision_lock = threading.Lock()
 
-_api_key = os.getenv("ALPACA_API_KEY")
-_secret_key = os.getenv("ALPACA_SECRET_KEY")
+_alpaca = load_alpaca_credentials(os.getenv("ALPACA_PROFILE"))
+_api_key = _alpaca["api_key"]
+_secret_key = _alpaca["secret_key"]
+BOT_VERSION = VERSION_PATH.read_text().strip() if VERSION_PATH.exists() else "0.0"
 
 trading = TradingClient(api_key=_api_key, secret_key=_secret_key, paper=True)
 stock_data = StockHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
@@ -83,6 +89,80 @@ def normalize_symbol(symbol: str) -> str:
 
 def yf_symbol(symbol: str) -> str:
     return "BTC-USD" if symbol == "BTC/USD" else symbol
+
+
+def _decision_timestamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _format_order_timestamp(value) -> str | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, str):
+        normalized = value.replace("Z", "+00:00")
+        try:
+            value = datetime.fromisoformat(normalized)
+        except ValueError:
+            return value
+    if isinstance(value, datetime):
+        dt = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return str(value)
+
+
+def _order_request_payload(
+    *,
+    symbol: str,
+    side: str,
+    time_in_force,
+    notional: float | None = None,
+    qty: float | None = None,
+) -> dict:
+    payload = {
+        "symbol": symbol,
+        "side": side,
+        "type": "market",
+        "time_in_force": str(time_in_force),
+    }
+    if notional is not None:
+        payload["notional"] = round(notional, 2)
+    if qty is not None:
+        payload["qty"] = qty
+    return payload
+
+
+def _versioned_rationale(reason: str) -> str:
+    return f"BOT v{BOT_VERSION}->{reason}"
+
+
+def log_decision(
+    event_type: str,
+    *,
+    symbol: str | None = None,
+    rationale: str,
+    state: dict | None = None,
+    order: dict | None = None,
+):
+    payload = {
+        "timestamp_utc": _decision_timestamp(),
+        "event_type": event_type,
+        "symbol": symbol,
+        "rationale": rationale,
+        "state": state or {},
+        "order": order or {},
+    }
+    with _decision_lock:
+        with DECISION_LOG_PATH.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, sort_keys=True) + "\n")
+
+
+def _safe_float(value) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def compute_beta(symbol: str) -> float:
@@ -248,9 +328,22 @@ class Bot:
             return 0.0
         return round(notional / price, self.qty_precision)
 
-    def buy(self, notional: float, reason: str, trade_day: date | None = None):
+    def buy(
+        self,
+        notional: float,
+        reason: str,
+        trade_day: date | None = None,
+        decision_context: dict | None = None,
+    ):
         if notional < 1.0:
             return None
+        reason = _versioned_rationale(reason)
+        alpaca_request = _order_request_payload(
+            symbol=self.cfg.symbol,
+            side="buy",
+            notional=round(notional, 2),
+            time_in_force=self.tif,
+        )
         order = trading.submit_order(
             MarketOrderRequest(
                 symbol=self.cfg.symbol,
@@ -259,15 +352,52 @@ class Bot:
                 time_in_force=self.tif,
             )
         )
-        trade_log.log_order(self.cfg.symbol, order.id, "BUY", notional)
-        self.logger.info(f"BUY ${notional:.2f} [{reason}] → {order.status} id={order.id}")
+        submitted_at = _format_order_timestamp(getattr(order, "submitted_at", None))
+        trade_log.log_order(
+            self.cfg.symbol,
+            order.id,
+            "BUY",
+            notional,
+            alpaca_request=json.dumps(alpaca_request, sort_keys=True),
+            rationale=reason,
+            submitted_at=submitted_at,
+        )
+        self.logger.info(
+            f"BUY ${notional:.2f} id={order.id} request={alpaca_request} "
+            f"submitted_at={submitted_at or '—'} executed_at=— rationale={reason}"
+        )
+        log_decision(
+            "order_submitted",
+            symbol=self.cfg.symbol,
+            rationale=reason,
+            state={
+                "side": "BUY",
+                "notional": round(notional, 2),
+                "trade_day": trade_day.isoformat() if trade_day else None,
+                **(decision_context or {}),
+            },
+            order={
+                "id": str(order.id),
+                "status": str(order.status),
+                "alpaca_request": alpaca_request,
+                "submitted_at": submitted_at,
+                "executed_at": None,
+            },
+        )
         if trade_day is not None:
             self.mark_traded(trade_day)
         return order
 
-    def sell_qty(self, qty: float, reason: str, trade_day: date | None = None):
+    def sell_qty(
+        self,
+        qty: float,
+        reason: str,
+        trade_day: date | None = None,
+        decision_context: dict | None = None,
+    ):
         if qty <= 0:
             return None
+        reason = _versioned_rationale(reason)
         qty = round(qty, self.qty_precision)
         if qty <= 0:
             return None
@@ -275,6 +405,12 @@ class Bot:
             price = self.get_price()
         except Exception:
             price = self.entry_price or 0.0
+        alpaca_request = _order_request_payload(
+            symbol=self.cfg.symbol,
+            side="sell",
+            qty=qty,
+            time_in_force=self.tif,
+        )
         order = trading.submit_order(
             MarketOrderRequest(
                 symbol=self.cfg.symbol,
@@ -283,8 +419,39 @@ class Bot:
                 time_in_force=self.tif,
             )
         )
-        trade_log.log_order(self.cfg.symbol, order.id, "SELL", qty * price)
-        self.logger.info(f"SELL {qty} [{reason}] → {order.status} id={order.id}")
+        submitted_at = _format_order_timestamp(getattr(order, "submitted_at", None))
+        trade_log.log_order(
+            self.cfg.symbol,
+            order.id,
+            "SELL",
+            qty * price,
+            alpaca_request=json.dumps(alpaca_request, sort_keys=True),
+            rationale=reason,
+            submitted_at=submitted_at,
+        )
+        self.logger.info(
+            f"SELL {qty} id={order.id} request={alpaca_request} "
+            f"submitted_at={submitted_at or '—'} executed_at=— rationale={reason}"
+        )
+        log_decision(
+            "order_submitted",
+            symbol=self.cfg.symbol,
+            rationale=reason,
+            state={
+                "side": "SELL",
+                "qty": qty,
+                "reference_price": round(price, 2),
+                "trade_day": trade_day.isoformat() if trade_day else None,
+                **(decision_context or {}),
+            },
+            order={
+                "id": str(order.id),
+                "status": str(order.status),
+                "alpaca_request": alpaca_request,
+                "submitted_at": submitted_at,
+                "executed_at": None,
+            },
+        )
         if trade_day is not None:
             self.mark_traded(trade_day)
         return order
@@ -309,6 +476,8 @@ class Bot:
                 self.logger.error(f"SYNC ERROR: {exc}")
 
     def monitor_risk(self, trade_day: date):
+        if LIVE_REBALANCE_ONLY:
+            return None
         pos = self.refresh_position()
         if not pos or self.total_qty <= 0:
             return None
@@ -325,7 +494,31 @@ class Bot:
             self.logger.info(
                 f"STOP HIT at ${price:,.2f} — selling {self.cfg.stop_sell_pct:.0%} and parking proceeds"
             )
-            self.sell_qty(sell_qty, "stop loss", trade_day=trade_day)
+            log_decision(
+                "stop_triggered",
+                symbol=self.cfg.symbol,
+                rationale="Price breached the active stop floor and cooldown allowed a stop sale.",
+                state={
+                    "price": round(price, 2),
+                    "floor": round(self.floor, 2),
+                    "sell_qty": sell_qty,
+                    "position_qty": round(self.total_qty, self.qty_precision),
+                    "stop_sell_pct": self.cfg.stop_sell_pct,
+                    "trade_day": trade_day.isoformat(),
+                },
+            )
+            self.sell_qty(
+                sell_qty,
+                "stop loss",
+                trade_day=trade_day,
+                decision_context={
+                    "trigger_type": "stop",
+                    "price": round(price, 2),
+                    "floor": round(self.floor, 2),
+                    "position_qty": round(self.total_qty, self.qty_precision),
+                    "stop_sell_pct": self.cfg.stop_sell_pct,
+                },
+            )
             self.reset_risk_levels(stop_price)
             self.set_stop_cooldown(trade_day)
             return {
@@ -344,6 +537,17 @@ class Bot:
                 self.logger.info(
                     f"TRAILING: floor ${old_floor:,.2f} → ${self.floor:,.2f}, "
                     f"next trigger=${self.trail_next:,.2f}"
+                )
+                log_decision(
+                    "trail_update",
+                    symbol=self.cfg.symbol,
+                    rationale="Price crossed the trail trigger, so the stop floor and next trigger were raised.",
+                    state={
+                        "price": round(price, 2),
+                        "old_floor": round(old_floor, 2),
+                        "new_floor": round(self.floor, 2),
+                        "new_trail_next": round(self.trail_next, 2),
+                    },
                 )
         return None
 
@@ -410,6 +614,94 @@ class PortfolioManager:
                 break
             time.sleep(1)
 
+    def lookup_order(self, order_id: str):
+        if hasattr(trading, "get_order_by_id"):
+            return trading.get_order_by_id(order_id)
+        try:
+            orders = trading.get_orders(filter=GetOrdersRequest())
+        except TypeError:
+            orders = trading.get_orders()
+        for order in orders:
+            if str(getattr(order, "id", "")) == str(order_id):
+                return order
+        return None
+
+    def canonical_order_status(self, order) -> str:
+        status = str(getattr(order, "status", "pending")).lower()
+        if status in {"filled", "canceled", "cancelled", "rejected", "expired"}:
+            return status
+        return "pending"
+
+    def sync_trade_log(self):
+        for row in trade_log.all_rows():
+            order_id = row.get("order_id")
+            if not order_id:
+                continue
+            current_status = str(row.get("status") or "pending").lower()
+            if current_status in {"canceled", "cancelled", "rejected", "expired"}:
+                continue
+            if current_status == "filled" and (row.get("executed_at") or row.get("filled_at")) and row.get("avg_price"):
+                continue
+            try:
+                order = self.lookup_order(order_id)
+            except Exception as exc:
+                self.logger.error(f"ORDER SYNC ERROR {order_id}: {exc}")
+                continue
+            if not order:
+                continue
+            synced_status = self.canonical_order_status(order)
+            filled_avg_price = _safe_float(getattr(order, "filled_avg_price", None))
+            if filled_avg_price is None:
+                filled_avg_price = _safe_float(getattr(order, "avg_fill_price", None))
+            submitted_at = getattr(order, "submitted_at", None)
+            filled_at = getattr(order, "filled_at", None)
+            needs_update = synced_status != current_status
+            needs_update = needs_update or bool(submitted_at and not row.get("submitted_at"))
+            if synced_status == "filled":
+                needs_update = needs_update or (
+                    filled_avg_price is not None and not row.get("avg_price")
+                )
+                needs_update = needs_update or bool(filled_at and not row.get("executed_at"))
+            if not needs_update:
+                continue
+            trade_log.update_order(
+                order_id,
+                synced_status,
+                avg_price=filled_avg_price if synced_status == "filled" else None,
+                submitted_at=submitted_at,
+                filled_at=filled_at if synced_status == "filled" else None,
+            )
+            submitted_at_s = _format_order_timestamp(submitted_at)
+            executed_at_s = _format_order_timestamp(filled_at) if synced_status == "filled" else None
+            self.logger.info(
+                f"ORDER SYNC {row.get('symbol')} {current_status} → {synced_status} "
+                f"id={order_id} submitted_at={submitted_at_s or row.get('submitted_at') or '—'} "
+                f"executed_at={executed_at_s or row.get('executed_at') or '—'} "
+                f"avg_price={filled_avg_price if filled_avg_price is not None else '—'} "
+                f"rationale={row.get('rationale') or 'Synchronized local state with Alpaca.'}"
+            )
+            log_decision(
+                "order_status_update",
+                symbol=row.get("symbol"),
+                rationale=row.get("rationale") or "Synchronized the local trade log with Alpaca order status and fill details.",
+                state={
+                    "previous_status": current_status,
+                    "new_status": synced_status,
+                    "logged_submitted_at": row.get("submitted_at") or None,
+                    "logged_executed_at": row.get("executed_at") or None,
+                    "logged_avg_price": row.get("avg_price") or None,
+                },
+                order={
+                    "id": str(order_id),
+                    "status": synced_status,
+                    "alpaca_request": row.get("alpaca_request") or None,
+                    "submitted_at": submitted_at_s or row.get("submitted_at") or None,
+                    "executed_at": executed_at_s or row.get("executed_at") or None,
+                    "filled_at": executed_at_s or row.get("filled_at") or None,
+                    "avg_price": round(filled_avg_price, 4) if filled_avg_price is not None else None,
+                },
+            )
+
     def should_monitor_bot(self, bot: Bot, market_is_open: bool) -> bool:
         if bot.cfg.asset_class == "stock":
             return market_is_open
@@ -436,8 +728,40 @@ class PortfolioManager:
                     time_in_force=tif,
                 )
             )
-            trade_log.log_order(live_symbol, order.id, "SELL", qty * price)
-            self.logger.info(f"Flattened unmanaged position {live_symbol} qty={qty}")
+            alpaca_request = _order_request_payload(
+                symbol=live_symbol,
+                side="sell",
+                qty=rounded_qty,
+                time_in_force=tif,
+            )
+            submitted_at = _format_order_timestamp(getattr(order, "submitted_at", None))
+            rationale = _versioned_rationale("startup sync found a live position outside the managed basket and flattened it.")
+            trade_log.log_order(
+                live_symbol,
+                order.id,
+                "SELL",
+                qty * price,
+                alpaca_request=json.dumps(alpaca_request, sort_keys=True),
+                rationale=rationale,
+                submitted_at=submitted_at,
+            )
+            self.logger.info(
+                f"Flattened unmanaged position {live_symbol} qty={qty} request={alpaca_request} "
+                f"submitted_at={submitted_at or '—'} executed_at=— rationale={rationale}"
+            )
+            log_decision(
+                "flatten_unmanaged_position",
+                symbol=live_symbol,
+                rationale=rationale,
+                state={"qty": rounded_qty, "reference_price": round(price, 2)},
+                order={
+                    "id": str(order.id),
+                    "status": str(order.status),
+                    "alpaca_request": alpaca_request,
+                    "submitted_at": submitted_at,
+                    "executed_at": None,
+                },
+            )
 
     def rebalance_portfolio(self, reason: str):
         self.logger.info(f"REBALANCE START [{reason}]")
@@ -465,7 +789,19 @@ class PortfolioManager:
             qty = round(excess / price, bot.qty_precision)
             if qty <= 0:
                 continue
-            bot.sell_qty(qty, f"rebalance sell to target ${target_value:,.2f}", trade_day=trade_day)
+            bot.sell_qty(
+                qty,
+                f"rebalance sell to target ${target_value:,.2f}",
+                trade_day=trade_day,
+                decision_context={
+                    "trigger_type": "rebalance",
+                    "target_value": target_value,
+                    "current_value": round(current_value, 2),
+                    "excess": excess,
+                    "equity": round(equity, 2),
+                    "rebalance_reason": reason,
+                },
+            )
             self.logger.info(
                 f"CASH BUFFER +${round(qty * price, 2):,.2f} [rebalance sell {bot.cfg.symbol}]"
             )
@@ -492,7 +828,19 @@ class PortfolioManager:
             if spend <= 1.0:
                 continue
             try:
-                bot.buy(spend, f"rebalance buy to target ${target_value:,.2f}", trade_day=trade_day)
+                bot.buy(
+                    spend,
+                    f"rebalance buy to target ${target_value:,.2f}",
+                    trade_day=trade_day,
+                    decision_context={
+                        "trigger_type": "rebalance",
+                        "target_value": target_value,
+                        "current_value": round(current_value, 2),
+                        "deficit": deficit,
+                        "cash_available": round(cash, 2),
+                        "rebalance_reason": reason,
+                    },
+                )
             except Exception as exc:
                 self.logger.error(f"REBALANCE BUY FAILED {bot.cfg.symbol}: {exc}")
 
@@ -507,6 +855,7 @@ class PortfolioManager:
 
     def startup_sync(self):
         self.load_state()
+        self.sync_trade_log()
         for bot in self.bots:
             bot.sync_from_market()
         if self.market_open():
@@ -518,12 +867,14 @@ class PortfolioManager:
                 self.rebalance_portfolio("startup sync")
             except Exception as exc:
                 self.logger.error(f"STARTUP REBALANCE ERROR: {exc}")
+        self.sync_trade_log()
         self.save_state()
 
     def run(self):
         self.startup_sync()
         while True:
             try:
+                self.sync_trade_log()
                 clock = self.market_clock()
                 now = clock.timestamp
                 monitored_any = False
@@ -542,6 +893,7 @@ class PortfolioManager:
                     self.logger.info(
                         f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}"
                     )
+                self.sync_trade_log()
                 self.save_state()
                 sleep_for = min(cfg.poll_interval for cfg in (bot.cfg for bot in self.bots))
                 time.sleep(sleep_for)

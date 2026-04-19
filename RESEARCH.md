@@ -163,20 +163,116 @@ Interpretation:
 - with `x = 1.00`, test falls from `+14.83%` to `+13.28%`
 - The extra capacity mostly lets weaker medium-band names linger instead of forcing concentration into the best Mullin names.
 
-### Khanna Status
+### Khanna `50K+` Results
 
-- We narrowed the next follow-up to `Ro Khanna` `50K+` only.
-- That still means `183` qualifying signals across `83` symbols, so the first pass is much more cache-heavy than Mullin.
-- We do have the signal data needed for the queue-size / decay study.
-- The remaining blocker is market-data warmup, not missing Capitol data.
-- The hourly cache layout has now been reorganized to a cleaner quarter tree:
-- `symbols/YYYY/Qn/SYMBOL.json`
-- legacy hashed cache files are still readable during the transition
-- a migration helper now exists so old cache files can be copied into the new layout without refetching market data
-- Once the Khanna cache warm finishes, the intended first Khanna sweep is:
-- queue sizes `10`, `15`, `20`
-- daily decay `0.25`, `0.50`, `0.75`, `1.00`
-- `50K+` only
+Working Khanna split:
+
+- train: `2024-02-07` through `2025-12-31`
+- test: `2026-01-01` through `2026-04-19`
+- full local actionable window through `2026-04-19`
+- eligible sample: `183` signals across `83` symbols
+
+Queue-size sweep read:
+
+- Queue sizes `10`, `15`, and `20` are effectively identical on the current Khanna run.
+- Test return is flat at about `+11.13%` to `+11.14%`.
+- Full-window return is also effectively flat once decay is in the good range.
+- Practical takeaway: a soft queue limit of `10` is enough.
+
+Burst trace read:
+
+- The scary `83` names are over the full history, not all at once.
+- The largest simultaneous active queue in the current best Khanna setup is `16` names.
+- That peak happens on `2024-07-10`.
+- The queue-expansion logic works:
+- the limit temporarily expands above `10`
+- then steps back down by `1` on later event days until it returns to the base cap
+- Because the true burst is only `16`, a hard move to `20` slots buys almost nothing.
+
+### Half-Life Framing
+
+The current Capitol decay parameter is best understood as an event-driven model with calendar-day memory:
+
+- decay is only applied when the simulator advances from one event trade day to the next event trade day
+- the gap uses calendar days between those event days
+
+That makes half-life a cleaner unit than raw daily decay percent.
+
+### Khanna Half-Life Sweep
+
+For `Ro Khanna` `50K+` with the soft `10`-slot queue:
+
+- The best region is a short-memory plateau around `1.25` to `2.0` calendar days.
+- The practical default is `2` calendar days.
+- That corresponds to daily retention of about `70.71%` and daily decay of about `29.29%`.
+
+Interpretation:
+
+- Khanna wants forgetting, but not the near-instant memory death that Mullin likes.
+- No-decay Khanna is materially worse than the short-memory settings.
+- Longer half-lives steadily degrade while usually increasing transaction count.
+
+### Mullin Half-Life Sweep
+
+We reran Mullin in the same half-life framing with the soft `10`-slot queue.
+
+Interpretation:
+
+- `50K+` Mullin prefers about `1` calendar day or shorter.
+- `15K-50K+` Mullin also prefers about `1` calendar day or shorter.
+- In the `1` to `15` day grid, `1` day is the best visible point for both Mullin bands.
+- The earlier `x = 0.65` Mullin result implies an even shorter half-life of about `0.66` days, so the true Mullin optimum may be slightly shorter than `1` day.
+
+Practical takeaway:
+
+- Khanna and Mullin do not want the same memory.
+- Current defaults:
+- `Ro Khanna 50K+`: about `2` calendar days
+- `Markwayne Mullin 50K+`: about `1` calendar day
+
+### Other Whale Checks
+
+We sanity-checked the same `50K+` half-life idea on other Capitol whales:
+
+- `Kevin Hern` `50K+` lines up more with Khanna than Mullin and prefers about `2` days.
+- `Josh Gottheimer` `50K+` is not informative on decay because his large-signal sample is almost entirely one symbol (`MSFT`), so many half-lives behave the same.
+- `David Taylor` has no `50K+` sample.
+
+Interpretation:
+
+- There is not a universal whale half-life law.
+- Broad multi-name whale profiles currently lean closer to `2` days.
+- Mullin still looks like the short-memory outlier.
+
+### Merged Whale Read
+
+We also looked at the merged `50K+` feed across:
+
+- `Josh Gottheimer`
+- `Kevin Hern`
+- `David Taylor`
+- `Ro Khanna`
+- `Markwayne Mullin`
+
+Signal-level read:
+
+- merged sample: `288` qualifying `50K+` signals across `106` symbols
+- the merged book is still mostly dominated by `Ro Khanna`
+- the largest burst is still basically Khanna's own `2024-07-09` cluster
+- genuine same-day, same-symbol cross-politician reinforcement is almost nonexistent
+- the only clear cross-politician same-symbol event in the merged `50K+` set is `MSFT` on `2025-05-15` from `Josh Gottheimer` and `Ro Khanna`
+
+Market-data read:
+
+- the merged-whale cache now has path coverage for all expected symbol-quarter files
+- but some symbol-quarters are still empty Alpaca caches, especially on names like `SPX`, `BNPQY`, `GSKPX`, `NTIOF`, `MAIPX`, `NCR`, and a few other non-plain-vanilla symbols
+- several of those names do carry real `50K+` whale signals, mostly from Khanna and some from Kevin Hern
+
+Practical takeaway:
+
+- The merged-whale idea does not currently look like a strong consensus overlay.
+- It mostly behaves like Khanna's wide book plus a few isolated reinforcements.
+- Any merged-whale PnL result should still be treated cautiously until the unsupported / empty-cache symbols are handled more deliberately.
 
 ## Current Conclusion
 
@@ -188,12 +284,17 @@ Interpretation:
 - materially better than `x = 0.00` on test and full-window returns
 - better balanced than `x = 1.00`
 - A `10`-slot queue still looks better than `20` for Mullin.
+- In half-life terms, the current practical memory defaults are:
+- `Ro Khanna 50K+`: about `2` calendar days
+- `Markwayne Mullin 50K+`: about `1` calendar day
+- Khanna's big universe is much less threatening than it first appears because the real simultaneous burst is only about `16` names under the current queue logic.
+- Merged-whale overlap is weaker than expected, so a naive combined whale source is not obviously better than just using Khanna or Mullin directly.
 - Lower Mullin disclosure bands are less dangerous once decay and queue discipline are active, but the cleaner read still comes from focusing on the more meaningful signals.
 
 ## Most Useful Next Steps
 
-- Sanity-check the Mullin event trace under `x = 0.65` so we understand whether the strong result is intuitive or just a side effect of near-total concentration in the latest event.
-- Test whether the `50K+` Mullin high-decay plateau is robust to nearby implementation choices, or whether it is really just equivalent to “latest large event only.”
-- Finish the narrowed `Ro Khanna` `50K+` queue-size / decay sweep once the first-time market cache warm completes.
-- Run the same decay framework on `Josh Gottheimer`, `Kevin Hern`, and `David Taylor`, then compare their preferred decay levels against Mullin.
-- Test whether queue length `8`, `10`, `12`, or `15` changes the Mullin result once decay is active, even though `20` already looks too loose.
+- Sanity-check the Mullin event trace under the roughly `1`-day half-life framing so we understand whether the strong result is intuitive or just a side effect of near-total concentration in the latest event.
+- Tighten the Mullin half-life grid below `1` calendar day so we can decide whether the cleaner default should stay at `1` day or move closer to the earlier `x = 0.65` result.
+- Decide whether Khanna should be the default Capitol paper-trading candidate now that the soft `10`-slot queue and `~2`-day half-life look stable.
+- Handle the unsupported / empty-cache merged-whale symbols more explicitly before treating any merged-whale PnL as a final answer.
+- If merged whales stay interesting, compare a strict tradable-symbol merged feed against the raw merged feed to measure how much the weird Alpaca symbols are distorting the idea.

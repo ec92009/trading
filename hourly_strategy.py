@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 from bisect import bisect_left
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -20,15 +19,14 @@ from pathlib import Path
 from threading import Lock
 from zoneinfo import ZoneInfo
 
-from dotenv import load_dotenv
 from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
 from alpaca.data.enums import Adjustment
 from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
+from alpaca_env import load_alpaca_credentials
 
 ET = ZoneInfo("America/New_York")
 HERE = Path(__file__).parent
-load_dotenv(HERE / ".env")
 CACHE_DIR = HERE / ".cache" / "hourly_data"
 CACHE_VERSION = 4
 SYMBOL_CACHE_DIR = CACHE_DIR / "symbols"
@@ -47,8 +45,9 @@ DISPLAY_LABELS = {"TSM": "TSMC", "BTC/USD": "BTC"}
 REGULAR_HOURLY_STARTS_ET = {10, 11, 12, 13, 14, 15}
 BETA_WINDOW = 60
 
-_api_key = os.getenv("ALPACA_API_KEY")
-_secret_key = os.getenv("ALPACA_SECRET_KEY")
+_alpaca = load_alpaca_credentials()
+_api_key = _alpaca["api_key"]
+_secret_key = _alpaca["secret_key"]
 _stock_data = StockHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
 _crypto_data = CryptoHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
 _cache: dict[tuple[tuple[str, ...], str, str], dict] = {}

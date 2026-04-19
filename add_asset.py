@@ -9,8 +9,8 @@ import re
 import subprocess
 import threading
 from pathlib import Path
-from dotenv import load_dotenv
 
+from alpaca_env import load_alpaca_credentials
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
@@ -18,15 +18,15 @@ from textual.widgets import Footer, Header, Input, Button, Label, Static, Rule
 from textual import on, work
 
 HERE = Path(__file__).parent
-load_dotenv(HERE / ".env")
+ALPACA = load_alpaca_credentials()
 
 # ── Alpaca helpers ────────────────────────────────────────────────────────────
 
 def fetch_account():
     from alpaca.trading.client import TradingClient
     c = TradingClient(
-        api_key=os.getenv("ALPACA_API_KEY"),
-        secret_key=os.getenv("ALPACA_SECRET_KEY"),
+        api_key=ALPACA["api_key"],
+        secret_key=ALPACA["secret_key"],
         paper=True,
     )
     a = c.get_account()
@@ -44,8 +44,8 @@ def validate_symbol(symbol: str, asset_class: str) -> str | None:
     from alpaca.trading.client import TradingClient
     from alpaca.trading.exceptions import APIError
     c = TradingClient(
-        api_key=os.getenv("ALPACA_API_KEY"),
-        secret_key=os.getenv("ALPACA_SECRET_KEY"),
+        api_key=ALPACA["api_key"],
+        secret_key=ALPACA["secret_key"],
         paper=True,
     )
     try:
@@ -53,8 +53,8 @@ def validate_symbol(symbol: str, asset_class: str) -> str | None:
             from alpaca.data.historical import CryptoHistoricalDataClient
             from alpaca.data.requests import CryptoLatestQuoteRequest
             data = CryptoHistoricalDataClient(
-                api_key=os.getenv("ALPACA_API_KEY"),
-                secret_key=os.getenv("ALPACA_SECRET_KEY"),
+                api_key=ALPACA["api_key"],
+                secret_key=ALPACA["secret_key"],
             )
             quote = data.get_crypto_latest_quote(
                 CryptoLatestQuoteRequest(symbol_or_symbols=symbol)
@@ -119,8 +119,8 @@ def _ensure_cache():
         from alpaca.trading.requests import GetAssetsRequest
         from alpaca.trading.enums import AssetClass, AssetStatus
         c = TradingClient(
-            api_key=os.getenv("ALPACA_API_KEY"),
-            secret_key=os.getenv("ALPACA_SECRET_KEY"),
+            api_key=ALPACA["api_key"],
+            secret_key=ALPACA["secret_key"],
             paper=True,
         )
         assets = c.get_all_assets(GetAssetsRequest(

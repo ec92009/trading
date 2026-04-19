@@ -1,12 +1,12 @@
-import os
-from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
 
-load_dotenv()
+from alpaca_env import load_alpaca_credentials
+
+alpaca = load_alpaca_credentials()
 
 client = TradingClient(
-    api_key=os.getenv("ALPACA_API_KEY"),
-    secret_key=os.getenv("ALPACA_SECRET_KEY"),
+    api_key=alpaca["api_key"],
+    secret_key=alpaca["secret_key"],
     paper=True,
 )
 
