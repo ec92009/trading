@@ -75,94 +75,125 @@ Reasoning:
 
 - We dropped the old `literal` copy mode.
 - Active names now use a point-based target system:
+- `5M-25M`: `20` points
 - `50K+` disclosure bands: `4` points
 - `15K-50K`: `2` points
 - `1K-15K`: `1` point
+- `'< 1K'`: ignored
 - Target weight is `symbol points / total active points`.
 
 ## Capitol Queue Rules
 
 - The current Mullin simulator now applies a capped exit queue.
 - Default queue limit is `10` names.
+- Point behavior:
+- repeated buys stack on top of the current live balance
+- sells subtract their disclosure-tier points instead of hard-resetting a name
+- point balances floor at `0`
+- point balances can decay by a configurable daily percentage between event days
 - Queue behavior:
 - lower bands sit closer to the exit
 - higher bands sit farther from the exit
 - within the same band, weaker `%` performers move closer to the exit
 - within the same band, stronger `%` performers stay farther from the exit
 - older entry order still breaks ties when same-band performance is equal
-- same-day band-1 bursts can temporarily expand the working queue above the base cap
+- same-day top-tier / band-1 bursts can temporarily expand the working queue above the base cap
 - after a burst, the working queue limit steps back down by `1` on later event days until it returns to the base cap
 - when a new name causes overflow, eviction happens from the front of the queue
 - Practical implication:
 - weak bands can enter, but they are first to be crowded out
 - same-band losers can now drift toward the exit even if they entered earlier with the same points
-- large band-1 bursts no longer force an immediate arbitrary trim just because they exceed the base cap on that event day
+- high daily decay can effectively turn the model into a “latest event matters most” engine
+- large top-tier / band-1 bursts no longer force an immediate arbitrary trim just because they exceed the base cap on that event day
 
 ## Latest Mullin Results
 
-All results below use fresh `$10,000` cash in each window, daily policy, next-trading-day execution, fractional shares, and the current point-based queue logic.
+All results below use fresh `$10,000` cash in each window, daily policy, next-trading-day execution, fractional shares, the current stacked-point queue logic, and daily point decay `x` where applicable.
 
-### Out-of-sample test with the simpler capped queue (`2026-01-01` to `2026-04-19`)
+### Mullin Decay Sweep
 
-| Threshold | Mullin Return | SPY Return | Transactions | Queue Evictions | Final Names |
-|---|---:|---:|---:|---:|---:|
-| `50K-100K+` | `+5.74%` | `+3.76%` | `21` | `1` | `10` |
-| `15K-50K+` | `+5.79%` | `+3.76%` | `41` | `39` | `10` |
-| `1K-15K+` | `+5.79%` | `+3.76%` | `41` | `40` | `10` |
+Working Mullin split:
 
-Interpretation:
+- train: `2025-08-13` through `2025-12-31`
+- test: `2026-01-01` through `2026-04-19`
+- full local actionable window through `2026-04-19`
 
-- The `10`-name cap fixed the worst portfolio bloat from lower-threshold Mullin runs.
-- But the smaller disclosures still did not add much value:
-- test return only improved from `+5.74%` to `+5.79%`
-- transactions nearly doubled from `21` to `41`
-- most smaller names churned through the queue and did not survive into the final top `10`
+#### `50K-100K+` Mullin
 
-### Out-of-sample test with the current performance-aware queue (`2026-01-01` to `2026-04-19`)
-
-Using the newer “almost FIFO” queue where same-band laggards drift toward the exit:
-
-| Threshold | Mullin Return | SPY Return |
-|---|---:|---:|
-| `50K-100K+` | `+4.82%` | `+3.76%` |
-| `15K-50K+` | `+4.87%` | `+3.76%` |
-
-Interpretation:
-
-- The performance-aware queue is a cleaner portfolio rule conceptually.
-- But on the current short Mullin test window, it underperformed the simpler capped queue.
-- It still stayed ahead of `SPY`, but only modestly.
-- This should be treated as a framework idea worth testing across other whales, not as validated proof that Mullin itself improves under this rule.
-
-### In-sample train (`2025-08-13` to `2025-12-31`)
-
-| Threshold | Mullin Return | SPY Return | Transactions | Final Names |
+| Daily Decay `x` | Train Return | Test Return | Full-Window Return | SPY Test |
 |---|---:|---:|---:|---:|
-| `50K-100K+` | `+64.47%` | `+6.21%` | `10` | `4` |
-| `15K-50K+` | `+49.63%` | `+6.21%` | `17` | `7` |
-| `1K-15K+` | `+46.60%` | `+6.21%` | `20` | `8` |
+| `0.00` | `+64.47%` | `+5.12%` | `+57.03%` | `+4.37%` |
+| `0.65` | `+74.32%` | `+9.96%` | `+84.75%` | `+4.37%` |
+| `1.00` | `+74.32%` | `+9.96%` | `+84.75%` | `+4.37%` |
 
 Interpretation:
 
-- Train performance is strong but comes from a very short and sparse actionable history.
-- The out-of-sample test read matters much more than the train result.
+- Large-signal Mullin clearly prefers very high decay.
+- In practice, `x = 0.65` and `x = 1.00` behave the same on returns.
+- That means old `50K+` Mullin points are effectively dead by the next event anyway.
+- The practical takeaway is not “exactly `1.00` is magic,” but “large Mullin disclosures have very short memory.”
+
+#### `15K-50K+` Mullin
+
+| Daily Decay `x` | Train Return | Test Return | Full-Window Return | SPY Test |
+|---|---:|---:|---:|---:|
+| `0.00` | `+49.63%` | `+9.91%` | `+46.74%` | `+2.65%` |
+| `0.65` | `+48.99%` | `+14.83%` | `+67.97%` | `+2.65%` |
+| `1.00` | `+25.26%` | `+14.83%` | `+41.22%` | `+2.65%` |
+
+Interpretation:
+
+- Medium-band Mullin does not want zero decay anymore.
+- `x = 0.65` is the best current compromise:
+- test improves materially versus `x = 0.00`
+- full-window return also improves materially versus `x = 0.00`
+- unlike `x = 1.00`, it does not crush the train window or the full window
+- `x = 1.00` turns the model into an almost pure “latest event only” engine, which helps this short test but is too extreme across the broader window.
+
+### Queue Length Check
+
+We also retested the current decay setups with a `20`-slot queue instead of the default `10`.
+
+Interpretation:
+
+- For `50K+` Mullin, queue length barely matters because the active book is already small.
+- For `15K-50K+` Mullin, `20` slots is worse than `10`:
+- with `x = 0.00`, test falls from `+9.91%` to `+8.33%`
+- with `x = 0.65`, test falls from `+14.83%` to `+13.28%`
+- with `x = 1.00`, test falls from `+14.83%` to `+13.28%`
+- The extra capacity mostly lets weaker medium-band names linger instead of forcing concentration into the best Mullin names.
+
+### Khanna Status
+
+- We narrowed the next follow-up to `Ro Khanna` `50K+` only.
+- That still means `183` qualifying signals across `83` symbols, so the first pass is much more cache-heavy than Mullin.
+- We do have the signal data needed for the queue-size / decay study.
+- The remaining blocker is market-data warmup, not missing Capitol data.
+- The hourly cache layout has now been reorganized to a cleaner quarter tree:
+- `symbols/YYYY/Qn/SYMBOL.json`
+- legacy hashed cache files are still readable during the transition
+- a migration helper now exists so old cache files can be copied into the new layout without refetching market data
+- Once the Khanna cache warm finishes, the intended first Khanna sweep is:
+- queue sizes `10`, `15`, `20`
+- daily decay `0.25`, `0.50`, `0.75`, `1.00`
+- `50K+` only
 
 ## Current Conclusion
 
 - For the main 5-name basket, buy-and-hold and rebalance-only remain the only credible live postures under the corrected simulator.
 - For Capitol, Mullin still looks promising as a standalone normalized strategy, but the edge is modest and the actionable history is short.
-- The current best Mullin result still comes from the higher-threshold version:
-- simpler
-- fewer names
-- lower churn
-- nearly identical out-of-sample return to lower-threshold variants
-- Lower Mullin disclosure bands are less dangerous once the queue is capped, but they still look more like extra activity than extra edge.
-- The newer performance-aware queue is attractive as a general whale-selection framework because it may transfer better across multiple politicians than a Mullin-specific tuning pass.
+- The strongest new Mullin finding is that explicit point decay matters more than the older queue-only tweaks.
+- For `50K+` Mullin, the strategy wants very high decay, which effectively says the latest large event dominates the older ones.
+- For `15K-50K+` Mullin, `x = 0.65` is the best current practical default:
+- materially better than `x = 0.00` on test and full-window returns
+- better balanced than `x = 1.00`
+- A `10`-slot queue still looks better than `20` for Mullin.
+- Lower Mullin disclosure bands are less dangerous once decay and queue discipline are active, but the cleaner read still comes from focusing on the more meaningful signals.
 
 ## Most Useful Next Steps
 
-- Run the current queue framework on `Josh Gottheimer`, `Kevin Hern`, and `David Taylor`, then compare them directly with Mullin.
-- Decide whether `Ro Khanna` is too noisy for the same engine or whether it becomes useful as a stress-test universe.
-- Add explicit stale-signal expiry so old names do not persist indefinitely without reinforcement.
-- Add band-upgrade / refresh rules so repeat disclosures can improve queue position instead of only entering once.
-- Test whether base queue length `10` is actually best, or whether `8`, `12`, or `15` changes the churn/return balance once the burst-expansion rule is active.
+- Sanity-check the Mullin event trace under `x = 0.65` so we understand whether the strong result is intuitive or just a side effect of near-total concentration in the latest event.
+- Test whether the `50K+` Mullin high-decay plateau is robust to nearby implementation choices, or whether it is really just equivalent to “latest large event only.”
+- Finish the narrowed `Ro Khanna` `50K+` queue-size / decay sweep once the first-time market cache warm completes.
+- Run the same decay framework on `Josh Gottheimer`, `Kevin Hern`, and `David Taylor`, then compare their preferred decay levels against Mullin.
+- Test whether queue length `8`, `10`, `12`, or `15` changes the Mullin result once decay is active, even though `20` already looks too loose.

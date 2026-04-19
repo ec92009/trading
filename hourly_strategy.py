@@ -10,7 +10,6 @@ Alpaca historical bars so the comparison stays clean.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
@@ -31,7 +30,8 @@ ET = ZoneInfo("America/New_York")
 HERE = Path(__file__).parent
 load_dotenv(HERE / ".env")
 CACHE_DIR = HERE / ".cache" / "hourly_data"
-CACHE_VERSION = 2
+CACHE_VERSION = 4
+SYMBOL_CACHE_DIR = CACHE_DIR / "symbols"
 
 DEFAULT_SYMBOLS = ["TSLA", "TSM", "NVDA", "PLTR", "BTC/USD"]
 DEFAULT_TARGET_WEIGHTS = {
@@ -52,6 +52,7 @@ _secret_key = os.getenv("ALPACA_SECRET_KEY")
 _stock_data = StockHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
 _crypto_data = CryptoHistoricalDataClient(api_key=_api_key, secret_key=_secret_key)
 _cache: dict[tuple[tuple[str, ...], str, str], dict] = {}
+_raw_bar_cache: dict[tuple[str, str, str], dict[str, tuple[float, float, float, float]]] = {}
 _cache_lock = Lock()
 
 
@@ -65,6 +66,12 @@ def is_fractional(sym: str) -> bool:
 
 def is_crypto_symbol(sym: str) -> bool:
     return "/" in sym
+
+
+def market_data_symbol(sym: str) -> str:
+    if is_crypto_symbol(sym):
+        return sym
+    return sym.replace("-", ".")
 
 
 def is_absorber(sym: str) -> bool:
@@ -88,10 +95,53 @@ def _stock_session_bar(dt: datetime) -> bool:
     return et.weekday() < 5 and et.hour in REGULAR_HOURLY_STARTS_ET
 
 
-def _disk_cache_path(symbols: list[str], start: str, end: str) -> Path:
-    cache_key = "|".join([str(CACHE_VERSION), ",".join(symbols), start, end])
+def _quarter_start(dt: datetime) -> datetime:
+    month = ((dt.month - 1) // 3) * 3 + 1
+    return datetime(dt.year, month, 1, tzinfo=timezone.utc)
+
+
+def _next_quarter_start(dt: datetime) -> datetime:
+    start = _quarter_start(dt)
+    year = start.year + (1 if start.month == 10 else 0)
+    month = 1 if start.month == 10 else start.month + 3
+    return datetime(year, month, 1, tzinfo=timezone.utc)
+
+
+def _quarter_ranges(start_dt: datetime, end_dt: datetime) -> list[tuple[datetime, datetime]]:
+    if start_dt >= end_dt:
+        return []
+    ranges: list[tuple[datetime, datetime]] = []
+    cursor = _quarter_start(start_dt)
+    while cursor < end_dt:
+        nxt = _next_quarter_start(cursor)
+        ranges.append((cursor, nxt))
+        cursor = nxt
+    return ranges
+
+
+def _quarter_label(start: str) -> str:
+    month = int(start[5:7])
+    quarter = ((month - 1) // 3) + 1
+    return f"Q{quarter}"
+
+
+def _symbol_cache_stem(symbol: str) -> str:
+    return symbol.replace("/", "__")
+
+
+def _symbol_disk_cache_path(symbol: str, start: str, end: str) -> Path:
+    del end
+    safe_symbol = _symbol_cache_stem(symbol)
+    return SYMBOL_CACHE_DIR / start[:4] / _quarter_label(start) / f"{safe_symbol}.json"
+
+
+def _legacy_symbol_disk_cache_path(symbol: str, start: str, end: str) -> Path:
+    import hashlib
+
+    cache_key = "|".join([str(CACHE_VERSION), symbol, start, end])
     digest = hashlib.sha256(cache_key.encode()).hexdigest()[:16]
-    return CACHE_DIR / f"{start}_{end}_{digest}.json"
+    safe_symbol = _symbol_cache_stem(symbol)
+    return SYMBOL_CACHE_DIR / f"{safe_symbol}_{start}_{end}_{digest}.json"
 
 
 def _chunk_ranges(start_dt: datetime, end_dt: datetime, days: int = 120) -> list[tuple[datetime, datetime]]:
@@ -102,6 +152,13 @@ def _chunk_ranges(start_dt: datetime, end_dt: datetime, days: int = 120) -> list
         ranges.append((cursor, nxt))
         cursor = nxt
     return ranges
+
+
+def _effective_market_data_end(symbol: str, requested_end_dt: datetime, *, now_dt: datetime | None = None) -> datetime:
+    if now_dt is None:
+        now_dt = datetime.now(timezone.utc)
+    latest_allowed = now_dt if is_crypto_symbol(symbol) else now_dt - timedelta(minutes=20)
+    return min(requested_end_dt, latest_allowed)
 
 
 def _compute_rolling_betas(assets: dict, symbols: list[str], n: int) -> dict[str, list[float]]:
@@ -163,6 +220,234 @@ def _fill_to_union(
     return {"opens": opens, "closes": closes, "lows": lows, "highs": highs}
 
 
+def _rows_to_jsonable(rows: dict[str, tuple[float, float, float, float]]) -> dict[str, list[float]]:
+    return {ts: [open_, close, low, high] for ts, (open_, close, low, high) in rows.items()}
+
+
+def _rows_from_jsonable(payload: dict[str, list[float]]) -> dict[str, tuple[float, float, float, float]]:
+    return {ts: tuple(values) for ts, values in payload.items()}
+
+
+def _read_cached_quarter_rows(symbol: str, quarter_start: str, quarter_end: str) -> dict[str, tuple[float, float, float, float]] | None:
+    cache_key = (symbol, quarter_start, quarter_end)
+    with _cache_lock:
+        cached = _raw_bar_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    disk_path = _symbol_disk_cache_path(symbol, quarter_start, quarter_end)
+    if not disk_path.exists():
+        legacy_path = _legacy_symbol_disk_cache_path(symbol, quarter_start, quarter_end)
+        if not legacy_path.exists():
+            return None
+        disk_path = legacy_path
+    try:
+        cached = _rows_from_jsonable(json.loads(disk_path.read_text()))
+    except Exception:
+        return None
+    canonical_path = _symbol_disk_cache_path(symbol, quarter_start, quarter_end)
+    if disk_path != canonical_path:
+        _write_cached_quarter_rows(symbol, quarter_start, quarter_end, cached)
+    with _cache_lock:
+        _raw_bar_cache[cache_key] = cached
+    return cached
+
+
+def _write_cached_quarter_rows(
+    symbol: str,
+    quarter_start: str,
+    quarter_end: str,
+    rows: dict[str, tuple[float, float, float, float]],
+):
+    cache_key = (symbol, quarter_start, quarter_end)
+    disk_path = _symbol_disk_cache_path(symbol, quarter_start, quarter_end)
+    disk_path.parent.mkdir(parents=True, exist_ok=True)
+    disk_path.write_text(json.dumps(_rows_to_jsonable(rows)))
+    with _cache_lock:
+        _raw_bar_cache[cache_key] = rows
+
+
+def _fetch_symbol_rows(
+    symbol: str,
+    *,
+    start_dt: datetime,
+    end_dt: datetime,
+) -> dict[str, tuple[float, float, float, float]]:
+    rows: dict[str, tuple[float, float, float, float]] = {}
+    effective_end_dt = _effective_market_data_end(symbol, end_dt)
+    if effective_end_dt <= start_dt:
+        return rows
+    if is_crypto_symbol(symbol):
+        request_symbol = market_data_symbol(symbol)
+        for chunk_start, chunk_end in _chunk_ranges(start_dt, effective_end_dt):
+            crypto_res = _crypto_data.get_crypto_bars(
+                CryptoBarsRequest(
+                    symbol_or_symbols=request_symbol,
+                    timeframe=TimeFrame.Hour,
+                    start=chunk_start,
+                    end=chunk_end,
+                )
+            )
+            for bar in crypto_res.data.get(request_symbol, []):
+                rows[_ts_key(bar.timestamp)] = (
+                    float(bar.open),
+                    float(bar.close),
+                    float(bar.low),
+                    float(bar.high),
+                )
+        return rows
+
+    request_symbol = market_data_symbol(symbol)
+    for chunk_start, chunk_end in _chunk_ranges(start_dt, effective_end_dt):
+        stock_res = _stock_data.get_stock_bars(
+            StockBarsRequest(
+                symbol_or_symbols=request_symbol,
+                timeframe=TimeFrame.Hour,
+                start=chunk_start,
+                end=chunk_end,
+                adjustment=Adjustment.ALL,
+            )
+        )
+        for bar in stock_res.data.get(request_symbol, []):
+            if not _stock_session_bar(bar.timestamp):
+                continue
+            rows[_ts_key(bar.timestamp)] = (
+                float(bar.open),
+                float(bar.close),
+                float(bar.low),
+                float(bar.high),
+            )
+    return rows
+
+
+def _fetch_stock_rows_batch(
+    symbols: list[str],
+    *,
+    start_dt: datetime,
+    end_dt: datetime,
+) -> dict[str, dict[str, tuple[float, float, float, float]]]:
+    rows_by_symbol = {symbol: {} for symbol in symbols}
+    if not symbols:
+        return rows_by_symbol
+    effective_end_dt = _effective_market_data_end(symbols[0], end_dt)
+    if effective_end_dt <= start_dt:
+        return rows_by_symbol
+    request_symbols = [market_data_symbol(symbol) for symbol in symbols]
+    request_to_original = {market_data_symbol(symbol): symbol for symbol in symbols}
+
+    for chunk_start, chunk_end in _chunk_ranges(start_dt, effective_end_dt):
+        stock_res = _stock_data.get_stock_bars(
+            StockBarsRequest(
+                symbol_or_symbols=request_symbols,
+                timeframe=TimeFrame.Hour,
+                start=chunk_start,
+                end=chunk_end,
+                adjustment=Adjustment.ALL,
+            )
+        )
+        for request_symbol, original_symbol in request_to_original.items():
+            for bar in stock_res.data.get(request_symbol, []):
+                if not _stock_session_bar(bar.timestamp):
+                    continue
+                rows_by_symbol[original_symbol][_ts_key(bar.timestamp)] = (
+                    float(bar.open),
+                    float(bar.close),
+                    float(bar.low),
+                    float(bar.high),
+                )
+    return rows_by_symbol
+
+
+def _batched(items: list[str], batch_size: int) -> list[list[str]]:
+    return [items[idx : idx + batch_size] for idx in range(0, len(items), batch_size)]
+
+
+def warm_symbol_cache(
+    symbols: list[str],
+    *,
+    start: str,
+    end: str,
+    batch_size: int = 20,
+) -> dict[str, int]:
+    start_dt = datetime.fromisoformat(f"{start}T00:00:00+00:00")
+    end_dt = datetime.fromisoformat(f"{end}T00:00:00+00:00")
+    stock_symbols = sorted({symbol for symbol in symbols if not is_crypto_symbol(symbol)})
+    crypto_symbols = sorted({symbol for symbol in symbols if is_crypto_symbol(symbol)})
+    summary = {
+        "symbols": len(set(symbols)),
+        "quarters": len(_quarter_ranges(start_dt, end_dt)),
+        "written": 0,
+        "reused": 0,
+        "stock_batches": 0,
+        "batch_fallbacks": 0,
+        "crypto_fetches": 0,
+    }
+
+    for quarter_start, quarter_end in _quarter_ranges(start_dt, end_dt):
+        quarter_start_s = quarter_start.date().isoformat()
+        quarter_end_s = quarter_end.date().isoformat()
+
+        cold_stock_symbols: list[str] = []
+        for symbol in stock_symbols:
+            cached = _read_cached_quarter_rows(symbol, quarter_start_s, quarter_end_s)
+            if cached is None:
+                cold_stock_symbols.append(symbol)
+            else:
+                summary["reused"] += 1
+
+        for batch in _batched(cold_stock_symbols, max(1, batch_size)):
+            summary["stock_batches"] += 1
+            try:
+                fetched_by_symbol = _fetch_stock_rows_batch(batch, start_dt=quarter_start, end_dt=quarter_end)
+            except Exception:
+                summary["batch_fallbacks"] += 1
+                fetched_by_symbol = {
+                    symbol: _fetch_symbol_rows(symbol, start_dt=quarter_start, end_dt=quarter_end)
+                    for symbol in batch
+                }
+            for symbol in batch:
+                _write_cached_quarter_rows(symbol, quarter_start_s, quarter_end_s, fetched_by_symbol.get(symbol, {}))
+                summary["written"] += 1
+
+        for symbol in crypto_symbols:
+            cached = _read_cached_quarter_rows(symbol, quarter_start_s, quarter_end_s)
+            if cached is not None:
+                summary["reused"] += 1
+                continue
+            rows = _fetch_symbol_rows(symbol, start_dt=quarter_start, end_dt=quarter_end)
+            _write_cached_quarter_rows(symbol, quarter_start_s, quarter_end_s, rows)
+            summary["written"] += 1
+            summary["crypto_fetches"] += 1
+    return summary
+
+
+def _load_symbol_rows(
+    symbol: str,
+    *,
+    start: str,
+    end: str,
+    start_dt: datetime,
+    end_dt: datetime,
+) -> dict[str, tuple[float, float, float, float]]:
+    merged: dict[str, tuple[float, float, float, float]] = {}
+    for quarter_start, quarter_end in _quarter_ranges(start_dt, end_dt):
+        quarter_start_s = quarter_start.date().isoformat()
+        quarter_end_s = quarter_end.date().isoformat()
+        cached = _read_cached_quarter_rows(symbol, quarter_start_s, quarter_end_s)
+        if cached is None:
+            cached = _fetch_symbol_rows(symbol, start_dt=quarter_start, end_dt=quarter_end)
+            _write_cached_quarter_rows(symbol, quarter_start_s, quarter_end_s, cached)
+        merged.update(cached)
+
+    start_bound = start_dt
+    end_bound = end_dt
+    return {
+        ts: row
+        for ts, row in merged.items()
+        if start_bound <= _utc(ts) < end_bound
+    }
+
+
 def load_hourly_data(
     *,
     start: str,
@@ -174,15 +459,6 @@ def load_hourly_data(
     with _cache_lock:
         if cache_key in _cache:
             return _cache[cache_key]
-    disk_path = _disk_cache_path(symbols, start, end)
-    if disk_path.exists():
-        try:
-            payload = json.loads(disk_path.read_text())
-            with _cache_lock:
-                _cache[cache_key] = payload
-            return payload
-        except Exception:
-            pass
 
     stock_symbols = [sym for sym in symbols if not is_crypto_symbol(sym)]
     crypto_symbols = [sym for sym in symbols if is_crypto_symbol(sym)]
@@ -194,48 +470,13 @@ def load_hourly_data(
     stock_union: set[str] = set()
 
     for sym in stock_fetch:
-        rows: dict[str, tuple[float, float, float, float]] = {}
-        for chunk_start, chunk_end in _chunk_ranges(start_dt, end_dt):
-            stock_res = _stock_data.get_stock_bars(
-                StockBarsRequest(
-                    symbol_or_symbols=sym,
-                    timeframe=TimeFrame.Hour,
-                    start=chunk_start,
-                    end=chunk_end,
-                    adjustment=Adjustment.ALL,
-                )
-            )
-            for bar in stock_res.data.get(sym, []):
-                if not _stock_session_bar(bar.timestamp):
-                    continue
-                rows[_ts_key(bar.timestamp)] = (
-                    float(bar.open),
-                    float(bar.close),
-                    float(bar.low),
-                    float(bar.high),
-                )
+        rows = _load_symbol_rows(sym, start=start, end=end, start_dt=start_dt, end_dt=end_dt)
         raw[sym] = rows
         stock_union.update(rows)
 
     crypto_union: set[str] = set()
     for sym in crypto_symbols:
-        rows = {}
-        for chunk_start, chunk_end in _chunk_ranges(start_dt, end_dt):
-            crypto_res = _crypto_data.get_crypto_bars(
-                CryptoBarsRequest(
-                    symbol_or_symbols=sym,
-                    timeframe=TimeFrame.Hour,
-                    start=chunk_start,
-                    end=chunk_end,
-                )
-            )
-            for bar in crypto_res.data.get(sym, []):
-                rows[_ts_key(bar.timestamp)] = (
-                    float(bar.open),
-                    float(bar.close),
-                    float(bar.low),
-                    float(bar.high),
-                )
+        rows = _load_symbol_rows(sym, start=start, end=end, start_dt=start_dt, end_dt=end_dt)
         raw[sym] = rows
         crypto_union.update(rows)
 
@@ -299,8 +540,6 @@ def load_hourly_data(
             for sym in symbols
         },
     }
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    disk_path.write_text(json.dumps(payload))
     with _cache_lock:
         _cache[cache_key] = payload
     return payload

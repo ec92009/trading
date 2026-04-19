@@ -2,6 +2,12 @@
 
 Working preferences for `~/Dev/trading`.
 
+## Environment
+
+- Use the repo virtualenv for Python commands in this workspace.
+- Prefer `./.venv/bin/python` over system `python`/`python3`.
+- Prefer `./.venv/bin/pytest` for tests and `./.venv/bin/pip` for package installs when needed.
+
 ## Versioning
 
 - Full procedure lives in [VERSIONING_SOP.md](VERSIONING_SOP.md).

@@ -10,10 +10,13 @@ Policy choices:
 - signals are keyed off Capitol Trades `published_at` dates, not trade dates
 - execution defaults to the next trading day's opening bar
 - active copied weights are normalized from tier points to keep capital fully invested
-- Capitol size bands map to point tiers: `50K+ = 4`, `15K-50K = 2`, `1K-15K = 1`
+- Capitol size bands map to point tiers: `5M-25M = 20`, `50K+ = 4`, `15K-50K = 2`, `1K-15K = 1`
+- Capitol `'< 1K'` disclosures are ignored
+- signal points stack on repeated buys and subtract on sells instead of hard-resetting a name
+- active point balances can decay by a configurable daily percentage between event days
 - active names sit in a capped exit queue: lower bands are closer to the exit
 - within the same band, weaker `%` performers move closer to the exit
-- large band-1 bursts can temporarily expand the queue above the base cap, then the cap steps back down by one on later event days
+- large top-tier and band-1 bursts can temporarily expand the queue above the base cap, then the cap steps back down by one on later event days
 
 Usage:
     python3 copytrade_demo.py
@@ -36,9 +39,10 @@ HERE = Path(__file__).parent
 SIGNALS_PATH = HERE / "copytrade_signals.json"
 DEFAULT_MAX_NAMES = 10
 
-BAND_ORDER = ["1K-15K", "15K-50K", "50K-100K", "100K-250K", "250K-500K", "500K-1M", "1M-5M", "5M+"]
+BAND_ORDER = ["< 1K", "1K-15K", "15K-50K", "50K-100K", "100K-250K", "250K-500K", "500K-1M", "1M-5M", "5M-25M"]
 BAND_RANK = {band: idx for idx, band in enumerate(BAND_ORDER)}
 BAND_POINTS = {
+    "< 1K": 0,
     "1K-15K": 1,
     "15K-50K": 2,
     "50K-100K": 4,
@@ -46,7 +50,7 @@ BAND_POINTS = {
     "250K-500K": 4,
     "500K-1M": 4,
     "1M-5M": 4,
-    "5M+": 4,
+    "5M-25M": 20,
 }
 
 
@@ -84,6 +88,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-names", type=int, default=DEFAULT_MAX_NAMES)
     parser.add_argument("--politician", default=None)
     parser.add_argument("--entry-lag-trading-days", type=int, default=1)
+    parser.add_argument("--daily-decay-pct", type=float, default=0.0)
     parser.add_argument("--end", default=date.today().isoformat())
     return parser.parse_args()
 
@@ -111,7 +116,9 @@ def _queue_bucket(points: int) -> int:
         return 0
     if points <= 2:
         return 1
-    return 2
+    if points <= 4:
+        return 2
+    return 3
 
 
 def _day_from_ts(ts: str) -> str:
@@ -188,8 +195,8 @@ def _trade_day_for_signal(published_at: str, trading_days: list[str], lag: int) 
     return trading_days[idx]
 
 
-def _desired_weights(raw_points: dict[str, int]) -> dict[str, float]:
-    active = {symbol: max(0, points) for symbol, points in raw_points.items() if points > 0}
+def _desired_weights(raw_points: dict[str, float]) -> dict[str, float]:
+    active = {symbol: max(0.0, points) for symbol, points in raw_points.items() if points > 0}
     total = sum(active.values())
     if total <= 0:
         return {}
@@ -215,22 +222,30 @@ def _portfolio_value_on_day(day: str, cash: float, positions: dict[str, float], 
     return round(total, 2)
 
 
-def _collapse_signal_batch(signals: list[DisclosureSignal]) -> dict[str, int]:
-    updates: dict[str, int] = {}
-    grouped: dict[str, list[DisclosureSignal]] = defaultdict(list)
+def _signal_point_deltas(signals: list[DisclosureSignal]) -> dict[str, float]:
+    deltas: dict[str, float] = defaultdict(float)
     for signal in signals:
-        grouped[signal.symbol].append(signal)
-    for symbol, symbol_signals in grouped.items():
-        buy_points = max((target_points(signal) for signal in symbol_signals if signal.side == "buy"), default=0)
-        if buy_points > 0:
-            updates[symbol] = buy_points
+        points = float(target_points(signal))
+        if points <= 0:
             continue
-        if any(signal.side == "sell" for signal in symbol_signals):
-            updates[symbol] = 0.0
-    return updates
+        if signal.side == "buy":
+            deltas[signal.symbol] += points
+        elif signal.side == "sell":
+            deltas[signal.symbol] -= points
+    return dict(deltas)
 
 
-def _queue_insert(queue: list[str], symbol: str, points: int, active_points: dict[str, int]) -> None:
+def _apply_decay(raw_points: dict[str, float], days_elapsed: int, daily_decay_pct: float) -> None:
+    if days_elapsed <= 0 or daily_decay_pct <= 0:
+        return
+    decay_multiplier = max(0.0, 1.0 - daily_decay_pct) ** days_elapsed
+    for symbol in list(raw_points):
+        raw_points[symbol] *= decay_multiplier
+        if raw_points[symbol] <= 1e-9:
+            raw_points.pop(symbol, None)
+
+
+def _queue_insert(queue: list[str], symbol: str, points: float, active_points: dict[str, float]) -> None:
     bucket = _queue_bucket(points)
     insert_at = len(queue)
     for idx, queued_symbol in enumerate(queue):
@@ -265,7 +280,7 @@ def _performance_pct(
 def _resort_queue(
     queue: list[str],
     *,
-    active_points: dict[str, int],
+    active_points: dict[str, float],
     positions: dict[str, float],
     cost_basis: dict[str, float],
     market: dict[str, DailySeries],
@@ -312,6 +327,7 @@ def simulate_with_market(
     entry_lag_trading_days: int,
     end: str,
     max_names: int = DEFAULT_MAX_NAMES,
+    daily_decay_pct: float = 0.0,
     skipped_symbols: dict[str, str] | None = None,
 ) -> dict:
     eligible = [signal for signal in signals if qualifies(signal, min_band) and target_points(signal) > 0]
@@ -364,7 +380,7 @@ def simulate_with_market(
             "benchmarks": {},
         }
 
-    raw_points: dict[str, int] = defaultdict(int)
+    raw_points: dict[str, float] = defaultdict(float)
     active_queue: list[str] = []
     positions: dict[str, float] = defaultdict(float)
     cost_basis: dict[str, float] = {}
@@ -373,10 +389,16 @@ def simulate_with_market(
     effective_max_names = max_names
     cash = capital
     events: list[dict] = []
+    previous_trade_day: str | None = None
 
     for trade_day in sorted(by_trade_day):
-        updates = _collapse_signal_batch(by_trade_day[trade_day])
-        for symbol, points in updates.items():
+        if previous_trade_day is not None:
+            days_elapsed = (date.fromisoformat(trade_day) - date.fromisoformat(previous_trade_day)).days
+            _apply_decay(raw_points, days_elapsed, daily_decay_pct)
+            active_queue = [symbol for symbol in active_queue if raw_points.get(symbol, 0.0) > 1e-9]
+
+        updates = _signal_point_deltas(by_trade_day[trade_day])
+        for symbol, point_delta in updates.items():
             if symbol not in market:
                 events.append(
                     {
@@ -388,20 +410,37 @@ def simulate_with_market(
                     }
                 )
                 continue
-            if points <= 0:
+            prior_points = raw_points.get(symbol, 0.0)
+            updated_points = max(0.0, prior_points + point_delta)
+            if updated_points <= 1e-9:
                 raw_points.pop(symbol, None)
                 if symbol in active_queue:
                     active_queue.remove(symbol)
-                cost_basis.pop(symbol, None)
                 entry_order.pop(symbol, None)
+                events.append(
+                    {
+                        "trade_day": trade_day,
+                        "symbol": symbol,
+                        "action": "point_update",
+                        "point_delta": round(point_delta, 4),
+                        "points_after": 0.0,
+                    }
+                )
                 continue
-            if symbol not in raw_points:
-                raw_points[symbol] = points
+            raw_points[symbol] = updated_points
+            if symbol not in active_queue:
                 entry_order[symbol] = next_entry_order
                 next_entry_order += 1
-                _queue_insert(active_queue, symbol, points, raw_points)
-            else:
-                raw_points[symbol] = points
+                _queue_insert(active_queue, symbol, updated_points, raw_points)
+            events.append(
+                {
+                    "trade_day": trade_day,
+                    "symbol": symbol,
+                    "action": "point_update",
+                    "point_delta": round(point_delta, 4),
+                    "points_after": round(updated_points, 4),
+                }
+            )
 
         active_queue = _resort_queue(
             active_queue,
@@ -413,9 +452,9 @@ def simulate_with_market(
             entry_order=entry_order,
         )
 
-        band1_count = sum(1 for symbol in active_queue if raw_points[symbol] >= 4)
-        if band1_count > effective_max_names:
-            effective_max_names = band1_count
+        priority_count = sum(1 for symbol in active_queue if raw_points[symbol] >= 4)
+        if priority_count > effective_max_names:
+            effective_max_names = priority_count
         elif effective_max_names > max_names:
             effective_max_names -= 1
 
@@ -432,6 +471,8 @@ def simulate_with_market(
                     "reason": f"queue limit {effective_max_names}",
                 }
             )
+
+        previous_trade_day = trade_day
 
         target_weights = _desired_weights(raw_points)
         total_equity = _portfolio_value_on_day(trade_day, cash, positions, market)
@@ -542,7 +583,8 @@ def simulate_with_market(
     return {
         "capital": capital,
         "weight_mode": "normalized",
-        "point_system": {"50K+": 4, "15K-50K": 2, "1K-15K": 1},
+        "point_system": {"5M-25M": 20, "50K+": 4, "15K-50K": 2, "1K-15K": 1},
+        "daily_decay_pct": daily_decay_pct,
         "queue_limit": max_names,
         "effective_queue_limit": effective_max_names,
         "active_queue": active_queue,
@@ -577,6 +619,7 @@ def simulate(
     min_band: str,
     max_names: int = DEFAULT_MAX_NAMES,
     entry_lag_trading_days: int = 1,
+    daily_decay_pct: float = 0.0,
     end: str | None = None,
 ) -> dict:
     if end is None:
@@ -609,6 +652,7 @@ def simulate(
         min_band=min_band,
         max_names=max_names,
         entry_lag_trading_days=entry_lag_trading_days,
+        daily_decay_pct=daily_decay_pct,
         end=end,
         skipped_symbols=skipped_symbols,
     )
@@ -623,6 +667,7 @@ def main():
         min_band=args.min_band,
         max_names=args.max_names,
         entry_lag_trading_days=args.entry_lag_trading_days,
+        daily_decay_pct=args.daily_decay_pct,
         end=args.end,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
