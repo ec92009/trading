@@ -11,7 +11,9 @@ Policy choices:
 - execution defaults to the next trading day's opening bar
 - active copied weights are normalized from tier points to keep capital fully invested
 - Capitol size bands map to point tiers: `50K+ = 4`, `15K-50K = 2`, `1K-15K = 1`
-- active names sit in a capped exit queue: lower bands are closer to the exit, FIFO within each band
+- active names sit in a capped exit queue: lower bands are closer to the exit
+- within the same band, weaker `%` performers move closer to the exit
+- large band-1 bursts can temporarily expand the queue above the base cap, then the cap steps back down by one on later event days
 
 Usage:
     python3 copytrade_demo.py
@@ -238,6 +240,48 @@ def _queue_insert(queue: list[str], symbol: str, points: int, active_points: dic
     queue.insert(insert_at, symbol)
 
 
+def _performance_pct(
+    symbol: str,
+    *,
+    positions: dict[str, float],
+    cost_basis: dict[str, float],
+    market: dict[str, DailySeries],
+    day: str,
+) -> float:
+    qty = positions.get(symbol, 0.0)
+    avg_cost = cost_basis.get(symbol, 0.0)
+    if qty <= 0 or avg_cost <= 0:
+        return 0.0
+    series = market.get(symbol)
+    if series is None:
+        return 0.0
+    quote = _quote_on_or_after(series, day, "open")
+    if quote is None:
+        return 0.0
+    price = quote[1]
+    return (price / avg_cost) - 1.0
+
+
+def _resort_queue(
+    queue: list[str],
+    *,
+    active_points: dict[str, int],
+    positions: dict[str, float],
+    cost_basis: dict[str, float],
+    market: dict[str, DailySeries],
+    day: str,
+    entry_order: dict[str, int],
+) -> list[str]:
+    return sorted(
+        queue,
+        key=lambda symbol: (
+            _queue_bucket(active_points[symbol]),
+            _performance_pct(symbol, positions=positions, cost_basis=cost_basis, market=market, day=day),
+            entry_order.get(symbol, 0),
+        ),
+    )
+
+
 def _spy_buy_and_hold(capital: float, start_day: str, end_day: str, market: dict[str, DailySeries]) -> dict | None:
     series = market.get("SPY")
     if series is None:
@@ -276,6 +320,7 @@ def simulate_with_market(
             "capital": capital,
             "weight_mode": "normalized",
             "queue_limit": max_names,
+            "effective_queue_limit": max_names,
             "active_queue": [],
             "min_band": min_band,
             "signals_used": 0,
@@ -307,6 +352,7 @@ def simulate_with_market(
             "capital": capital,
             "weight_mode": "normalized",
             "queue_limit": max_names,
+            "effective_queue_limit": max_names,
             "active_queue": [],
             "min_band": min_band,
             "signals_used": 0,
@@ -321,6 +367,10 @@ def simulate_with_market(
     raw_points: dict[str, int] = defaultdict(int)
     active_queue: list[str] = []
     positions: dict[str, float] = defaultdict(float)
+    cost_basis: dict[str, float] = {}
+    entry_order: dict[str, int] = {}
+    next_entry_order = 0
+    effective_max_names = max_names
     cash = capital
     events: list[dict] = []
 
@@ -342,22 +392,44 @@ def simulate_with_market(
                 raw_points.pop(symbol, None)
                 if symbol in active_queue:
                     active_queue.remove(symbol)
+                cost_basis.pop(symbol, None)
+                entry_order.pop(symbol, None)
                 continue
             if symbol not in raw_points:
                 raw_points[symbol] = points
+                entry_order[symbol] = next_entry_order
+                next_entry_order += 1
                 _queue_insert(active_queue, symbol, points, raw_points)
             else:
                 raw_points[symbol] = points
 
-        while len(active_queue) > max_names:
+        active_queue = _resort_queue(
+            active_queue,
+            active_points=raw_points,
+            positions=positions,
+            cost_basis=cost_basis,
+            market=market,
+            day=trade_day,
+            entry_order=entry_order,
+        )
+
+        band1_count = sum(1 for symbol in active_queue if raw_points[symbol] >= 4)
+        if band1_count > effective_max_names:
+            effective_max_names = band1_count
+        elif effective_max_names > max_names:
+            effective_max_names -= 1
+
+        while len(active_queue) > effective_max_names:
             evicted = active_queue.pop(0)
             raw_points.pop(evicted, None)
+            cost_basis.pop(evicted, None)
+            entry_order.pop(evicted, None)
             events.append(
                 {
                     "trade_day": trade_day,
                     "symbol": evicted,
                     "action": "queue_evict",
-                    "reason": f"queue limit {max_names}",
+                    "reason": f"queue limit {effective_max_names}",
                 }
             )
 
@@ -403,6 +475,9 @@ def simulate_with_market(
                 continue
             qty = sell_value / item["price"]
             positions[symbol] = max(0.0, positions[symbol] - qty)
+            if positions[symbol] <= 1e-9:
+                positions[symbol] = 0.0
+                cost_basis.pop(symbol, None)
             cash = round(cash + sell_value, 2)
             events.append(
                 {
@@ -422,7 +497,12 @@ def simulate_with_market(
             if spend < 1.0:
                 continue
             qty = spend / item["price"]
+            prior_qty = positions[symbol]
+            prior_cost = cost_basis.get(symbol, item["price"])
             positions[symbol] += qty
+            total_qty = positions[symbol]
+            if total_qty > 0:
+                cost_basis[symbol] = ((prior_qty * prior_cost) + spend) / total_qty
             cash = round(cash - spend, 2)
             events.append(
                 {
@@ -464,6 +544,7 @@ def simulate_with_market(
         "weight_mode": "normalized",
         "point_system": {"50K+": 4, "15K-50K": 2, "1K-15K": 1},
         "queue_limit": max_names,
+        "effective_queue_limit": effective_max_names,
         "active_queue": active_queue,
         "min_band": min_band,
         "entry_lag_trading_days": entry_lag_trading_days,
@@ -506,6 +587,7 @@ def simulate(
             "capital": capital,
             "weight_mode": "normalized",
             "queue_limit": max_names,
+            "effective_queue_limit": max_names,
             "active_queue": [],
             "min_band": min_band,
             "signals_used": 0,

@@ -78,6 +78,24 @@ class CopyTradeDemoTests(unittest.TestCase):
         demo._queue_insert(queue, "M2", 2, {**active_points, "M1": 2, "L1": 1, "M2": 2})
         self.assertEqual(queue, ["L1", "M1", "M2", "H1", "H2"])
 
+    def test_queue_resorts_same_band_by_performance(self):
+        market = {
+            "AAA": make_series(10.0),
+            "BBB": make_series(20.0),
+            "CCC": make_series(30.0),
+        }
+        queue = ["AAA", "BBB", "CCC"]
+        sorted_queue = demo._resort_queue(
+            queue,
+            active_points={"AAA": 4, "BBB": 4, "CCC": 4},
+            positions={"AAA": 1.0, "BBB": 1.0, "CCC": 1.0},
+            cost_basis={"AAA": 8.0, "BBB": 21.0, "CCC": 35.0},
+            market=market,
+            day="2026-01-21",
+            entry_order={"AAA": 0, "BBB": 1, "CCC": 2},
+        )
+        self.assertEqual(sorted_queue, ["CCC", "BBB", "AAA"])
+
     def test_next_trading_day_open_execution(self):
         signal = demo.DisclosureSignal(
             published_at="2026-01-20",
@@ -168,9 +186,55 @@ class CopyTradeDemoTests(unittest.TestCase):
             skipped_symbols={},
         )
         evicted = [event["symbol"] for event in result["events"] if event["action"] == "queue_evict"]
-        self.assertEqual(evicted, ["S00"])
+        self.assertEqual(evicted, [])
+        self.assertEqual(len(result["active_queue"]), 11)
+        self.assertEqual(result["effective_queue_limit"], 11)
+
+    def test_band1_burst_expands_then_contracts_limit(self):
+        market = {"SPY": make_series(100.0)}
+        signals = []
+        for idx in range(11):
+            symbol = f"S{idx:02d}"
+            market[symbol] = make_series(10.0 + idx)
+            signals.append(
+                demo.DisclosureSignal(
+                    published_at="2026-01-20",
+                    traded_at="2026-01-15",
+                    politician="Markwayne Mullin",
+                    symbol=symbol,
+                    side="buy",
+                    size_band="100K-250K",
+                    source=f"https://example.com/{symbol.lower()}",
+                )
+            )
+        signals.append(
+            demo.DisclosureSignal(
+                published_at="2026-01-21",
+                traded_at="2026-01-16",
+                politician="Markwayne Mullin",
+                symbol="MID",
+                side="buy",
+                size_band="15K-50K",
+                source="https://example.com/mid",
+            )
+        )
+        market["MID"] = make_series(40.0)
+        result = demo.simulate_with_market(
+            signals,
+            market=market,
+            trading_days=["2026-01-20", "2026-01-21", "2026-01-22"],
+            capital=10000.0,
+            min_band="15K-50K",
+            max_names=10,
+            entry_lag_trading_days=1,
+            end="2026-01-22",
+            skipped_symbols={},
+        )
+        evicted = [event["symbol"] for event in result["events"] if event["action"] == "queue_evict"]
+        self.assertEqual(evicted, ["MID", "S10"])
         self.assertEqual(len(result["active_queue"]), 10)
-        self.assertNotIn("S00", result["active_queue"])
+        self.assertEqual(result["effective_queue_limit"], 10)
+        self.assertNotIn("MID", result["active_queue"])
 
 
 if __name__ == "__main__":
