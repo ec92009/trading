@@ -8,6 +8,7 @@ All trades run against a **paper trading account** (no real money).
 - [STRATEGY.md](/Users/ecohen/Dev/trading/STRATEGY.md): current sandbox strategy mechanics
 - [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md): research results, pitfalls, and current conclusion
 - [TODO.md](/Users/ecohen/Dev/trading/TODO.md): active follow-up work
+- [walk_forward_hourly_results.json](/Users/ecohen/Dev/trading/walk_forward_hourly_results.json): latest rolling walk-forward validation artifact
 - [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json): latest full-history production refit artifact, with an explicit do-not-auto-promote policy
 
 Use this `README` for setup and operational scripts. For current strategy behavior and research conclusions, prefer the docs above.
@@ -19,7 +20,9 @@ Use this `README` for setup and operational scripts. For current strategy behavi
 - Connects to an Alpaca paper trading account
 - Places market orders (stocks and crypto) using fractional/notional amounts
 - Runs an always-on background bot that monitors multiple positions concurrently and enforces trading rules automatically
-- Persists order state in a local TSV log so restarts never duplicate buys
+- Persists order state in a local TSV log so restarts never duplicate buys, and reconciles fill prices/timestamps from Alpaca
+- Writes a structured JSONL decision journal alongside the human-readable bot log
+- Runs the current live posture as a rebalance-only bot on the existing 5-name basket
 - Displays a live visual dashboard of all positions (unified HTML control panel or matplotlib chart)
 
 ---
@@ -38,8 +41,9 @@ trading/
 ├── queue_orders.py   # Place multiple orders at once
 ├── dashboard.py      # Unified web control panel at http://localhost:8080
 ├── status.py         # matplotlib chart (interactive window or PNG)
-├── .cache/           # Local raw hourly market-data cache (not committed)
+├── .cache/           # Local raw hourly market-data cache (quarterly symbol files, not committed)
 ├── bot.log           # Live log output (not committed)
+├── bot_decisions.jsonl # Structured decision + order-status journal (not committed)
 └── trades.tsv        # Order state log (not committed)
 ```
 
@@ -96,8 +100,12 @@ cd ~/Dev/trading && source .venv/bin/activate
 | `python3 status.py` | Open matplotlib chart window |
 | `SAVE_ONLY=1 python3 status.py` | Save chart to `status.png` |
 | `python3 add_asset.py` | TUI to add a new asset to the bot |
-| `python3 optimize_hourly_strategies.py` | Run the benchmark `2023` train / `2024-2026Q1` holdout optimizer |
+| `python3 optimize_hourly_strategies.py` | Run the five-contender benchmark (`basket buy-and-hold`, `SPY`, `rebalance-only`, `stop/trigger`, `stop/trigger + rebalance`) on the `2023` train / `2024-2026Q1` holdout |
+| `python3 walk_forward_hourly.py` | Run rolling walk-forward validation across repeated train/test windows for the same five contenders |
 | `python3 refit_bot_strategy.py` | Refit the current strategy on all available history for live bot defaults |
+| `python3 copytrade_demo.py` | Run the Capitol Trades copy-trade research script on the local signal file using the shared Alpaca cache and normalized active weights |
+| `python3 backfill_capitol_trades.py` | Refresh the local Capitol Trades signal file from a public politician profile |
+| `python3 warm_hourly_cache.py` | Warm the shared Alpaca-backed quarter cache from a symbol list or a politician's disclosed universe |
 
 ---
 
@@ -132,9 +140,9 @@ Important:
 | Behavior | Description |
 |---|---|
 | **Entry / sync** | On startup, flatten unmanaged positions, resume managed ones, and optionally do a startup rebalance |
-| **Stop floor** | Use beta-scaled stop floors and sell `stop_sell_pct` of a position when price breaks the floor |
-| **Trailing floor** | Raise the floor and next trigger as price moves up |
-| **Cooldown** | After a stop, block another stop sale for `N` trading days |
+| **Stop floor** | Present in research and config fields, but currently disabled in the live rebalance-only posture |
+| **Trailing floor** | Present in research and config fields, but currently disabled in the live rebalance-only posture |
+| **Cooldown** | Present in research and config fields, but currently inactive while the live bot stays rebalance-only |
 | **Cash buffer** | Keep stop-sale and rebalance-sale proceeds in cash until rebalance redeploys them |
 | **Rebalance** | Rebalance once per trading day, five minutes before the stock-market close, toward target weights |
 
@@ -149,7 +157,7 @@ On startup the bot checks Alpaca positions **and** the local `trades.tsv` log be
 - **Pending buy in TSV + cancelled on Alpaca** → mark TSV cancelled, place a fresh buy
 - **No position, no TSV record** → fresh entry buy
 
-The TSV log prevents duplicate buys if the bot restarts multiple times before a pending order has filled.
+The TSV log prevents duplicate buys if the bot restarts multiple times before a pending order has filled. It now also backfills `filled_at` and `avg_price` from Alpaca as orders complete, using human-readable UTC timestamps in both `trades.tsv` and `bot.log`.
 
 ### Market hours
 
