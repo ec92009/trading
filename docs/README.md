@@ -8,7 +8,19 @@ Supported file types:
 - `bot.log`
 - `trades*.tsv`
 
-The page now opens with bundled committed snapshots by default, so it still shows recent data when you are away from the machine running the bot.
+The page now opens with three dedicated tabs:
+
+- Runtime Log
+- Decision Log
+- Trade Journal
+
+Each tab reads the matching committed snapshot from `docs/data/` by default, and a local upload only overrides the matching tab in your browser session.
+
+The running `10k` bot publishes fresh committed snapshots for:
+
+- `recent_bot.log`
+- `recent_decisions.json`
+- `recent_trades.tsv`
 
 Open `docs/index.html` locally for quick testing, or publish the `docs/` folder with GitHub Pages.
 

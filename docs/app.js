@@ -1,20 +1,49 @@
+const TAB_CONFIG = {
+  botlog: {
+    label: "Runtime Log",
+    bundledPath: "./data/recent_bot.log",
+    bundledLabel: "committed runtime log",
+  },
+  decisions: {
+    label: "Decision Log",
+    bundledPath: "./data/recent_decisions.json",
+    bundledLabel: "committed decision log",
+  },
+  trades: {
+    label: "Trade Journal",
+    bundledPath: "./data/recent_trades.tsv",
+    bundledLabel: "committed trade journal",
+  },
+};
+
+function emptyDataset(type) {
+  return {
+    type,
+    source: "empty",
+    sourceLabel: "No data loaded yet.",
+    rawText: "",
+    parsedType: type,
+    records: [],
+    headers: [],
+    summary: [],
+  };
+}
+
 const state = {
-  fileName: "",
-  rawText: "",
-  mode: "auto",
-  parsedType: null,
-  records: [],
-  headers: [],
-  summary: [],
+  activeTab: "botlog",
+  datasets: {
+    botlog: emptyDataset("botlog"),
+    decisions: emptyDataset("decisions"),
+    trades: emptyDataset("trades"),
+  },
 };
 
 const dom = {
   fileInput: document.getElementById("fileInput"),
   dropzone: document.getElementById("dropzone"),
   statusText: document.getElementById("statusText"),
-  loadRecentDecisions: document.getElementById("loadRecentDecisions"),
-  loadRecentTrades: document.getElementById("loadRecentTrades"),
-  viewSelect: document.getElementById("viewSelect"),
+  sourceText: document.getElementById("sourceText"),
+  reloadBundled: document.getElementById("reloadBundled"),
   symbolFilter: document.getElementById("symbolFilter"),
   eventFilter: document.getElementById("eventFilter"),
   textFilter: document.getElementById("textFilter"),
@@ -22,6 +51,7 @@ const dom = {
   summaryPanel: document.getElementById("summaryPanel"),
   resultsPanel: document.getElementById("resultsPanel"),
   summaryCardTemplate: document.getElementById("summaryCardTemplate"),
+  tabButtons: Array.from(document.querySelectorAll(".tab-button")),
 };
 
 const filterInputs = [dom.symbolFilter, dom.eventFilter, dom.textFilter, dom.limitInput];
@@ -38,6 +68,9 @@ function escapeHtml(value) {
 function parseDecisionLog(text) {
   let records = [];
   const trimmed = text.trim();
+  if (!trimmed) {
+    return [];
+  }
   if (trimmed.startsWith("[")) {
     const parsed = JSON.parse(trimmed);
     records = Array.isArray(parsed) ? parsed : [];
@@ -48,7 +81,7 @@ function parseDecisionLog(text) {
       .filter(Boolean)
       .map((line) => JSON.parse(line));
   }
-  if (!records.length || !records.every((entry) => entry && entry.event_type && entry.timestamp_utc)) {
+  if (!records.every((entry) => entry && entry.event_type && entry.timestamp_utc)) {
     throw new Error("Not a decision log");
   }
   return records;
@@ -56,7 +89,7 @@ function parseDecisionLog(text) {
 
 function parseTradesTsv(text) {
   const lines = text.split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2 || !lines[0].includes("\t")) {
+  if (!lines.length || !lines[0].includes("\t")) {
     throw new Error("Not a TSV file");
   }
   const headers = lines[0].split("\t");
@@ -92,75 +125,58 @@ function parseBotLog(text) {
   return records;
 }
 
-function detectAndParse(text, forcedMode = "auto") {
-  const mode = forcedMode === "auto" ? null : forcedMode;
-  const attempts = mode
-    ? [mode]
-    : ["decisions", "trades", "botlog"];
-
-  for (const attempt of attempts) {
-    try {
-      if (attempt === "decisions") {
-        const records = parseDecisionLog(text);
-        return { type: "decisions", records };
-      }
-      if (attempt === "trades") {
-        const { headers, rows } = parseTradesTsv(text);
-        return { type: "trades", records: rows, headers };
-      }
-      if (attempt === "botlog") {
-        const records = parseBotLog(text);
-        return { type: "botlog", records };
-      }
-    } catch (error) {
-      continue;
-    }
-  }
-  return { type: "raw", records: [] };
-}
-
-function summarize(parsed) {
-  if (parsed.type === "decisions") {
-    const symbols = new Set(parsed.records.map((record) => record.symbol).filter(Boolean));
-    const eventCounts = {};
-    let submitted = 0;
-    for (const record of parsed.records) {
-      eventCounts[record.event_type] = (eventCounts[record.event_type] ?? 0) + 1;
-      if (record.event_type === "order_submitted") {
-        submitted += 1;
-      }
-    }
-    const topEvent = Object.entries(eventCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "n/a";
+function summarize(dataset) {
+  if (dataset.parsedType === "decisions") {
+    const symbols = new Set(dataset.records.map((record) => record.symbol).filter(Boolean));
+    const submitted = dataset.records.filter((record) => record.event_type === "order_submitted").length;
+    const targetChanges = dataset.records.filter((record) => (record.state?.trigger_type || "").includes("copytrade")).length;
     return [
-      ["Entries", parsed.records.length],
+      ["Entries", dataset.records.length],
       ["Symbols", symbols.size || 0],
-      ["Orders Submitted", submitted],
-      ["Top Event", topEvent],
+      ["Orders", submitted],
+      ["Copytrade Events", targetChanges],
     ];
   }
-  if (parsed.type === "trades") {
-    const symbols = new Set(parsed.records.map((row) => row.symbol).filter(Boolean));
-    const pending = parsed.records.filter((row) => (row.status || "").toLowerCase() === "pending").length;
-    const filled = parsed.records.filter((row) => (row.status || "").toLowerCase() === "filled").length;
+  if (dataset.parsedType === "trades") {
+    const symbols = new Set(dataset.records.map((row) => row.symbol).filter(Boolean));
+    const pending = dataset.records.filter((row) => (row.status || "").toLowerCase() === "pending").length;
+    const filled = dataset.records.filter((row) => (row.status || "").toLowerCase() === "filled").length;
+    const buys = dataset.records.filter((row) => (row.side || "").toLowerCase() === "buy").length;
     return [
-      ["Rows", parsed.records.length],
+      ["Rows", dataset.records.length],
       ["Symbols", symbols.size || 0],
       ["Pending", pending],
-      ["Filled", filled],
+      ["Buys", buys],
     ];
   }
-  if (parsed.type === "botlog") {
-    const loggers = new Set(parsed.records.map((row) => row.logger));
-    const errors = parsed.records.filter((row) => /error/i.test(row.message)).length;
-    const warnings = parsed.records.filter((row) => /warn/i.test(row.message)).length;
+  if (dataset.parsedType === "botlog") {
+    const loggers = new Set(dataset.records.map((row) => row.logger));
+    const errors = dataset.records.filter((row) => /error/i.test(row.message)).length;
+    const marketMessages = dataset.records.filter((row) => /market/i.test(row.message)).length;
     return [
-      ["Lines", parsed.records.length],
+      ["Lines", dataset.records.length],
       ["Loggers", loggers.size || 0],
       ["Errors", errors],
-      ["Warnings", warnings],
+      ["Market Notes", marketMessages],
     ];
   }
   return [];
+}
+
+function badgeClass(value) {
+  const text = String(value || "").toLowerCase();
+  if (text.includes("buy") || text.includes("filled")) return "badge-buy";
+  if (text.includes("sell") || text.includes("error") || text.includes("failed")) return "badge-sell";
+  if (text.includes("warn") || text.includes("pending") || text.includes("closed")) return "badge-warn";
+  return "badge-neutral";
+}
+
+function severityClass(message) {
+  const normalized = String(message || "").toLowerCase();
+  if (normalized.includes("error")) return "badge-sell";
+  if (normalized.includes("closed") || normalized.includes("waiting")) return "badge-warn";
+  if (normalized.includes("buy") || normalized.includes("applying")) return "badge-buy";
+  return "badge-neutral";
 }
 
 function formatValue(value) {
@@ -176,12 +192,66 @@ function formatValue(value) {
   return String(value);
 }
 
-function badgeClass(value) {
-  const text = String(value || "").toLowerCase();
-  if (text.includes("buy")) return "badge-buy";
-  if (text.includes("sell") || text.includes("error")) return "badge-sell";
-  if (text.includes("stop") || text.includes("warn")) return "badge-warn";
-  return "badge-neutral";
+function formatMoney(value) {
+  const number = Number.parseFloat(value);
+  if (!Number.isFinite(number)) {
+    return null;
+  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: number >= 1000 ? 0 : 2,
+  }).format(number);
+}
+
+function formatPercent(value) {
+  const number = Number.parseFloat(value);
+  if (!Number.isFinite(number)) {
+    return null;
+  }
+  return `${(number * 100).toFixed(2)}%`;
+}
+
+function decisionTitle(record) {
+  const side = String(record.order?.alpaca_request?.side || record.state?.side || "").toUpperCase();
+  const symbol = record.symbol || "Portfolio";
+  const notional = record.order?.alpaca_request?.notional;
+  const qty = record.order?.alpaca_request?.qty ?? record.state?.qty;
+  if (record.event_type === "order_submitted") {
+    if (notional !== undefined) {
+      return `${side || "ORDER"} ${symbol} for ${formatMoney(notional) || notional}`;
+    }
+    if (qty !== undefined) {
+      return `${side || "ORDER"} ${symbol} for ${qty} shares`;
+    }
+  }
+  return `${String(record.event_type || "event").replaceAll("_", " ")}${record.symbol ? `: ${symbol}` : ""}`;
+}
+
+function decisionNarrative(record) {
+  const trigger = record.state?.trigger_type ? `Trigger: ${record.state.trigger_type}.` : "";
+  const targetWeight = formatPercent(record.state?.target_weight);
+  const targetValue = formatMoney(record.state?.target_value);
+  const target = targetWeight || targetValue
+    ? ` Target ${targetWeight || "—"}${targetValue ? ` (${targetValue})` : ""}.`
+    : "";
+  return `${record.rationale || "No rationale recorded."}${trigger ? ` ${trigger}` : ""}${target}`;
+}
+
+function tradeRequestSummary(row) {
+  try {
+    const parsed = JSON.parse(row.alpaca_request || "{}");
+    if (parsed.notional !== undefined) {
+      return `${String(parsed.side || row.side || "").toUpperCase()} ${row.symbol} for ${formatMoney(parsed.notional) || parsed.notional}`;
+    }
+    if (parsed.qty !== undefined) {
+      return `${String(parsed.side || row.side || "").toUpperCase()} ${row.symbol} for ${parsed.qty} units`;
+    }
+  } catch (_error) {
+    return null;
+  }
+  const amount = formatMoney(row.notional) || row.notional || "—";
+  return `${String(row.side || "").toUpperCase()} ${row.symbol} for ${amount}`;
 }
 
 function applyFilters(records, type) {
@@ -195,8 +265,18 @@ function applyFilters(records, type) {
       const event = String(record.event_type || "").toLowerCase();
       const haystack = JSON.stringify(record).toLowerCase();
       return (
-        (!symbolNeedle || symbol.includes(symbolNeedle)) &&
-        (!eventNeedle || event.includes(eventNeedle)) &&
+        (!symbolNeedle || symbol.includes(symbolNeedle) || haystack.includes(symbolNeedle)) &&
+        (!eventNeedle || event.includes(eventNeedle) || haystack.includes(eventNeedle)) &&
+        (!textNeedle || haystack.includes(textNeedle))
+      );
+    }
+    if (type === "trades") {
+      const symbol = String(record.symbol || "").toLowerCase();
+      const status = String(record.status || "").toLowerCase();
+      const haystack = JSON.stringify(record).toLowerCase();
+      return (
+        (!symbolNeedle || symbol.includes(symbolNeedle) || haystack.includes(symbolNeedle)) &&
+        (!eventNeedle || status.includes(eventNeedle) || haystack.includes(eventNeedle)) &&
         (!textNeedle || haystack.includes(textNeedle))
       );
     }
@@ -209,23 +289,13 @@ function applyFilters(records, type) {
         (!textNeedle || haystack.includes(textNeedle))
       );
     }
-    if (type === "trades") {
-      const symbol = String(record.symbol || "").toLowerCase();
-      const event = String(record.status || "").toLowerCase();
-      const haystack = JSON.stringify(record).toLowerCase();
-      return (
-        (!symbolNeedle || symbol.includes(symbolNeedle)) &&
-        (!eventNeedle || event.includes(eventNeedle)) &&
-        (!textNeedle || haystack.includes(textNeedle))
-      );
-    }
     return true;
   });
 }
 
 function visibleRecords(records) {
   const limit = Number.parseInt(dom.limitInput.value, 10);
-  const normalizedLimit = Number.isFinite(limit) && limit > 0 ? limit : 200;
+  const normalizedLimit = Number.isFinite(limit) && limit > 0 ? limit : 120;
   return [...records].reverse().slice(0, normalizedLimit);
 }
 
@@ -241,217 +311,246 @@ function renderSummary(cards) {
 
 function renderDecisionCards(records) {
   if (!records.length) {
-    return "<section class=\"panel empty-state\"><h2>No matching events</h2><p>Adjust the filters to widen the result set.</p></section>";
+    return "<section class=\"panel empty-state\"><h2>No matching decision events</h2><p>Adjust the filters to widen the result set.</p></section>";
   }
-  const cards = records
-    .map((record) => {
-      const orderPairs = Object.entries(record.order || {});
-      const statePairs = Object.entries(record.state || {});
-      return `
-        <article class="event-card">
-          <div class="event-topline">
-            <span class="badge ${badgeClass(record.event_type)}">${escapeHtml(record.event_type)}</span>
-            ${record.symbol ? `<span class="badge ${badgeClass(record.order?.alpaca_request?.side || record.state?.side || "")}">${escapeHtml(record.symbol)}</span>` : ""}
-            <span class="timestamp">${escapeHtml(record.timestamp_utc)}</span>
-          </div>
-          <p class="rationale">${escapeHtml(record.rationale || "No rationale recorded.")}</p>
-          <div class="kv-grid">
-            <section class="kv-box">
-              <h3>State</h3>
-              <div class="kv-list">
-                ${statePairs.length ? statePairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No state</span><span>—</span></div>"}
-              </div>
-            </section>
-            <section class="kv-box">
-              <h3>Order</h3>
-              <div class="kv-list">
-                ${orderPairs.length ? orderPairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No order payload</span><span>—</span></div>"}
-              </div>
-            </section>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+  const cards = records.map((record) => {
+    const orderPairs = Object.entries(record.order || {});
+    const statePairs = Object.entries(record.state || {});
+    return `
+      <article class="event-card">
+        <div class="event-topline">
+          <span class="badge ${badgeClass(record.event_type)}">${escapeHtml(record.event_type)}</span>
+          ${record.symbol ? `<span class="badge ${badgeClass(record.order?.alpaca_request?.side || record.state?.side || "")}">${escapeHtml(record.symbol)}</span>` : ""}
+          <span class="timestamp">${escapeHtml(record.timestamp_utc)}</span>
+        </div>
+        <h3 class="entry-title">${escapeHtml(decisionTitle(record))}</h3>
+        <p class="rationale">${escapeHtml(decisionNarrative(record))}</p>
+        <div class="kv-grid">
+          <section class="kv-box">
+            <h4>Decision state</h4>
+            <div class="kv-list">
+              ${statePairs.length ? statePairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No state</span><span>—</span></div>"}
+            </div>
+          </section>
+          <section class="kv-box">
+            <h4>Order payload</h4>
+            <div class="kv-list">
+              ${orderPairs.length ? orderPairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No order payload</span><span>—</span></div>"}
+            </div>
+          </section>
+        </div>
+      </article>
+    `;
+  }).join("");
   return `<section class="panel results"><div class="stack">${cards}</div></section>`;
 }
 
-function renderDecisionTable(records) {
+function renderTradesCards(records) {
   if (!records.length) {
-    return "<section class=\"panel empty-state\"><h2>No matching events</h2><p>Adjust the filters to widen the result set.</p></section>";
+    return "<section class=\"panel empty-state\"><h2>No matching trade rows</h2><p>Adjust the filters to widen the result set.</p></section>";
   }
-  const body = records
-    .map((record) => {
-      const side = record.order?.alpaca_request?.side || record.state?.side || "";
-      const amount = record.order?.alpaca_request?.notional ?? record.order?.alpaca_request?.qty ?? record.state?.deficit ?? record.state?.qty ?? "";
-      return `
-        <tr>
-          <td class="mono">${escapeHtml(record.timestamp_utc || "")}</td>
-          <td>${escapeHtml(record.symbol || "")}</td>
-          <td>${escapeHtml(record.event_type || "")}</td>
-          <td>${escapeHtml(String(side || ""))}</td>
-          <td class="mono">${escapeHtml(formatValue(amount))}</td>
-          <td>${escapeHtml(record.rationale || "")}</td>
-        </tr>
-      `;
-    })
-    .join("");
-  return `
-    <section class="panel results">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Symbol</th>
-              <th>Event</th>
-              <th>Side</th>
-              <th>Amount</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>${body}</tbody>
-        </table>
+  const cards = records.map((row) => `
+    <article class="event-card">
+      <div class="event-topline">
+        <span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status || "unknown")}</span>
+        <span class="badge ${badgeClass(row.side)}">${escapeHtml(row.symbol || "—")}</span>
+        <span class="timestamp">${escapeHtml(row.submitted_at || row.executed_at || row.filled_at || "—")}</span>
       </div>
-    </section>
-  `;
+      <h3 class="entry-title">${escapeHtml(tradeRequestSummary(row))}</h3>
+      <p class="rationale">${escapeHtml(row.rationale || "No rationale recorded.")}</p>
+      <div class="kv-grid">
+        <section class="kv-box">
+          <h4>Order status</h4>
+          <div class="kv-list">
+            <div class="kv-row"><span>Order ID</span><span class="mono">${escapeHtml(row.order_id || "—")}</span></div>
+            <div class="kv-row"><span>Side</span><span class="mono">${escapeHtml(row.side || "—")}</span></div>
+            <div class="kv-row"><span>Notional</span><span class="mono">${escapeHtml(formatMoney(row.notional) || row.notional || "—")}</span></div>
+            <div class="kv-row"><span>Average price</span><span class="mono">${escapeHtml(row.avg_price || "—")}</span></div>
+          </div>
+        </section>
+        <section class="kv-box">
+          <h4>Timestamps</h4>
+          <div class="kv-list">
+            <div class="kv-row"><span>Submitted</span><span class="mono">${escapeHtml(row.submitted_at || "—")}</span></div>
+            <div class="kv-row"><span>Executed</span><span class="mono">${escapeHtml(row.executed_at || "—")}</span></div>
+            <div class="kv-row"><span>Filled</span><span class="mono">${escapeHtml(row.filled_at || "—")}</span></div>
+            <div class="kv-row"><span>Request</span><span class="mono">${escapeHtml(row.alpaca_request || "—")}</span></div>
+          </div>
+        </section>
+      </div>
+    </article>
+  `).join("");
+  return `<section class="panel results"><div class="stack">${cards}</div></section>`;
 }
 
 function renderBotLog(records) {
   if (!records.length) {
-    return "<section class=\"panel empty-state\"><h2>No matching lines</h2><p>Adjust the filters to widen the result set.</p></section>";
+    return "<section class=\"panel empty-state\"><h2>No matching log lines</h2><p>Adjust the filters to widen the result set.</p></section>";
   }
-  const lines = records
-    .map((record) => `
-      <article class="log-line-card">
-        <div class="line-topline">
-          <span class="badge ${badgeClass(record.logger)}">${escapeHtml(record.logger)}</span>
-          <span class="timestamp">${escapeHtml(record.timestamp)}</span>
-        </div>
-        <p class="message">${escapeHtml(record.message)}</p>
-      </article>
-    `)
-    .join("");
+  const lines = records.map((record) => `
+    <article class="log-line-card">
+      <div class="line-topline">
+        <span class="badge ${severityClass(record.message)}">${escapeHtml(record.logger)}</span>
+        <span class="timestamp">${escapeHtml(record.timestamp)}</span>
+      </div>
+      <h3 class="entry-title">${escapeHtml(record.message)}</h3>
+    </article>
+  `).join("");
   return `<section class="panel results"><div class="stack">${lines}</div></section>`;
 }
 
-function renderTradesTable(records, headers) {
-  if (!records.length) {
-    return "<section class=\"panel empty-state\"><h2>No matching rows</h2><p>Adjust the filters to widen the result set.</p></section>";
-  }
-  if (state.fileName.startsWith("recent:")) {
-    const body = records
-      .map((row) => `
-        <tr>
-          <td class="mono">${escapeHtml(row.submitted_at || "")}</td>
-          <td>${escapeHtml(row.symbol || "")}</td>
-          <td>${escapeHtml(row.side || "")}</td>
-          <td class="mono">${escapeHtml(row.notional || "")}</td>
-          <td>${escapeHtml(row.status || "")}</td>
-          <td>${escapeHtml(row.rationale || "")}</td>
-        </tr>
-      `)
-      .join("");
-    return `
-      <section class="panel results">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Submitted</th>
-                <th>Symbol</th>
-                <th>Side</th>
-                <th>Notional</th>
-                <th>Status</th>
-                <th>Rationale</th>
-              </tr>
-            </thead>
-            <tbody>${body}</tbody>
-          </table>
-        </div>
-      </section>
-    `;
-  }
-  const head = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("");
-  const body = records
-    .map((row) => `<tr>${headers.map((header) => `<td class="mono">${escapeHtml(row[header] || "")}</td>`).join("")}</tr>`)
-    .join("");
-  return `
-    <section class="panel results">
-      <div class="table-wrap">
-        <table>
-          <thead><tr>${head}</tr></thead>
-          <tbody>${body}</tbody>
-        </table>
-      </div>
-    </section>
-  `;
+function renderEmptyForTab(tab) {
+  const label = TAB_CONFIG[tab].label;
+  return `<h2>${escapeHtml(label)}</h2><p>No data loaded for this tab yet.</p>`;
 }
 
-function renderRaw(text) {
-  return `
-    <section class="panel results">
-      <pre class="raw-block">${escapeHtml(text)}</pre>
-    </section>
-  `;
+function currentDataset() {
+  return state.datasets[state.activeTab];
+}
+
+function updateStatusText(dataset) {
+  dom.statusText.textContent = `${TAB_CONFIG[state.activeTab].label}: ${dataset.sourceLabel}`;
+  dom.sourceText.textContent = dataset.source === "bundled"
+    ? "This tab is showing the last snapshot the bot committed to GitHub Pages."
+    : dataset.source === "local"
+      ? "This tab is showing a local override loaded in your browser only."
+      : "This tab does not have data yet.";
+}
+
+function syncTabButtons() {
+  for (const button of dom.tabButtons) {
+    const active = button.dataset.tab === state.activeTab;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  }
 }
 
 function render() {
-  renderSummary(state.summary);
-  if (!state.rawText) {
+  syncTabButtons();
+  const dataset = currentDataset();
+  renderSummary(dataset.summary);
+  updateStatusText(dataset);
+
+  if (!dataset.rawText) {
     dom.resultsPanel.className = "panel empty-state";
-    dom.resultsPanel.innerHTML = "<h2>Ready</h2><p>Load one of the trading log files to begin.</p>";
+    dom.resultsPanel.innerHTML = renderEmptyForTab(state.activeTab);
     return;
   }
 
-  const filtered = visibleRecords(applyFilters(state.records, state.parsedType));
+  const filtered = visibleRecords(applyFilters(dataset.records, dataset.parsedType));
   let html = "";
-  if (state.parsedType === "decisions") {
-    html = state.fileName.startsWith("recent:")
-      ? renderDecisionTable(filtered)
-      : renderDecisionCards(filtered);
-  } else if (state.parsedType === "botlog") {
+  if (dataset.parsedType === "decisions") {
+    html = renderDecisionCards(filtered);
+  } else if (dataset.parsedType === "trades") {
+    html = renderTradesCards(filtered);
+  } else if (dataset.parsedType === "botlog") {
     html = renderBotLog(filtered);
-  } else if (state.parsedType === "trades") {
-    html = renderTradesTable(filtered, state.headers);
   } else {
-    html = renderRaw(state.rawText);
+    html = `
+      <section class="panel results">
+        <pre class="raw-block">${escapeHtml(dataset.rawText)}</pre>
+      </section>
+    `;
   }
   dom.resultsPanel.outerHTML = html;
   dom.resultsPanel = document.querySelector(".results, .empty-state");
 }
 
-async function handleFile(file) {
-  const text = await file.text();
-  const parsed = detectAndParse(text, dom.viewSelect.value);
-  state.fileName = file.name;
-  state.rawText = text;
-  state.parsedType = parsed.type;
-  state.records = parsed.records;
-  state.headers = parsed.headers || [];
-  state.summary = summarize(parsed);
-  dom.statusText.textContent =
-    parsed.type === "raw"
-      ? `Loaded ${file.name}. Format not recognized, showing raw text.`
-      : `Loaded ${file.name}. Parsed as ${parsed.type}.`;
+function setDataset(tab, payload) {
+  state.datasets[tab] = {
+    type: tab,
+    source: payload.source,
+    sourceLabel: payload.sourceLabel,
+    rawText: payload.rawText,
+    parsedType: payload.parsedType,
+    records: payload.records,
+    headers: payload.headers || [],
+    summary: summarize(payload),
+  };
+}
+
+async function loadBundledTab(tab) {
+  const config = TAB_CONFIG[tab];
+  const response = await fetch(config.bundledPath, { cache: "no-store" });
+  if (!response.ok) {
+    setDataset(tab, {
+      source: "empty",
+      sourceLabel: `Could not load ${config.bundledLabel}.`,
+      rawText: "",
+      parsedType: tab,
+      records: [],
+      headers: [],
+    });
+    return;
+  }
+  const rawText = await response.text();
+  let parsedType = tab;
+  let records = [];
+  let headers = [];
+  if (tab === "decisions") {
+    records = parseDecisionLog(rawText);
+  } else if (tab === "trades") {
+    const parsed = parseTradesTsv(rawText);
+    records = parsed.rows;
+    headers = parsed.headers;
+  } else {
+    records = parseBotLog(rawText);
+  }
+  setDataset(tab, {
+    source: "bundled",
+    sourceLabel: `Showing ${config.bundledLabel}.`,
+    rawText,
+    parsedType,
+    records,
+    headers,
+  });
+}
+
+async function loadAllBundled() {
+  dom.statusText.textContent = "Loading committed snapshots.";
+  await Promise.all(Object.keys(TAB_CONFIG).map((tab) => loadBundledTab(tab)));
   render();
 }
 
-async function loadBundledFile(path, label, forcedView = "auto") {
-  const response = await fetch(path, { cache: "no-store" });
-  if (!response.ok) {
-    dom.statusText.textContent = `Could not load ${label}.`;
+async function handleFile(file) {
+  const rawText = await file.text();
+  const name = file.name.toLowerCase();
+  let tab = "";
+  let parsedType = "";
+  let records = [];
+  let headers = [];
+
+  try {
+    if (name.endsWith(".json") || name.endsWith(".jsonl")) {
+      tab = "decisions";
+      parsedType = "decisions";
+      records = parseDecisionLog(rawText);
+    } else if (name.endsWith(".tsv")) {
+      tab = "trades";
+      parsedType = "trades";
+      const parsed = parseTradesTsv(rawText);
+      records = parsed.rows;
+      headers = parsed.headers;
+    } else {
+      tab = "botlog";
+      parsedType = "botlog";
+      records = parseBotLog(rawText);
+    }
+  } catch (_error) {
+    dom.statusText.textContent = `Could not parse ${file.name}.`;
+    dom.sourceText.textContent = "Supported types are decision JSONL/JSON, trades TSV, and bot log text.";
     return;
   }
-  const text = await response.text();
-  const parsed = detectAndParse(text, forcedView);
-  state.fileName = `recent:${label}`;
-  state.rawText = text;
-  state.parsedType = parsed.type;
-  state.records = parsed.records;
-  state.headers = parsed.headers || [];
-  state.summary = summarize(parsed);
-  dom.statusText.textContent = `Showing committed snapshot: ${label}.`;
+
+  setDataset(tab, {
+    source: "local",
+    sourceLabel: `Loaded local override: ${file.name}.`,
+    rawText,
+    parsedType,
+    records,
+    headers,
+  });
+  state.activeTab = tab;
   render();
 }
 
@@ -485,28 +584,19 @@ dom.dropzone.addEventListener("keydown", () => {
   dom.fileInput.click();
 });
 
-dom.loadRecentDecisions.addEventListener("click", async () => {
-  dom.viewSelect.value = "decisions";
-  await loadBundledFile("./data/recent_decisions.json", "recent decisions", "decisions");
-});
+for (const button of dom.tabButtons) {
+  button.addEventListener("click", () => {
+    state.activeTab = button.dataset.tab;
+    render();
+  });
+}
 
-dom.loadRecentTrades.addEventListener("click", async () => {
-  dom.viewSelect.value = "trades";
-  await loadBundledFile("./data/recent_trades.tsv", "recent trades", "trades");
-});
-
-dom.viewSelect.addEventListener("change", () => {
-  if (!state.rawText) return;
-  const parsed = detectAndParse(state.rawText, dom.viewSelect.value);
-  state.parsedType = parsed.type;
-  state.records = parsed.records;
-  state.headers = parsed.headers || [];
-  state.summary = summarize(parsed);
-  render();
+dom.reloadBundled.addEventListener("click", async () => {
+  await loadAllBundled();
 });
 
 for (const input of filterInputs) {
   input.addEventListener("input", render);
 }
 
-loadBundledFile("./data/recent_decisions.json", "recent decisions", "decisions");
+loadAllBundled();

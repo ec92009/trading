@@ -297,7 +297,13 @@ Use `--no-browser` to skip auto-opening.
 ### GitHub Pages log viewer
 
 There is also a static log viewer under [`docs/`](/Users/ecohen/Dev/trading/docs) for GitHub Pages.
-It reads local `bot_decisions*.jsonl`, `bot.log`, and `trades*.tsv` files directly in the browser and does not upload them anywhere.
+It now opens with three explicit tabs for:
+
+- the runtime log
+- the structured decision log
+- the trade journal
+
+Each tab renders the underlying `10k` bot file in a more human-readable format, and the running `10k` bot periodically publishes fresh committed snapshots into `docs/data/` so the latest view stays available on GitHub Pages even when you are away from the machine.
 
 To publish it on GitHub Pages:
 

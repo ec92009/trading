@@ -3,1183 +3,420 @@
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
+        "qty": 0.0160573,
         "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "BTC/USD",
+        "time_in_force": "TimeInForce.GTC",
         "type": "market"
       },
       "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "9beb79d0-b3cc-4999-9a68-664766b11e46",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:30:20Z"
     },
-    "rationale": "BOT v50.0->stop loss",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "current_value": 1207.76,
+      "excess": 1207.76,
+      "qty": 0.0160573,
+      "reference_price": 75215.34,
+      "target_value": 0.0,
+      "target_weight": 0.0,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T20:44:59Z"
+    "symbol": "BTC/USD",
+    "timestamp_utc": "2026-04-20T13:30:21Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T20:45:00Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 1694.99,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "ACI",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:30:29Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 1694.99,
+      "target_value": 1694.99,
+      "target_weight": 0.1698,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:26:07Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:26:08Z"
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-20T13:30:30Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:26:08Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:26:08Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 1675.02,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "BMO",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "c028af38-0617-413f-acf2-792aa7064aa8",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:30:38Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 1675.02,
+      "target_value": 1675.02,
+      "target_weight": 0.1678,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:48Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:48Z"
+    "symbol": "BMO",
+    "timestamp_utc": "2026-04-20T13:30:39Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:48Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:48Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 1144.97,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "KO",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "428dc135-2fc0-4b92-90c1-3384c2f19fe0",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:30:43Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 1144.97,
+      "target_value": 1144.97,
+      "target_weight": 0.1147,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:58Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:59Z"
+    "symbol": "KO",
+    "timestamp_utc": "2026-04-20T13:30:44Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:59Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:32:59Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 1030.17,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "JPM",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "4ca9dfdf-3c74-49b7-a178-25b889c86d53",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:30:47Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 1030.17,
+      "target_value": 1030.17,
+      "target_weight": 0.1032,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:33:14Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:33:15Z"
+    "symbol": "JPM",
+    "timestamp_utc": "2026-04-20T13:30:48Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:33:15Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-19T22:33:15Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 1022.18,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "AMZN",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:30:54Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 1022.18,
+      "target_value": 1022.18,
+      "target_weight": 0.1024,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T06:12:52Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T06:12:52Z"
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-20T13:30:54Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T06:12:52Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T06:12:52Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 991.24,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "MCD",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "496fbc7f-3e9e-41f6-b509-eb5add7a264b",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:31:00Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 991.24,
+      "target_value": 991.24,
+      "target_weight": 0.0993,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:35Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:36Z"
+    "symbol": "MCD",
+    "timestamp_utc": "2026-04-20T13:31:01Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:36Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:38Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 929.35,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "IT",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "9d91d921-c87b-4b3c-9802-a19db1a13af9",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:31:07Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 929.35,
+      "target_value": 929.35,
+      "target_weight": 0.0931,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:57Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:58Z"
+    "symbol": "IT",
+    "timestamp_utc": "2026-04-20T13:31:07Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:58Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:10:59Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 616.9,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "VIG",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "c783b96e-2ff9-461a-b14b-f2a0b86e3459",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:31:13Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 616.9,
+      "target_value": 616.9,
+      "target_weight": 0.0618,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:14:26Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:14:26Z"
+    "symbol": "VIG",
+    "timestamp_utc": "2026-04-20T13:31:14Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:14:26Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:14:28Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 510.09,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "AMRZ",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:31:20Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 510.09,
+      "target_value": 510.09,
+      "target_weight": 0.0511,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:15:34Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:15:35Z"
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-20T13:31:21Z"
   },
   {
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:15:35Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:15:36Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
+        "notional": 368.35,
         "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
+        "symbol": "TD",
+        "time_in_force": "TimeInForce.DAY",
         "type": "market"
       },
       "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "OrderStatus.PENDING_NEW",
+      "submitted_at": "2026-04-20T13:31:26Z"
     },
-    "rationale": "BOT v50.0->test",
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
     "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
+      "active_queue": [
+        "VIG",
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 9978.19,
+      "deficit": 368.35,
+      "target_value": 368.35,
+      "target_weight": 0.0369,
+      "trigger_type": "copytrade_rebalance"
     },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:16:33Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:16:33Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:16:33Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:16:35Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
-        "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->test",
-    "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:18:09Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:18:10Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:18:10Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:18:11Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 50.0,
-        "side": "buy",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "ord-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->test",
-    "state": {
-      "notional": 50.0,
-      "side": "BUY",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:34:27Z"
-  },
-  {
-    "event_type": "stop_triggered",
-    "order": {},
-    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "sell_qty": 5.5,
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:34:28Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 5.5,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-2",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop loss",
-    "state": {
-      "floor": 95.0,
-      "position_qty": 10.0,
-      "price": 94.0,
-      "qty": 5.5,
-      "reference_price": 94.0,
-      "side": "SELL",
-      "stop_sell_pct": 0.55,
-      "trade_day": "2026-04-17",
-      "trigger_type": "stop"
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:34:28Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "qty": 2.25,
-        "side": "sell",
-        "symbol": "AAPL",
-        "time_in_force": "DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "sell-1",
-      "status": "accepted",
-      "submitted_at": null
-    },
-    "rationale": "BOT v50.0->stop",
-    "state": {
-      "qty": 2.25,
-      "reference_price": 101.5,
-      "side": "SELL",
-      "trade_day": null
-    },
-    "symbol": "AAPL",
-    "timestamp_utc": "2026-04-20T10:34:30Z"
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-20T13:31:27Z"
   }
 ]

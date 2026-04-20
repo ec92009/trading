@@ -63,7 +63,7 @@ table td.mono,
 }
 
 .intro {
-  max-width: 700px;
+  max-width: 720px;
   margin: 14px 0 0;
   font-size: 1rem;
   line-height: 1.55;
@@ -172,9 +172,38 @@ table td.mono,
   gap: 12px;
 }
 
+.tab-panel {
+  margin-top: 18px;
+  padding: 10px;
+}
+
+.tablist {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tab-button {
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f7f1e3;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab-button.is-active {
+  color: white;
+  background: linear-gradient(135deg, #225e4c, #3c7e68);
+  border-color: #225e4c;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
 .controls {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-top: 18px;
   padding: 18px;
@@ -186,7 +215,7 @@ table td.mono,
 }
 
 .control-wide {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
 label {
@@ -308,6 +337,12 @@ select {
   font-size: 0.9rem;
 }
 
+.entry-title {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
 .rationale,
 .message {
   margin: 0 0 12px;
@@ -327,7 +362,7 @@ select {
   background: white;
 }
 
-.kv-box h3 {
+.kv-box h4 {
   margin: 0 0 10px;
   font-size: 0.95rem;
 }
@@ -348,34 +383,6 @@ select {
   color: var(--muted);
 }
 
-.table-wrap {
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-}
-
-th,
-td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #ece5d8;
-  text-align: left;
-  vertical-align: top;
-  font-size: 0.93rem;
-}
-
-th {
-  position: sticky;
-  top: 0;
-  background: #faf4e8;
-  z-index: 1;
-}
-
 .raw-block {
   margin: 0;
   padding: 16px;
@@ -387,20 +394,21 @@ th {
   font-size: 0.9rem;
 }
 
-.hidden {
-  display: none;
-}
-
 @media (max-width: 900px) {
   .bundle-panel,
   .upload-panel,
   .controls,
   .summary-grid,
-  .kv-grid {
+  .kv-grid,
+  .tablist {
     grid-template-columns: 1fr;
   }
 
   .bundle-panel {
     display: grid;
+  }
+
+  .control-wide {
+    grid-column: span 1;
   }
 }

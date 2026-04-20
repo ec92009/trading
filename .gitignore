@@ -6,6 +6,7 @@ __pycache__/
 venv/
 *.db
 *.log
+!docs/data/recent_bot.log
 .DS_Store
 *.png
 trades.tsv

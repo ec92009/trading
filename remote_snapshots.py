@@ -11,10 +11,12 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DOCS_DATA_DIR = HERE / "docs" / "data"
+RECENT_BOT_LOG_PATH = DOCS_DATA_DIR / "recent_bot.log"
 RECENT_DECISIONS_PATH = DOCS_DATA_DIR / "recent_decisions.json"
 RECENT_TRADES_PATH = DOCS_DATA_DIR / "recent_trades.tsv"
 
 SNAPSHOT_PUBLISH_INTERVAL = int(os.getenv("REMOTE_SNAPSHOT_PUBLISH_INTERVAL", "900"))
+BOT_LOG_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_BOT_LOG_SNAPSHOT_LIMIT", "200"))
 DECISION_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_DECISION_SNAPSHOT_LIMIT", "50"))
 TRADE_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_TRADE_SNAPSHOT_LIMIT", "50"))
 GIT_TIMEOUT_SECONDS = int(os.getenv("REMOTE_SNAPSHOT_GIT_TIMEOUT", "30"))
@@ -42,6 +44,15 @@ def _tail_tsv(path: Path, limit: int) -> tuple[list[str], list[dict]]:
     return fieldnames, rows[-max(1, limit) :]
 
 
+def _tail_lines(path: Path, limit: int) -> str:
+    if not path.exists():
+        return ""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines:
+        return ""
+    return "\n".join(lines[-max(1, limit) :]) + "\n"
+
+
 def _render_trades_tsv(fieldnames: list[str], rows: list[dict]) -> str:
     if not fieldnames:
         return ""
@@ -54,13 +65,21 @@ def _render_trades_tsv(fieldnames: list[str], rows: list[dict]) -> str:
 
 def write_snapshot_files(
     *,
+    bot_log_path: Path,
     decision_log_path: Path,
     trade_log_path: Path,
+    bot_log_limit: int = BOT_LOG_SNAPSHOT_LIMIT,
     decision_limit: int = DECISION_SNAPSHOT_LIMIT,
     trade_limit: int = TRADE_SNAPSHOT_LIMIT,
 ) -> list[Path]:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
     changed: list[Path] = []
+
+    bot_log_text = _tail_lines(bot_log_path, bot_log_limit)
+    current_bot_log_text = RECENT_BOT_LOG_PATH.read_text(encoding="utf-8") if RECENT_BOT_LOG_PATH.exists() else None
+    if current_bot_log_text != bot_log_text:
+        RECENT_BOT_LOG_PATH.write_text(bot_log_text, encoding="utf-8")
+        changed.append(RECENT_BOT_LOG_PATH)
 
     decision_rows = _tail_jsonl(decision_log_path, decision_limit)
     decision_text = json.dumps(decision_rows, indent=2) + "\n"
@@ -83,12 +102,14 @@ class RemoteSnapshotPublisher:
     def __init__(
         self,
         *,
+        bot_log_path: Path,
         decision_log_path: Path,
         trade_log_path: Path,
         logger: logging.Logger | None = None,
         interval_seconds: int = SNAPSHOT_PUBLISH_INTERVAL,
         enabled: bool = REMOTE_SNAPSHOT_PUBLISH_ENABLED,
     ):
+        self.bot_log_path = bot_log_path
         self.decision_log_path = decision_log_path
         self.trade_log_path = trade_log_path
         self.interval_seconds = max(60, interval_seconds)
@@ -107,6 +128,7 @@ class RemoteSnapshotPublisher:
 
     def publish_once(self):
         changed = write_snapshot_files(
+            bot_log_path=self.bot_log_path,
             decision_log_path=self.decision_log_path,
             trade_log_path=self.trade_log_path,
         )

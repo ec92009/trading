@@ -94,6 +94,7 @@ class CopyTradeLiveManager:
         self._cached_simulation_result: dict | None = None
         self._last_signal_refresh_at = 0.0
         self.snapshot_publisher = remote_snapshots.RemoteSnapshotPublisher(
+            bot_log_path=basket_bot.LOG_PATH,
             decision_log_path=basket_bot.DECISION_LOG_PATH,
             trade_log_path=trade_log.LOG_PATH,
             logger=self.logger,

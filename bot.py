@@ -63,6 +63,7 @@ TARGET_SYMBOLS = {cfg.symbol for cfg in BOTS}
 BETA_WINDOW = 60
 VERSION_PATH = Path(__file__).parent / "VERSION"
 BOT_FILE_SUFFIX = (os.getenv("BOT_LOG_SUFFIX") or "").strip()
+LOG_PATH = Path(__file__).parent / (f"bot_{BOT_FILE_SUFFIX}.log" if BOT_FILE_SUFFIX else "bot.log")
 STATE_PATH = Path(__file__).parent / (f"bot_state_{BOT_FILE_SUFFIX}.json" if BOT_FILE_SUFFIX else "bot_state.json")
 DECISION_LOG_PATH = Path(__file__).parent / (f"bot_decisions_{BOT_FILE_SUFFIX}.jsonl" if BOT_FILE_SUFFIX else "bot_decisions.jsonl")
 LIVE_REBALANCE_ONLY = True

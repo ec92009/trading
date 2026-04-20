@@ -15,10 +15,22 @@ class RemoteSnapshotTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
+            bot_log = root / "bot_10k.log"
             decision_log = root / "bot_decisions_10k.jsonl"
             trade_log = root / "trades_10k.tsv"
             docs_data = root / "docs" / "data"
 
+            bot_log.write_text(
+                "\n".join(
+                    [
+                        "2026-04-20 13:30:01 [copytrade] startup",
+                        "2026-04-20 13:30:02 [copytrade] first line",
+                        "2026-04-20 13:30:03 [copytrade] second line",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
             decision_log.write_text(
                 "\n".join(
                     [
@@ -39,18 +51,26 @@ class RemoteSnapshotTests(unittest.TestCase):
             )
 
             with patch.object(remote_snapshots, "DOCS_DATA_DIR", docs_data), patch.object(
+                remote_snapshots, "RECENT_BOT_LOG_PATH", docs_data / "recent_bot.log"
+            ), patch.object(
                 remote_snapshots, "RECENT_DECISIONS_PATH", docs_data / "recent_decisions.json"
             ), patch.object(
                 remote_snapshots, "RECENT_TRADES_PATH", docs_data / "recent_trades.tsv"
             ):
                 changed = remote_snapshots.write_snapshot_files(
+                    bot_log_path=bot_log,
                     decision_log_path=decision_log,
                     trade_log_path=trade_log,
+                    bot_log_limit=2,
                     decision_limit=2,
                     trade_limit=2,
                 )
 
-            self.assertEqual(len(changed), 2)
+            self.assertEqual(len(changed), 3)
+            bot_log_snapshot = (docs_data / "recent_bot.log").read_text(encoding="utf-8")
+            self.assertIn("first line", bot_log_snapshot)
+            self.assertIn("second line", bot_log_snapshot)
+            self.assertNotIn("startup", bot_log_snapshot)
             decision_rows = json.loads((docs_data / "recent_decisions.json").read_text(encoding="utf-8"))
             self.assertEqual([row["symbol"] for row in decision_rows], ["TSLA", "AMZN"])
             trade_snapshot = (docs_data / "recent_trades.tsv").read_text(encoding="utf-8")
