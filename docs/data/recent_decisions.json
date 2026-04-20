@@ -1,152 +1,1152 @@
 [
   {
-    "event_type": "order_submitted",
+    "event_type": "order_status_update",
     "order": {
-      "alpaca_request": {
-        "notional": 5000.0,
-        "side": "buy",
-        "symbol": "TSLA",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"NVDA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
       "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "2cf5312c-00cc-4a0d-94d3-b9e16771adba",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "NVDA",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"PLTR\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "54075d1f-7bf9-4f47-b00a-b4cceadf83f4",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "PLTR",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"BTC/USD\", \"time_in_force\": \"TimeInForce.GTC\", \"type\": \"market\"}",
+      "avg_price": 76129.86,
+      "executed_at": "2026-04-19T14:53:05Z",
+      "filled_at": "2026-04-19T14:53:05Z",
+      "filled_qty": 0.016097545,
+      "id": "fb0bf6e9-4a77-45a8-92b1-ec1155ca59e6",
+      "status": "filled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "BTC/USD",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"qty\": 0.0160573, \"side\": \"sell\", \"symbol\": \"BTC/USD\", \"time_in_force\": \"TimeInForce.GTC\", \"type\": \"market\"}",
+      "avg_price": 75150.19,
+      "executed_at": "2026-04-20T13:30:20Z",
+      "filled_at": "2026-04-20T13:30:20Z",
+      "filled_qty": 0.0160573,
+      "id": "9beb79d0-b3cc-4999-9a68-664766b11e46",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:30:20Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:20 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "BTC/USD",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20T13:32:58Z",
+      "filled_at": "2026-04-20T13:32:58Z",
+      "filled_qty": 77.0,
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1675.02, \"side\": \"buy\", \"symbol\": \"BMO\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 152.33,
+      "executed_at": "2026-04-20T13:32:20Z",
+      "filled_at": "2026-04-20T13:32:20Z",
+      "filled_qty": 10.995995536,
+      "id": "c028af38-0617-413f-acf2-792aa7064aa8",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:30:38Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:38 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "BMO",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1144.97, \"side\": \"buy\", \"symbol\": \"KO\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "428dc135-2fc0-4b92-90c1-3384c2f19fe0",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:44Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:44 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "KO",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1030.17, \"side\": \"buy\", \"symbol\": \"JPM\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 313.08,
+      "executed_at": "2026-04-20T13:33:36Z",
+      "filled_at": "2026-04-20T13:33:36Z",
+      "filled_qty": 3.290436949,
+      "id": "4ca9dfdf-3c74-49b7-a178-25b889c86d53",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:30:47Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:47 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "JPM",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20T13:32:41Z",
+      "filled_at": "2026-04-20T13:32:41Z",
+      "filled_qty": 2.0,
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 991.24, \"side\": \"buy\", \"symbol\": \"MCD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 312.04,
+      "executed_at": "2026-04-20T13:33:02Z",
+      "filled_at": "2026-04-20T13:33:02Z",
+      "filled_qty": 3.176644019,
+      "id": "496fbc7f-3e9e-41f6-b509-eb5add7a264b",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:31:00Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:00 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "MCD",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 929.35, \"side\": \"buy\", \"symbol\": \"IT\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 156.32,
+      "executed_at": "2026-04-20T13:32:50Z",
+      "filled_at": "2026-04-20T13:32:50Z",
+      "filled_qty": 5.94517656,
+      "id": "9d91d921-c87b-4b3c-9802-a19db1a13af9",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:31:07Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:07 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "IT",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 616.9, \"side\": \"buy\", \"symbol\": \"VIG\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "c783b96e-2ff9-461a-b14b-f2a0b86e3459",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:13Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:13 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "VIG",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20T13:31:59Z",
+      "filled_at": "2026-04-20T13:31:59Z",
+      "filled_qty": 5.0,
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20T13:32:02Z",
+      "filled_at": "2026-04-20T13:32:02Z",
+      "filled_qty": 1.0,
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-20T20:15:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 5000.0, \"side\": \"buy\", \"symbol\": \"TSLA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": "2026-04-20 13:32:02 UTC",
+      "filled_at": "2026-04-20 13:32:02 UTC",
+      "filled_qty": 0.0,
       "id": "ef9f6271-ac2d-4b5b-8ca6-9979b851faa6",
-      "status": "OrderStatus.ACCEPTED",
+      "status": "canceled",
       "submitted_at": "2026-04-19T14:53:04Z"
     },
     "rationale": "rebalance buy to target $5,000.00",
     "state": {
-      "cash_available": 10000.0,
-      "current_value": 0.0,
-      "deficit": 5000.0,
-      "notional": 5000.0,
-      "rebalance_reason": "manual overnight queue before next open",
-      "side": "BUY",
-      "target_value": 5000.0,
-      "trade_day": "2026-04-19",
-      "trigger_type": "rebalance"
+      "logged_avg_price": "105.4800",
+      "logged_executed_at": "2026-04-20 13:32:02 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
     },
     "symbol": "TSLA",
-    "timestamp_utc": "2026-04-19T14:53:04Z"
+    "timestamp_utc": "2026-04-20T20:15:55Z"
   },
   {
-    "event_type": "order_submitted",
+    "event_type": "order_status_update",
     "order": {
-      "alpaca_request": {
-        "notional": 1250.0,
-        "side": "buy",
-        "symbol": "TSM",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"TSM\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
       "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
       "id": "79b61cc1-04f3-446a-8a2a-a2075a6b5736",
-      "status": "OrderStatus.ACCEPTED",
+      "status": "canceled",
       "submitted_at": "2026-04-19T14:53:05Z"
     },
     "rationale": "rebalance buy to target $1,250.00",
     "state": {
-      "cash_available": 10000.0,
-      "current_value": 0.0,
-      "deficit": 1250.0,
-      "notional": 1250.0,
-      "rebalance_reason": "manual overnight queue before next open",
-      "side": "BUY",
-      "target_value": 1250.0,
-      "trade_day": "2026-04-19",
-      "trigger_type": "rebalance"
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
     },
     "symbol": "TSM",
-    "timestamp_utc": "2026-04-19T14:53:05Z"
+    "timestamp_utc": "2026-04-20T20:15:55Z"
   },
   {
-    "event_type": "order_submitted",
+    "event_type": "order_status_update",
     "order": {
-      "alpaca_request": {
-        "notional": 1250.0,
-        "side": "buy",
-        "symbol": "NVDA",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"NVDA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
       "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
       "id": "2cf5312c-00cc-4a0d-94d3-b9e16771adba",
-      "status": "OrderStatus.ACCEPTED",
+      "status": "canceled",
       "submitted_at": "2026-04-19T14:53:05Z"
     },
     "rationale": "rebalance buy to target $1,250.00",
     "state": {
-      "cash_available": 10000.0,
-      "current_value": 0.0,
-      "deficit": 1250.0,
-      "notional": 1250.0,
-      "rebalance_reason": "manual overnight queue before next open",
-      "side": "BUY",
-      "target_value": 1250.0,
-      "trade_day": "2026-04-19",
-      "trigger_type": "rebalance"
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
     },
     "symbol": "NVDA",
-    "timestamp_utc": "2026-04-19T14:53:05Z"
+    "timestamp_utc": "2026-04-20T20:15:55Z"
   },
   {
-    "event_type": "order_submitted",
+    "event_type": "order_status_update",
     "order": {
-      "alpaca_request": {
-        "notional": 1250.0,
-        "side": "buy",
-        "symbol": "PLTR",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"PLTR\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
       "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
       "id": "54075d1f-7bf9-4f47-b00a-b4cceadf83f4",
-      "status": "OrderStatus.ACCEPTED",
+      "status": "canceled",
       "submitted_at": "2026-04-19T14:53:05Z"
     },
     "rationale": "rebalance buy to target $1,250.00",
     "state": {
-      "cash_available": 10000.0,
-      "current_value": 0.0,
-      "deficit": 1250.0,
-      "notional": 1250.0,
-      "rebalance_reason": "manual overnight queue before next open",
-      "side": "BUY",
-      "target_value": 1250.0,
-      "trade_day": "2026-04-19",
-      "trigger_type": "rebalance"
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
     },
     "symbol": "PLTR",
-    "timestamp_utc": "2026-04-19T14:53:05Z"
+    "timestamp_utc": "2026-04-20T20:15:55Z"
   },
   {
-    "event_type": "order_submitted",
+    "event_type": "order_status_update",
     "order": {
-      "alpaca_request": {
-        "notional": 1250.0,
-        "side": "buy",
-        "symbol": "BTC/USD",
-        "time_in_force": "TimeInForce.GTC",
-        "type": "market"
-      },
-      "executed_at": null,
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"BTC/USD\", \"time_in_force\": \"TimeInForce.GTC\", \"type\": \"market\"}",
+      "avg_price": 76129.86,
+      "executed_at": "2026-04-19T14:53:05Z",
+      "filled_at": "2026-04-19T14:53:05Z",
+      "filled_qty": 0.016097545,
       "id": "fb0bf6e9-4a77-45a8-92b1-ec1155ca59e6",
-      "status": "OrderStatus.PENDING_NEW",
+      "status": "filled",
       "submitted_at": "2026-04-19T14:53:05Z"
     },
     "rationale": "rebalance buy to target $1,250.00",
     "state": {
-      "cash_available": 10000.0,
-      "current_value": 0.0,
-      "deficit": 1250.0,
-      "notional": 1250.0,
-      "rebalance_reason": "manual overnight queue before next open",
-      "side": "BUY",
-      "target_value": 1250.0,
-      "trade_day": "2026-04-19",
-      "trigger_type": "rebalance"
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
     },
     "symbol": "BTC/USD",
-    "timestamp_utc": "2026-04-19T14:53:05Z"
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"qty\": 0.0160573, \"side\": \"sell\", \"symbol\": \"BTC/USD\", \"time_in_force\": \"TimeInForce.GTC\", \"type\": \"market\"}",
+      "avg_price": 75150.19,
+      "executed_at": "2026-04-20T13:30:20Z",
+      "filled_at": "2026-04-20T13:30:20Z",
+      "filled_qty": 0.0160573,
+      "id": "9beb79d0-b3cc-4999-9a68-664766b11e46",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:30:20Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:20 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "BTC/USD",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20T13:32:58Z",
+      "filled_at": "2026-04-20T13:32:58Z",
+      "filled_qty": 77.0,
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1675.02, \"side\": \"buy\", \"symbol\": \"BMO\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 152.33,
+      "executed_at": "2026-04-20T13:32:20Z",
+      "filled_at": "2026-04-20T13:32:20Z",
+      "filled_qty": 10.995995536,
+      "id": "c028af38-0617-413f-acf2-792aa7064aa8",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:30:38Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:38 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "BMO",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1144.97, \"side\": \"buy\", \"symbol\": \"KO\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "428dc135-2fc0-4b92-90c1-3384c2f19fe0",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:44Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:44 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "KO",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1030.17, \"side\": \"buy\", \"symbol\": \"JPM\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 313.08,
+      "executed_at": "2026-04-20T13:33:36Z",
+      "filled_at": "2026-04-20T13:33:36Z",
+      "filled_qty": 3.290436949,
+      "id": "4ca9dfdf-3c74-49b7-a178-25b889c86d53",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:30:47Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:47 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "JPM",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20T13:32:41Z",
+      "filled_at": "2026-04-20T13:32:41Z",
+      "filled_qty": 2.0,
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 991.24, \"side\": \"buy\", \"symbol\": \"MCD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 312.04,
+      "executed_at": "2026-04-20T13:33:02Z",
+      "filled_at": "2026-04-20T13:33:02Z",
+      "filled_qty": 3.176644019,
+      "id": "496fbc7f-3e9e-41f6-b509-eb5add7a264b",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:31:00Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:00 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "MCD",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 929.35, \"side\": \"buy\", \"symbol\": \"IT\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 156.32,
+      "executed_at": "2026-04-20T13:32:50Z",
+      "filled_at": "2026-04-20T13:32:50Z",
+      "filled_qty": 5.94517656,
+      "id": "9d91d921-c87b-4b3c-9802-a19db1a13af9",
+      "status": "filled",
+      "submitted_at": "2026-04-20T13:31:07Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:07 UTC",
+      "new_status": "filled",
+      "previous_status": "pending"
+    },
+    "symbol": "IT",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 616.9, \"side\": \"buy\", \"symbol\": \"VIG\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "c783b96e-2ff9-461a-b14b-f2a0b86e3459",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:13Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:13 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "VIG",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20T13:31:59Z",
+      "filled_at": "2026-04-20T13:31:59Z",
+      "filled_qty": 5.0,
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20T13:32:02Z",
+      "filled_at": "2026-04-20T13:32:02Z",
+      "filled_qty": 1.0,
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-20T20:15:55Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 5000.0, \"side\": \"buy\", \"symbol\": \"TSLA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "ef9f6271-ac2d-4b5b-8ca6-9979b851faa6",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:04Z"
+    },
+    "rationale": "rebalance buy to target $5,000.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:04 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TSLA",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"TSM\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "79b61cc1-04f3-446a-8a2a-a2075a6b5736",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TSM",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"NVDA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "2cf5312c-00cc-4a0d-94d3-b9e16771adba",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "NVDA",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"PLTR\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "54075d1f-7bf9-4f47-b00a-b4cceadf83f4",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "PLTR",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20T13:32:58Z",
+      "filled_at": "2026-04-20T13:32:58Z",
+      "filled_qty": 77.0,
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "16.8300",
+      "logged_executed_at": "2026-04-20 13:32:58 UTC",
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1144.97, \"side\": \"buy\", \"symbol\": \"KO\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "428dc135-2fc0-4b92-90c1-3384c2f19fe0",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:44Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:44 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "KO",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20T13:32:41Z",
+      "filled_at": "2026-04-20T13:32:41Z",
+      "filled_qty": 2.0,
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "247.9200",
+      "logged_executed_at": "2026-04-20 13:32:41 UTC",
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 616.9, \"side\": \"buy\", \"symbol\": \"VIG\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "c783b96e-2ff9-461a-b14b-f2a0b86e3459",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:13Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:13 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "VIG",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20T13:31:59Z",
+      "filled_at": "2026-04-20T13:31:59Z",
+      "filled_qty": 5.0,
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "57.5200",
+      "logged_executed_at": "2026-04-20 13:31:59 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20T13:32:02Z",
+      "filled_at": "2026-04-20T13:32:02Z",
+      "filled_qty": 1.0,
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "105.4800",
+      "logged_executed_at": "2026-04-20 13:32:02 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-20T20:16:58Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 5000.0, \"side\": \"buy\", \"symbol\": \"TSLA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "ef9f6271-ac2d-4b5b-8ca6-9979b851faa6",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:04Z"
+    },
+    "rationale": "rebalance buy to target $5,000.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:04 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TSLA",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"TSM\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "79b61cc1-04f3-446a-8a2a-a2075a6b5736",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TSM",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"NVDA\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "2cf5312c-00cc-4a0d-94d3-b9e16771adba",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "NVDA",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1250.0, \"side\": \"buy\", \"symbol\": \"PLTR\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "54075d1f-7bf9-4f47-b00a-b4cceadf83f4",
+      "status": "canceled",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-19 14:53:05 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "PLTR",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20T13:32:58Z",
+      "filled_at": "2026-04-20T13:32:58Z",
+      "filled_qty": 77.0,
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "16.8300",
+      "logged_executed_at": "2026-04-20 13:32:58 UTC",
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1144.97, \"side\": \"buy\", \"symbol\": \"KO\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "428dc135-2fc0-4b92-90c1-3384c2f19fe0",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:44Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:30:44 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "KO",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20T13:32:41Z",
+      "filled_at": "2026-04-20T13:32:41Z",
+      "filled_qty": 2.0,
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "247.9200",
+      "logged_executed_at": "2026-04-20 13:32:41 UTC",
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 616.9, \"side\": \"buy\", \"symbol\": \"VIG\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": null,
+      "executed_at": null,
+      "filled_at": null,
+      "filled_qty": 0.0,
+      "id": "c783b96e-2ff9-461a-b14b-f2a0b86e3459",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:13Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_submitted_at": "2026-04-20 13:31:13 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "VIG",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20T13:31:59Z",
+      "filled_at": "2026-04-20T13:31:59Z",
+      "filled_qty": 5.0,
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "57.5200",
+      "logged_executed_at": "2026-04-20 13:31:59 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20T13:32:02Z",
+      "filled_at": "2026-04-20T13:32:02Z",
+      "filled_qty": 1.0,
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "canceled",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v51.3->Backfilled local order history from Alpaca recent order activity.",
+    "state": {
+      "logged_avg_price": "105.4800",
+      "logged_executed_at": "2026-04-20 13:32:02 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-20T20:17:56Z"
   }
 ]
