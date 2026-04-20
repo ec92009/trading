@@ -10,11 +10,13 @@ from pathlib import Path
 
 import bot as basket_bot
 import copytrade_demo as demo
+import remote_snapshots
 import trade_log
 from alpaca.trading.enums import OrderSide, QueryOrderStatus, TimeInForce
 from alpaca.trading.requests import GetOrdersRequest, MarketOrderRequest
 
 from . import market_data
+from . import signal_updater
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,6 +41,7 @@ DAILY_DECAY_PCT = 1.0 - (0.5 ** (1.0 / HALF_LIFE_DAYS))
 MAX_NAMES = 10
 SIM_CAPITAL = 10000.0
 POLL_INTERVAL = 30
+SIGNAL_REFRESH_INTERVAL = 900
 IGNORED_SYMBOLS = {"SPX"}
 LIVE_POINT_SYSTEM = {
     "< 1K": 0.125,
@@ -89,6 +92,12 @@ class CopyTradeLiveManager:
         self.last_rebalance_signature: str | None = None
         self._cached_simulation_key: tuple[str, float] | None = None
         self._cached_simulation_result: dict | None = None
+        self._last_signal_refresh_at = 0.0
+        self.snapshot_publisher = remote_snapshots.RemoteSnapshotPublisher(
+            decision_log_path=basket_bot.DECISION_LOG_PATH,
+            trade_log_path=trade_log.LOG_PATH,
+            logger=self.logger,
+        )
 
     def market_clock(self):
         return basket_bot.trading.get_clock()
@@ -101,6 +110,29 @@ class CopyTradeLiveManager:
 
     def _signal_mtime(self) -> float:
         return SIGNALS_PATH.stat().st_mtime if SIGNALS_PATH.exists() else 0.0
+
+    def refresh_signals_if_due(self, *, force: bool = False):
+        now = time.time()
+        if not force and now - self._last_signal_refresh_at < SIGNAL_REFRESH_INTERVAL:
+            return
+        try:
+            result = signal_updater.refresh_politician_signals()
+            self._last_signal_refresh_at = now
+            if result["added"]:
+                self.logger.info(
+                    "Refreshed Capitol signals for %s: +%s trades across %s page(s).",
+                    POLITICIAN,
+                    result["added"],
+                    result["pages_scanned"],
+                )
+            else:
+                self.logger.info(
+                    "Checked Capitol signals for %s: no new trades across %s page(s).",
+                    POLITICIAN,
+                    result["pages_scanned"],
+                )
+        except Exception as exc:
+            self.logger.error("SIGNAL REFRESH ERROR: %s", exc)
 
     def load_state(self):
         if not STATE_PATH.exists():
@@ -338,11 +370,13 @@ class CopyTradeLiveManager:
         self.save_state()
 
     def startup_sync(self):
+        self.refresh_signals_if_due(force=True)
         self.load_state()
         self.order_sync.sync_trade_log()
         self.evaluate(force=False, reason="Khanna copy-trade rebalance")
         self.order_sync.sync_trade_log()
         self.save_state()
+        self.snapshot_publisher.publish_if_due(force=True)
 
     def run(self):
         try:
@@ -352,6 +386,7 @@ class CopyTradeLiveManager:
             time.sleep(30)
         while True:
             try:
+                self.refresh_signals_if_due()
                 self.order_sync.sync_trade_log()
                 clock = self.market_clock()
                 if not clock.is_open:
@@ -359,6 +394,7 @@ class CopyTradeLiveManager:
                 self.evaluate(reason="Khanna copy-trade rebalance")
                 self.order_sync.sync_trade_log()
                 self.save_state()
+                self.snapshot_publisher.publish_if_due()
                 time.sleep(POLL_INTERVAL)
             except Exception as exc:
                 self.logger.error(f"LOOP ERROR: {exc}")
@@ -367,4 +403,3 @@ class CopyTradeLiveManager:
 
 def main():
     CopyTradeLiveManager().run()
-

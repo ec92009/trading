@@ -1,0 +1,150 @@
+from __future__ import annotations
+
+import csv
+import json
+import logging
+import os
+import subprocess
+import time
+from io import StringIO
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+DOCS_DATA_DIR = HERE / "docs" / "data"
+RECENT_DECISIONS_PATH = DOCS_DATA_DIR / "recent_decisions.json"
+RECENT_TRADES_PATH = DOCS_DATA_DIR / "recent_trades.tsv"
+
+SNAPSHOT_PUBLISH_INTERVAL = int(os.getenv("REMOTE_SNAPSHOT_PUBLISH_INTERVAL", "900"))
+DECISION_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_DECISION_SNAPSHOT_LIMIT", "50"))
+TRADE_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_TRADE_SNAPSHOT_LIMIT", "50"))
+GIT_TIMEOUT_SECONDS = int(os.getenv("REMOTE_SNAPSHOT_GIT_TIMEOUT", "30"))
+REMOTE_SNAPSHOT_PUBLISH_ENABLED = (os.getenv("ENABLE_REMOTE_SNAPSHOT_PUBLISH", "").strip().lower() in {"1", "true", "yes", "on"})
+
+
+def _tail_jsonl(path: Path, limit: int) -> list[dict]:
+    if not path.exists():
+        return []
+    rows = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    return rows[-max(1, limit) :]
+
+
+def _tail_tsv(path: Path, limit: int) -> tuple[list[str], list[dict]]:
+    if not path.exists():
+        return [], []
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle, delimiter="\t")
+        rows = list(reader)
+        fieldnames = list(reader.fieldnames or [])
+    return fieldnames, rows[-max(1, limit) :]
+
+
+def _render_trades_tsv(fieldnames: list[str], rows: list[dict]) -> str:
+    if not fieldnames:
+        return ""
+    buffer = StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=fieldnames, delimiter="\t", lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    return buffer.getvalue()
+
+
+def write_snapshot_files(
+    *,
+    decision_log_path: Path,
+    trade_log_path: Path,
+    decision_limit: int = DECISION_SNAPSHOT_LIMIT,
+    trade_limit: int = TRADE_SNAPSHOT_LIMIT,
+) -> list[Path]:
+    DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    changed: list[Path] = []
+
+    decision_rows = _tail_jsonl(decision_log_path, decision_limit)
+    decision_text = json.dumps(decision_rows, indent=2) + "\n"
+    current_decision_text = RECENT_DECISIONS_PATH.read_text(encoding="utf-8") if RECENT_DECISIONS_PATH.exists() else None
+    if current_decision_text != decision_text:
+        RECENT_DECISIONS_PATH.write_text(decision_text, encoding="utf-8")
+        changed.append(RECENT_DECISIONS_PATH)
+
+    trade_fields, trade_rows = _tail_tsv(trade_log_path, trade_limit)
+    trade_text = _render_trades_tsv(trade_fields, trade_rows)
+    current_trade_text = RECENT_TRADES_PATH.read_text(encoding="utf-8") if RECENT_TRADES_PATH.exists() else None
+    if current_trade_text != trade_text:
+        RECENT_TRADES_PATH.write_text(trade_text, encoding="utf-8")
+        changed.append(RECENT_TRADES_PATH)
+
+    return changed
+
+
+class RemoteSnapshotPublisher:
+    def __init__(
+        self,
+        *,
+        decision_log_path: Path,
+        trade_log_path: Path,
+        logger: logging.Logger | None = None,
+        interval_seconds: int = SNAPSHOT_PUBLISH_INTERVAL,
+        enabled: bool = REMOTE_SNAPSHOT_PUBLISH_ENABLED,
+    ):
+        self.decision_log_path = decision_log_path
+        self.trade_log_path = trade_log_path
+        self.interval_seconds = max(60, interval_seconds)
+        self.logger = logger or logging.getLogger("remote_snapshots")
+        self.enabled = enabled
+        self._last_publish_at = 0.0
+
+    def publish_if_due(self, *, force: bool = False):
+        if not self.enabled:
+            return
+        now = time.time()
+        if not force and now - self._last_publish_at < self.interval_seconds:
+            return
+        self._last_publish_at = now
+        self.publish_once()
+
+    def publish_once(self):
+        changed = write_snapshot_files(
+            decision_log_path=self.decision_log_path,
+            trade_log_path=self.trade_log_path,
+        )
+        if not changed:
+            return
+        self._git_publish(changed)
+
+    def _git_publish(self, changed: list[Path]):
+        try:
+            rel_paths = [path.relative_to(HERE).as_posix() for path in changed]
+            self._run_git(["git", "add", "--", *rel_paths])
+            diff = subprocess.run(
+                ["git", "diff", "--cached", "--quiet", "--", *rel_paths],
+                cwd=HERE,
+                capture_output=True,
+                text=True,
+                timeout=GIT_TIMEOUT_SECONDS,
+                check=False,
+            )
+            if diff.returncode == 0:
+                return
+            branch = self._run_git(["git", "branch", "--show-current"]).strip() or "main"
+            self._run_git(["git", "commit", "-m", "Update remote log snapshots"])
+            self._run_git(["git", "push", "origin", branch])
+            self.logger.info("Published updated remote snapshot files: %s", ", ".join(rel_paths))
+        except Exception as exc:
+            self.logger.error("REMOTE SNAPSHOT PUBLISH ERROR: %s", exc)
+
+    def _run_git(self, cmd: list[str]) -> str:
+        result = subprocess.run(
+            cmd,
+            cwd=HERE,
+            capture_output=True,
+            text=True,
+            timeout=GIT_TIMEOUT_SECONDS,
+            check=False,
+        )
+        if result.returncode != 0:
+            message = result.stderr.strip() or result.stdout.strip() or f"{cmd[0]} failed"
+            raise RuntimeError(message)
+        return result.stdout
