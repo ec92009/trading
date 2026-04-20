@@ -43,6 +43,7 @@ const dom = {
   dropzone: document.getElementById("dropzone"),
   statusText: document.getElementById("statusText"),
   sourceText: document.getElementById("sourceText"),
+  versionBadge: document.getElementById("versionBadge"),
   reloadBundled: document.getElementById("reloadBundled"),
   symbolFilter: document.getElementById("symbolFilter"),
   eventFilter: document.getElementById("eventFilter"),
@@ -599,4 +600,18 @@ for (const input of filterInputs) {
   input.addEventListener("input", render);
 }
 
+loadVersionBadge();
 loadAllBundled();
+async function loadVersionBadge() {
+  try {
+    const response = await fetch("./data/version.json", { cache: "no-store" });
+    if (!response.ok) {
+      dom.versionBadge.textContent = "v—";
+      return;
+    }
+    const payload = await response.json();
+    dom.versionBadge.textContent = payload.display || `v${payload.version || "—"}`;
+  } catch (_error) {
+    dom.versionBadge.textContent = "v—";
+  }
+}

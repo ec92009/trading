@@ -51,6 +51,8 @@ class RemoteSnapshotTests(unittest.TestCase):
             )
 
             with patch.object(remote_snapshots, "DOCS_DATA_DIR", docs_data), patch.object(
+                remote_snapshots, "PUBLIC_VERSION_PATH", docs_data / "version.json"
+            ), patch.object(
                 remote_snapshots, "RECENT_BOT_LOG_PATH", docs_data / "recent_bot.log"
             ), patch.object(
                 remote_snapshots, "RECENT_DECISIONS_PATH", docs_data / "recent_decisions.json"
@@ -66,7 +68,10 @@ class RemoteSnapshotTests(unittest.TestCase):
                     trade_limit=2,
                 )
 
-            self.assertEqual(len(changed), 3)
+            self.assertEqual(len(changed), 4)
+            version_payload = json.loads((docs_data / "version.json").read_text(encoding="utf-8"))
+            self.assertEqual(version_payload["version"], "51.1")
+            self.assertEqual(version_payload["display"], "v51.1")
             bot_log_snapshot = (docs_data / "recent_bot.log").read_text(encoding="utf-8")
             self.assertIn("first line", bot_log_snapshot)
             self.assertIn("second line", bot_log_snapshot)

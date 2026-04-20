@@ -13,6 +13,11 @@ Working preferences for `~/Dev/trading`.
 - Full procedure lives in [VERSIONING_SOP.md](VERSIONING_SOP.md).
 - Apply `VERSIONING_SOP.md` whenever bot-facing version numbers or release badges change.
 - Do not assume simulation-only research changes need a version bump unless they also ship a bot/UI-facing change.
+- For each completed web-app / bot-facing delivery cycle, bump the shared version, keep the bot and web app on the same version source, and report the three viewer URLs:
+- localhost URL
+- LAN URL
+- public GitHub Pages URL
+- Also report the new visible version at the end of the cycle.
 
 ## Research Context
 

@@ -304,6 +304,7 @@ It now opens with three explicit tabs for:
 - the trade journal
 
 Each tab renders the underlying `10k` bot file in a more human-readable format, and the running `10k` bot periodically publishes fresh committed snapshots into `docs/data/` so the latest view stays available on GitHub Pages even when you are away from the machine.
+The page also shows the shared bot/app version badge sourced from the repo `VERSION`.
 
 To publish it on GitHub Pages:
 

@@ -11,6 +11,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DOCS_DATA_DIR = HERE / "docs" / "data"
+VERSION_PATH = HERE / "VERSION"
+PUBLIC_VERSION_PATH = DOCS_DATA_DIR / "version.json"
 RECENT_BOT_LOG_PATH = DOCS_DATA_DIR / "recent_bot.log"
 RECENT_DECISIONS_PATH = DOCS_DATA_DIR / "recent_decisions.json"
 RECENT_TRADES_PATH = DOCS_DATA_DIR / "recent_trades.tsv"
@@ -53,6 +55,14 @@ def _tail_lines(path: Path, limit: int) -> str:
     return "\n".join(lines[-max(1, limit) :]) + "\n"
 
 
+def _shared_version_payload() -> dict[str, str]:
+    version = VERSION_PATH.read_text(encoding="utf-8").strip() if VERSION_PATH.exists() else "0.0"
+    return {
+        "version": version,
+        "display": f"v{version}",
+    }
+
+
 def _render_trades_tsv(fieldnames: list[str], rows: list[dict]) -> str:
     if not fieldnames:
         return ""
@@ -74,6 +84,12 @@ def write_snapshot_files(
 ) -> list[Path]:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
     changed: list[Path] = []
+
+    version_text = json.dumps(_shared_version_payload(), indent=2) + "\n"
+    current_version_text = PUBLIC_VERSION_PATH.read_text(encoding="utf-8") if PUBLIC_VERSION_PATH.exists() else None
+    if current_version_text != version_text:
+        PUBLIC_VERSION_PATH.write_text(version_text, encoding="utf-8")
+        changed.append(PUBLIC_VERSION_PATH)
 
     bot_log_text = _tail_lines(bot_log_path, bot_log_limit)
     current_bot_log_text = RECENT_BOT_LOG_PATH.read_text(encoding="utf-8") if RECENT_BOT_LOG_PATH.exists() else None
