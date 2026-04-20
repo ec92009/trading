@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trading Log Viewer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">GitHub Pages</p>
+        <h1>Trading Log Viewer</h1>
+        <p class="intro">
+          Open a local <code>bot_decisions*.jsonl</code>, <code>bot.log</code>, or
+          <code>trades*.tsv</code> file and view it in a readable format directly in
+          the browser.
+        </p>
+      </header>
+
+      <section class="panel upload-panel">
+        <div
+          id="dropzone"
+          class="dropzone"
+          tabindex="0"
+          aria-label="Upload trading log files"
+        >
+          <p class="drop-title">Drop files here</p>
+          <p class="drop-subtitle">or choose a file from disk</p>
+          <label class="button">
+            <span>Select file</span>
+            <input id="fileInput" type="file" accept=".jsonl,.log,.tsv,.json,.txt" />
+          </label>
+        </div>
+        <div class="upload-meta">
+          <p id="statusText">No file loaded.</p>
+          <p class="muted">
+            The app is fully client-side. Your logs stay in your browser and are not
+            uploaded anywhere.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel controls">
+        <div class="control">
+          <label for="viewSelect">View</label>
+          <select id="viewSelect">
+            <option value="auto">Auto</option>
+            <option value="decisions">Decision journal</option>
+            <option value="botlog">Bot log</option>
+            <option value="trades">Trades TSV</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="symbolFilter">Symbol</label>
+          <input id="symbolFilter" type="text" placeholder="TSLA, AAPL, BTC/USD" />
+        </div>
+        <div class="control">
+          <label for="eventFilter">Event / logger</label>
+          <input id="eventFilter" type="text" placeholder="order_submitted, portfolio" />
+        </div>
+        <div class="control control-wide">
+          <label for="textFilter">Text search</label>
+          <input id="textFilter" type="text" placeholder="rebalance, stop, next open" />
+        </div>
+        <div class="control">
+          <label for="limitInput">Show latest</label>
+          <input id="limitInput" type="number" min="1" step="1" value="200" />
+        </div>
+      </section>
+
+      <section id="summaryPanel" class="summary-grid"></section>
+
+      <section id="resultsPanel" class="panel empty-state">
+        <h2>Ready</h2>
+        <p>Load one of the trading log files to begin.</p>
+      </section>
+    </main>
+
+    <template id="summaryCardTemplate">
+      <article class="summary-card">
+        <p class="summary-label"></p>
+        <p class="summary-value"></p>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
