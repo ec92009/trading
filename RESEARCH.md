@@ -1,6 +1,6 @@
 # Research Handoff
 
-Current state for `~/Dev/trading` as of `2026-04-19`.
+Current state for `~/Dev/trading` as of `2026-04-20`.
 
 ## Core Bot / Basket
 
@@ -34,6 +34,7 @@ Current state for `~/Dev/trading` as of `2026-04-19`.
 
 - Capitol now looks more interesting than the old stop-overlay path as a source of actual stock-picking edge.
 - We now have a broader local Capitol dataset, not just Mullin.
+- The `10K` live bot path has now been repointed away from the old basket bot and onto the Ro Khanna daily copy-trade flow in [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py).
 - Mullin actionable history is short:
 - actionable `published_at` window starts `2025-08-13`
 - current local actionable history runs through `2026-03-10`
@@ -44,6 +45,42 @@ Current state for `~/Dev/trading` as of `2026-04-19`.
 - decisions are keyed off `published_at`
 - entries use the next trading day open
 - positions use Alpaca-style fractional sizing
+
+## Khanna Live Deployment Status
+
+- The Ro Khanna daily live path now runs through:
+- [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py)
+- [khanna_daily/market_data.py](/Users/ecohen/Dev/trading/khanna_daily/market_data.py)
+- The live policy is:
+- Ro Khanna only
+- minimum disclosure band `'< 1K'`
+- max active queue `10`
+- half-life `60` calendar days
+- next-trading-day execution
+- target weights normalized from active point balances
+- The daily cache warm is now effectively complete for the current Khanna universe:
+- daily cache spans the actionable window from `2024-02-07` through `2026-04-20`
+- the current Khanna build resolves offline from cache after one Alpaca-backed warm pass
+- The current live build also persists an Alpaca rejection list under [`.cache/daily_data/rejected_symbols.json`](/Users/ecohen/Dev/trading/.cache/daily_data/rejected_symbols.json).
+- Current rejected symbols include:
+- `7410Z`
+- `DE1`
+- `SPX`
+- Working policy:
+- any symbol Alpaca rejects or cannot support for live pricing/trading should be ignored by the live Khanna bot
+- symbols with no Alpaca market data remain excluded from the actionable book
+- After the cache warm and rejection persistence pass, the remaining skipped symbols on the Khanna run are now mostly genuine `no market data` names rather than transient network misses.
+- The current cached Khanna target book for the `10K` bot resolves to:
+- `ACI`
+- `BMO`
+- `KO`
+- `JPM`
+- `AMZN`
+- `MCD`
+- `IT`
+- `VIG`
+- `AMRZ`
+- `TD`
 
 ## Local Capitol Dataset
 

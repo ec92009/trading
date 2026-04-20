@@ -19,7 +19,9 @@ def install_alpaca_stubs():
     trading_exceptions = ModuleType("alpaca.trading.exceptions")
     data = ModuleType("alpaca.data")
     data_historical = ModuleType("alpaca.data.historical")
+    data_enums = ModuleType("alpaca.data.enums")
     data_requests = ModuleType("alpaca.data.requests")
+    data_timeframe = ModuleType("alpaca.data.timeframe")
 
     class TradingClient:
         def __init__(self, *args, **kwargs):
@@ -53,6 +55,14 @@ def install_alpaca_stubs():
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
+    class StockBarsRequest:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+    class CryptoBarsRequest:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
     class APIError(Exception):
         pass
 
@@ -66,8 +76,12 @@ def install_alpaca_stubs():
     trading_exceptions.APIError = APIError
     data_historical.StockHistoricalDataClient = StockHistoricalDataClient
     data_historical.CryptoHistoricalDataClient = CryptoHistoricalDataClient
+    data_enums.Adjustment = SimpleNamespace(RAW="raw")
     data_requests.StockLatestQuoteRequest = StockLatestQuoteRequest
     data_requests.CryptoLatestQuoteRequest = CryptoLatestQuoteRequest
+    data_requests.StockBarsRequest = StockBarsRequest
+    data_requests.CryptoBarsRequest = CryptoBarsRequest
+    data_timeframe.TimeFrame = SimpleNamespace(Hour="1Hour")
 
     modules = {
         "alpaca": alpaca,
@@ -78,12 +92,191 @@ def install_alpaca_stubs():
         "alpaca.trading.exceptions": trading_exceptions,
         "alpaca.data": data,
         "alpaca.data.historical": data_historical,
+        "alpaca.data.enums": data_enums,
         "alpaca.data.requests": data_requests,
+        "alpaca.data.timeframe": data_timeframe,
     }
     return patch.dict(sys.modules, modules)
 
 
 class BotBehaviorTests(unittest.TestCase):
+    def test_khanna_daily_live_uses_inclusive_60_day_policy(self):
+        with install_alpaca_stubs():
+            live = importlib.import_module("khanna_daily.live")
+            importlib.reload(live)
+
+            self.assertEqual(live.MIN_BAND, "< 1K")
+            self.assertEqual(live.MAX_NAMES, 10)
+            self.assertAlmostEqual(live.HALF_LIFE_DAYS, 60.0)
+            self.assertAlmostEqual(live.DAILY_DECAY_PCT, 0.01148597964710385)
+            self.assertEqual(live.IGNORED_SYMBOLS, {"SPX"})
+
+    def test_khanna_daily_market_data_collapses_hourly_rows(self):
+        market_data = importlib.import_module("khanna_daily.market_data")
+        importlib.reload(market_data)
+
+        rows = {
+            "2026-04-20T14:00:00Z": (10.0, 11.0, 9.5, 11.5),
+            "2026-04-20T15:00:00Z": (11.0, 12.0, 10.5, 12.5),
+            "2026-04-21T14:00:00Z": (12.5, 12.0, 11.5, 13.0),
+        }
+        self.assertEqual(
+            market_data._daily_rows_from_hourly_rows(rows),
+            {
+                "2026-04-20": (10.0, 12.0, 9.5, 12.5),
+                "2026-04-21": (12.5, 12.0, 11.5, 13.0),
+            },
+        )
+
+    def test_khanna_daily_market_data_remembers_rejected_symbols(self):
+        market_data = importlib.import_module("khanna_daily.market_data")
+        importlib.reload(market_data)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            rejected_path = Path(tmpdir) / "rejected_symbols.json"
+            with patch.object(market_data, "REJECTED_SYMBOLS_PATH", rejected_path):
+                market_data._remember_rejected_symbol("7410Z", "alpaca rejected symbol")
+                market_data._remember_rejected_symbol("SPX", "alpaca rejected symbol")
+
+                self.assertEqual(
+                    market_data._load_rejected_symbols(),
+                    {"7410Z": "alpaca rejected symbol", "SPX": "alpaca rejected symbol"},
+                )
+
+    def test_khanna_daily_market_data_skips_previously_rejected_symbols(self):
+        market_data = importlib.import_module("khanna_daily.market_data")
+        importlib.reload(market_data)
+
+        fake_series = SimpleNamespace(days=["2026-04-18"], quotes={})
+        load_calls: list[str] = []
+
+        def fake_load(symbol: str, *, start: str, end: str):
+            load_calls.append(symbol)
+            if symbol == "SPY":
+                return {"2026-04-18": (1.0, 1.0, 1.0, 1.0)}
+            if symbol == "AAPL":
+                return {"2026-04-18": (2.0, 2.0, 2.0, 2.0)}
+            raise AssertionError(f"unexpected symbol load: {symbol}")
+
+        with patch.object(market_data, "_load_rejected_symbols", return_value={"7410Z": "alpaca rejected symbol"}), patch.object(
+            market_data,
+            "_load_symbol_daily_rows",
+            side_effect=fake_load,
+        ), patch.object(market_data.demo, "_build_daily_series", return_value=fake_series):
+            trading_days, market, skipped = market_data.load_market_series(
+                ["AAPL", "7410Z"],
+                start="2026-04-18",
+                end="2026-04-18",
+            )
+
+        self.assertEqual(trading_days, ["2026-04-18"])
+        self.assertEqual(load_calls, ["SPY", "AAPL"])
+        self.assertIn("AAPL", market)
+        self.assertEqual(skipped, {"7410Z": "alpaca rejected symbol"})
+
+    def test_copytrade_live_uses_inclusive_60_day_policy(self):
+        with install_alpaca_stubs():
+            copytrade_live = importlib.import_module("copytrade_live")
+            importlib.reload(copytrade_live)
+
+            self.assertEqual(copytrade_live.MIN_BAND, "< 1K")
+            self.assertEqual(copytrade_live.MAX_NAMES, 10)
+            self.assertAlmostEqual(copytrade_live.HALF_LIFE_DAYS, 60.0)
+            self.assertAlmostEqual(copytrade_live.DAILY_DECAY_PCT, 0.01148597964710385)
+            self.assertEqual(
+                copytrade_live.LIVE_POINT_SYSTEM,
+                {
+                    "< 1K": 0.125,
+                    "1K-15K": 0.25,
+                    "15K-50K": 0.5,
+                    "50K-100K": 1.0,
+                    "100K-250K": 1.0,
+                    "250K-500K": 2.0,
+                    "500K-1M": 4.0,
+                    "1M-5M": 10.0,
+                    "5M-25M": 20.0,
+                },
+            )
+
+    def test_copytrade_live_point_system_restores_demo_defaults(self):
+        with install_alpaca_stubs():
+            copytrade_demo = importlib.import_module("copytrade_demo")
+            copytrade_live = importlib.import_module("copytrade_live")
+            importlib.reload(copytrade_demo)
+            importlib.reload(copytrade_live)
+
+            original_points = dict(copytrade_demo.BAND_POINTS)
+            with copytrade_live._live_point_system():
+                self.assertEqual(copytrade_demo.BAND_POINTS["< 1K"], 0.125)
+                self.assertEqual(copytrade_demo.BAND_POINTS["1M-5M"], 10.0)
+            self.assertEqual(copytrade_demo.BAND_POINTS, original_points)
+
+    def test_copytrade_signature_tracks_trade_day_and_weights(self):
+        with install_alpaca_stubs():
+            copytrade_live = importlib.import_module("copytrade_live")
+            importlib.reload(copytrade_live)
+
+            result = {"trade_window": {"last_trade_day": "2026-04-10"}}
+            weights = {"MSFT": 0.4, "NVDA": 0.6}
+            self.assertEqual(
+                copytrade_live._signature_for(result, weights),
+                "2026-04-10|MSFT:0.4000,NVDA:0.6000",
+            )
+
+    def test_copytrade_weights_only_include_positive_targets(self):
+        with install_alpaca_stubs():
+            copytrade_live = importlib.import_module("copytrade_live")
+            importlib.reload(copytrade_live)
+
+            simulation = {
+                "positions": {
+                    "MSFT": {"weight": 0.55},
+                    "NVDA": {"weight": 0},
+                    "TSLA": {"weight": 0.4499},
+                }
+            }
+            self.assertEqual(
+                copytrade_live._weights_from_simulation(simulation),
+                {"MSFT": 0.55, "TSLA": 0.4499},
+            )
+
+    def test_copytrade_cancels_open_orders_before_rebalance(self):
+        with install_alpaca_stubs():
+            copytrade_live = importlib.import_module("copytrade_live")
+            importlib.reload(copytrade_live)
+
+            fake_trading = SimpleNamespace(
+                get_orders=Mock(
+                    return_value=[
+                        SimpleNamespace(id="ord-1", symbol="TSLA"),
+                        SimpleNamespace(id="ord-2", symbol="NVDA"),
+                    ]
+                ),
+                cancel_order_by_id=Mock(),
+            )
+            manager = copytrade_live.CopyTradeLiveManager()
+            with patch.object(copytrade_live.basket_bot, "trading", fake_trading):
+                canceled = manager.cancel_open_orders()
+
+            self.assertEqual(canceled, 2)
+            self.assertEqual(fake_trading.cancel_order_by_id.call_count, 2)
+            fake_trading.cancel_order_by_id.assert_any_call("ord-1")
+            fake_trading.cancel_order_by_id.assert_any_call("ord-2")
+
+    def test_copytrade_run_survives_startup_error(self):
+        with install_alpaca_stubs():
+            copytrade_live = importlib.import_module("copytrade_live")
+            importlib.reload(copytrade_live)
+
+            manager = copytrade_live.CopyTradeLiveManager()
+            with patch.object(manager, "startup_sync", side_effect=RuntimeError("boom")), patch.object(
+                manager, "market_clock", side_effect=KeyboardInterrupt
+            ), patch.object(copytrade_live.time, "sleep") as sleep_mock:
+                with self.assertRaises(KeyboardInterrupt):
+                    manager.run()
+
+            sleep_mock.assert_called_once_with(30)
+
     def test_buy_does_not_guess_position_size(self):
         with install_alpaca_stubs():
             bot = importlib.import_module("bot")
@@ -147,7 +340,9 @@ class BotBehaviorTests(unittest.TestCase):
                 ),
             )
 
-            with patch.object(bot, "trade_log", trade_log), patch.object(bot, "trading", fake_trading):
+            with patch.object(bot, "trade_log", trade_log), patch.object(bot, "trading", fake_trading), patch.object(
+                bot, "LIVE_REBALANCE_ONLY", False
+            ):
                 b = bot.Bot(
                     bot.BotConfig(
                         symbol="AAPL",
