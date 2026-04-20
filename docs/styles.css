@@ -77,6 +77,27 @@ table td.mono,
   box-shadow: var(--shadow);
 }
 
+.bundle-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.bundle-label {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.bundle-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .upload-panel {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
@@ -129,10 +150,19 @@ table td.mono,
   color: white;
   cursor: pointer;
   font-weight: 700;
+  border: 0;
+  font: inherit;
 }
 
 .button input {
   display: none;
+}
+
+.button-secondary {
+  margin-top: 0;
+  background: #f1eadc;
+  color: var(--ink);
+  border: 1px solid var(--line);
 }
 
 .upload-meta {
@@ -362,10 +392,15 @@ th {
 }
 
 @media (max-width: 900px) {
+  .bundle-panel,
   .upload-panel,
   .controls,
   .summary-grid,
   .kv-grid {
     grid-template-columns: 1fr;
+  }
+
+  .bundle-panel {
+    display: grid;
   }
 }

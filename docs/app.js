@@ -12,6 +12,8 @@ const dom = {
   fileInput: document.getElementById("fileInput"),
   dropzone: document.getElementById("dropzone"),
   statusText: document.getElementById("statusText"),
+  loadRecentDecisions: document.getElementById("loadRecentDecisions"),
+  loadRecentTrades: document.getElementById("loadRecentTrades"),
   viewSelect: document.getElementById("viewSelect"),
   symbolFilter: document.getElementById("symbolFilter"),
   eventFilter: document.getElementById("eventFilter"),
@@ -274,6 +276,47 @@ function renderDecisionCards(records) {
   return `<section class="panel results"><div class="stack">${cards}</div></section>`;
 }
 
+function renderDecisionTable(records) {
+  if (!records.length) {
+    return "<section class=\"panel empty-state\"><h2>No matching events</h2><p>Adjust the filters to widen the result set.</p></section>";
+  }
+  const body = records
+    .map((record) => {
+      const side = record.order?.alpaca_request?.side || record.state?.side || "";
+      const amount = record.order?.alpaca_request?.notional ?? record.order?.alpaca_request?.qty ?? record.state?.deficit ?? record.state?.qty ?? "";
+      return `
+        <tr>
+          <td class="mono">${escapeHtml(record.timestamp_utc || "")}</td>
+          <td>${escapeHtml(record.symbol || "")}</td>
+          <td>${escapeHtml(record.event_type || "")}</td>
+          <td>${escapeHtml(String(side || ""))}</td>
+          <td class="mono">${escapeHtml(formatValue(amount))}</td>
+          <td>${escapeHtml(record.rationale || "")}</td>
+        </tr>
+      `;
+    })
+    .join("");
+  return `
+    <section class="panel results">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Symbol</th>
+              <th>Event</th>
+              <th>Side</th>
+              <th>Amount</th>
+              <th>Rationale</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
 function renderBotLog(records) {
   if (!records.length) {
     return "<section class=\"panel empty-state\"><h2>No matching lines</h2><p>Adjust the filters to widen the result set.</p></section>";
@@ -295,6 +338,39 @@ function renderBotLog(records) {
 function renderTradesTable(records, headers) {
   if (!records.length) {
     return "<section class=\"panel empty-state\"><h2>No matching rows</h2><p>Adjust the filters to widen the result set.</p></section>";
+  }
+  if (state.fileName.startsWith("recent:")) {
+    const body = records
+      .map((row) => `
+        <tr>
+          <td class="mono">${escapeHtml(row.submitted_at || "")}</td>
+          <td>${escapeHtml(row.symbol || "")}</td>
+          <td>${escapeHtml(row.side || "")}</td>
+          <td class="mono">${escapeHtml(row.notional || "")}</td>
+          <td>${escapeHtml(row.status || "")}</td>
+          <td>${escapeHtml(row.rationale || "")}</td>
+        </tr>
+      `)
+      .join("");
+    return `
+      <section class="panel results">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Submitted</th>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Notional</th>
+                <th>Status</th>
+                <th>Rationale</th>
+              </tr>
+            </thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
   }
   const head = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("");
   const body = records
@@ -331,7 +407,9 @@ function render() {
   const filtered = visibleRecords(applyFilters(state.records, state.parsedType));
   let html = "";
   if (state.parsedType === "decisions") {
-    html = renderDecisionCards(filtered);
+    html = state.fileName.startsWith("recent:")
+      ? renderDecisionTable(filtered)
+      : renderDecisionCards(filtered);
   } else if (state.parsedType === "botlog") {
     html = renderBotLog(filtered);
   } else if (state.parsedType === "trades") {
@@ -356,6 +434,24 @@ async function handleFile(file) {
     parsed.type === "raw"
       ? `Loaded ${file.name}. Format not recognized, showing raw text.`
       : `Loaded ${file.name}. Parsed as ${parsed.type}.`;
+  render();
+}
+
+async function loadBundledFile(path, label, forcedView = "auto") {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) {
+    dom.statusText.textContent = `Could not load ${label}.`;
+    return;
+  }
+  const text = await response.text();
+  const parsed = detectAndParse(text, forcedView);
+  state.fileName = `recent:${label}`;
+  state.rawText = text;
+  state.parsedType = parsed.type;
+  state.records = parsed.records;
+  state.headers = parsed.headers || [];
+  state.summary = summarize(parsed);
+  dom.statusText.textContent = `Showing committed snapshot: ${label}.`;
   render();
 }
 
@@ -389,6 +485,16 @@ dom.dropzone.addEventListener("keydown", () => {
   dom.fileInput.click();
 });
 
+dom.loadRecentDecisions.addEventListener("click", async () => {
+  dom.viewSelect.value = "decisions";
+  await loadBundledFile("./data/recent_decisions.json", "recent decisions", "decisions");
+});
+
+dom.loadRecentTrades.addEventListener("click", async () => {
+  dom.viewSelect.value = "trades";
+  await loadBundledFile("./data/recent_trades.tsv", "recent trades", "trades");
+});
+
 dom.viewSelect.addEventListener("change", () => {
   if (!state.rawText) return;
   const parsed = detectAndParse(state.rawText, dom.viewSelect.value);
@@ -402,3 +508,5 @@ dom.viewSelect.addEventListener("change", () => {
 for (const input of filterInputs) {
   input.addEventListener("input", render);
 }
+
+loadBundledFile("./data/recent_decisions.json", "recent decisions", "decisions");

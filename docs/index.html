@@ -12,11 +12,25 @@
         <p class="eyebrow">GitHub Pages</p>
         <h1>Trading Log Viewer</h1>
         <p class="intro">
-          Open a local <code>bot_decisions*.jsonl</code>, <code>bot.log</code>, or
-          <code>trades*.tsv</code> file and view it in a readable format directly in
-          the browser.
+          View the most recently committed trading snapshots, or override them with a
+          local <code>bot_decisions*.jsonl</code>, <code>bot.log</code>, or
+          <code>trades*.tsv</code> file in the browser.
         </p>
       </header>
+
+      <section class="panel bundle-panel">
+        <div>
+          <p class="bundle-label">Bundled snapshots</p>
+          <p class="muted">
+            These are committed repo copies for when you are away from the machine
+            running the bot.
+          </p>
+        </div>
+        <div class="bundle-actions">
+          <button id="loadRecentDecisions" class="button button-secondary" type="button">Recent decisions</button>
+          <button id="loadRecentTrades" class="button button-secondary" type="button">Recent trades</button>
+        </div>
+      </section>
 
       <section class="panel upload-panel">
         <div

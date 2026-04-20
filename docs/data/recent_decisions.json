@@ -1,0 +1,118 @@
+[
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "qty": 3.412345,
+        "side": "sell",
+        "symbol": "VIG",
+        "time_in_force": "DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "sell-vig-1",
+      "status": "accepted",
+      "submitted_at": "2026-04-21T13:30:02Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "active_queue": [
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "TSLA",
+        "ACI",
+        "BMO"
+      ],
+      "current_value": 900.13,
+      "excess": 900.13,
+      "qty": 3.412345,
+      "reference_price": 263.77,
+      "target_value": 0.0,
+      "target_weight": 0.0,
+      "trigger_type": "copytrade_rebalance"
+    },
+    "symbol": "VIG",
+    "timestamp_utc": "2026-04-21T13:30:02Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "notional": 1456.0,
+        "side": "buy",
+        "symbol": "TSLA",
+        "time_in_force": "DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "buy-tsla-1",
+      "status": "accepted",
+      "submitted_at": "2026-04-21T13:30:03Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "active_queue": [
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "TSLA",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 1800.42,
+      "deficit": 1456.0,
+      "target_value": 1456.0,
+      "target_weight": 0.1456,
+      "trigger_type": "copytrade_rebalance"
+    },
+    "symbol": "TSLA",
+    "timestamp_utc": "2026-04-21T13:30:03Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "notional": 497.0,
+        "side": "buy",
+        "symbol": "AMZN",
+        "time_in_force": "DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "buy-amzn-1",
+      "status": "accepted",
+      "submitted_at": "2026-04-21T13:30:04Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "active_queue": [
+        "AMRZ",
+        "TD",
+        "IT",
+        "AMZN",
+        "KO",
+        "MCD",
+        "JPM",
+        "TSLA",
+        "ACI",
+        "BMO"
+      ],
+      "cash_available": 344.42,
+      "deficit": 497.0,
+      "target_value": 1527.0,
+      "target_weight": 0.1527,
+      "trigger_type": "copytrade_rebalance"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-21T13:30:04Z"
+  }
+]
