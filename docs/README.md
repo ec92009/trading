@@ -2,25 +2,20 @@
 
 Static GitHub Pages app for viewing local trading logs in the browser.
 
-Supported file types:
-
-- `bot_decisions*.jsonl`
-- `bot.log`
-- `trades*.tsv`
-
 The page now opens with three dedicated tabs:
 
 - Runtime Log
 - Decision Log
 - Trade Journal
 
-Each tab reads the matching committed snapshot from `docs/data/` by default, and a local upload only overrides the matching tab in your browser session.
+Each tab reads the matching committed snapshot from `docs/data/` by default.
 
 The running `10k` bot publishes fresh committed snapshots for:
 
 - `recent_bot.log`
 - `recent_decisions.json`
 - `recent_trades.tsv`
+- `version.json`
 
 Open `docs/index.html` locally for quick testing, or publish the `docs/` folder with GitHub Pages.
 

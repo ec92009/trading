@@ -39,9 +39,20 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 
 ## This session
 
-- Added a static GitHub Pages log viewer under [docs/](/Users/ecohen/Dev/trading/docs) for human-readable inspection of local trading logs in the browser.
-- The viewer supports drag-and-drop or file upload for `bot_decisions*.jsonl`, pretty-printed JSON decision arrays, `bot.log`, and `trades*.tsv`.
-- The decision journal now renders as event cards, while `bot.log` and `trades*.tsv` render as filtered line and table views.
-- Added browser-side filters for symbol, event or logger, free-text search, and a latest-entry limit so large logs stay usable.
-- Confirmed the intended published URL is [https://ec92009.github.io/trading/](https://ec92009.github.io/trading/), but it returned `404` because `docs/` only existed locally at the time of verification.
-- The next operational step was to commit and push the `docs/` app and README notes so GitHub Pages can serve the viewer.
+- Upgraded the GitHub Pages viewer under [docs/](/Users/ecohen/Dev/trading/docs) into three dedicated tabs for Runtime Log, Decision Log, and Trade Journal.
+- Added committed `10k` snapshot publishing for all three surfaces:
+- [docs/data/recent_bot.log](/Users/ecohen/Dev/trading/docs/data/recent_bot.log)
+- [docs/data/recent_decisions.json](/Users/ecohen/Dev/trading/docs/data/recent_decisions.json)
+- [docs/data/recent_trades.tsv](/Users/ecohen/Dev/trading/docs/data/recent_trades.tsv)
+- Added shared version publishing through [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) so the bot and web app stay on the same visible version.
+- Bumped the shared version to `51.1` in [VERSION](/Users/ecohen/Dev/trading/VERSION), updated the docs / SOP notes, and restarted the live `10k` bot so new rationales use `BOT v51.1->...`.
+- The local and LAN viewer URLs were verified at:
+- [http://127.0.0.1:8011/](http://127.0.0.1:8011/)
+- [http://192.168.1.155:8011/](http://192.168.1.155:8011/)
+- The public viewer URL is [https://ec92009.github.io/trading/](https://ec92009.github.io/trading/) and may lag a minute or two behind the push while GitHub Pages refreshes.
+- The Runtime Log tab was cleaned up to hide repeated `no new trades` polling and compact repeated closed-market / stale-order noise.
+- The Decision Log cards were simplified to remove the order-payload section.
+- The Trade Journal was compacted into a two-line mobile-friendly format:
+- line 1: submitted/status/side/symbol/notional/rationale
+- line 2: submitted/executed/filled
+- The upload / drag-and-drop panel and extra intro block were removed from the viewer so the page focuses on the committed `10k` snapshots only.

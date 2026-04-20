@@ -39,10 +39,6 @@ const state = {
 };
 
 const dom = {
-  fileInput: document.getElementById("fileInput"),
-  dropzone: document.getElementById("dropzone"),
-  statusText: document.getElementById("statusText"),
-  sourceText: document.getElementById("sourceText"),
   versionBadge: document.getElementById("versionBadge"),
   reloadBundled: document.getElementById("reloadBundled"),
   symbolFilter: document.getElementById("symbolFilter"),
@@ -255,6 +251,26 @@ function tradeRequestSummary(row) {
   return `${String(row.side || "").toUpperCase()} ${row.symbol} for ${amount}`;
 }
 
+function compactTradeHeadline(row) {
+  const submitted = row.submitted_at || row.executed_at || row.filled_at || "—";
+  const status = String(row.status || "unknown");
+  const side = String(row.side || "—").toUpperCase();
+  const symbol = row.symbol || "—";
+  const amount = formatMoney(row.notional) || row.notional || "—";
+  const rationale = String(row.rationale || "—")
+    .replace("BOT v", "BOT ")
+    .replace("Khanna copy-trade ", "");
+  return `${submitted} / ${status} / ${side} / ${symbol} / ${amount} / ${rationale}`;
+}
+
+function compactTradeDetails(row) {
+  return [
+    `Submitted ${row.submitted_at || "—"}`,
+    `Executed ${row.executed_at || "—"}`,
+    `Filled ${row.filled_at || "—"}`,
+  ].join(" / ");
+}
+
 function applyFilters(records, type) {
   const symbolNeedle = dom.symbolFilter.value.trim().toLowerCase();
   const eventNeedle = dom.eventFilter.value.trim().toLowerCase();
@@ -300,6 +316,75 @@ function visibleRecords(records) {
   return [...records].reverse().slice(0, normalizedLimit);
 }
 
+function compactBotLogRecords(records) {
+  const compacted = [];
+  for (const record of records) {
+    const message = String(record.message || "");
+
+    if (message.includes("Checked Capitol signals for Ro Khanna: no new trades")) {
+      continue;
+    }
+
+    if (message.startsWith("Canceled stale open order ")) {
+      const symbolMatch = message.match(/^Canceled stale open order\s+(\S+)/);
+      const symbol = symbolMatch?.[1] || "unknown";
+      const previous = compacted[compacted.length - 1];
+      if (previous && previous._compactType === "canceled_orders") {
+        previous._symbols.push(symbol);
+        previous.timestamp = record.timestamp;
+        previous.message = `Canceled stale open orders: ${previous._symbols.join(", ")}`;
+        continue;
+      }
+      compacted.push({
+        ...record,
+        _compactType: "canceled_orders",
+        _symbols: [symbol],
+        message: `Canceled stale open orders: ${symbol}`,
+      });
+      continue;
+    }
+
+    if (message === "Signal state changed but market is closed. Waiting for the next session.") {
+      const previous = compacted[compacted.length - 1];
+      if (previous && previous._compactType === "market_closed_wait") {
+        previous._count += 1;
+        previous.timestamp = record.timestamp;
+        previous.message = `Signal changed while market was closed (${previous._count}x)`;
+        continue;
+      }
+      compacted.push({
+        ...record,
+        _compactType: "market_closed_wait",
+        _count: 1,
+        message: "Signal changed while market was closed",
+      });
+      continue;
+    }
+
+    if (message.startsWith("Market closed. Next open ")) {
+      const nextOpen = message.replace("Market closed. Next open ", "");
+      const previous = compacted[compacted.length - 1];
+      if (previous && previous._compactType === "market_closed_next_open" && previous._nextOpen === nextOpen) {
+        previous._count += 1;
+        previous.timestamp = record.timestamp;
+        previous.message = `Market closed (${previous._count}x). Next open ${nextOpen}`;
+        continue;
+      }
+      compacted.push({
+        ...record,
+        _compactType: "market_closed_next_open",
+        _count: 1,
+        _nextOpen: nextOpen,
+        message: `Market closed. Next open ${nextOpen}`,
+      });
+      continue;
+    }
+
+    compacted.push(record);
+  }
+  return compacted;
+}
+
 function renderSummary(cards) {
   dom.summaryPanel.innerHTML = "";
   for (const [label, value] of cards) {
@@ -315,7 +400,6 @@ function renderDecisionCards(records) {
     return "<section class=\"panel empty-state\"><h2>No matching decision events</h2><p>Adjust the filters to widen the result set.</p></section>";
   }
   const cards = records.map((record) => {
-    const orderPairs = Object.entries(record.order || {});
     const statePairs = Object.entries(record.state || {});
     return `
       <article class="event-card">
@@ -326,20 +410,12 @@ function renderDecisionCards(records) {
         </div>
         <h3 class="entry-title">${escapeHtml(decisionTitle(record))}</h3>
         <p class="rationale">${escapeHtml(decisionNarrative(record))}</p>
-        <div class="kv-grid">
-          <section class="kv-box">
-            <h4>Decision state</h4>
-            <div class="kv-list">
-              ${statePairs.length ? statePairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No state</span><span>—</span></div>"}
-            </div>
-          </section>
-          <section class="kv-box">
-            <h4>Order payload</h4>
-            <div class="kv-list">
-              ${orderPairs.length ? orderPairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No order payload</span><span>—</span></div>"}
-            </div>
-          </section>
-        </div>
+        <section class="kv-box">
+          <h4>Decision state</h4>
+          <div class="kv-list">
+            ${statePairs.length ? statePairs.map(([key, value]) => `<div class="kv-row"><span>${escapeHtml(key)}</span><span class="mono">${escapeHtml(formatValue(value))}</span></div>`).join("") : "<div class=\"kv-row\"><span>No state</span><span>—</span></div>"}
+          </div>
+        </section>
       </article>
     `;
   }).join("");
@@ -352,33 +428,8 @@ function renderTradesCards(records) {
   }
   const cards = records.map((row) => `
     <article class="event-card">
-      <div class="event-topline">
-        <span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status || "unknown")}</span>
-        <span class="badge ${badgeClass(row.side)}">${escapeHtml(row.symbol || "—")}</span>
-        <span class="timestamp">${escapeHtml(row.submitted_at || row.executed_at || row.filled_at || "—")}</span>
-      </div>
-      <h3 class="entry-title">${escapeHtml(tradeRequestSummary(row))}</h3>
-      <p class="rationale">${escapeHtml(row.rationale || "No rationale recorded.")}</p>
-      <div class="kv-grid">
-        <section class="kv-box">
-          <h4>Order status</h4>
-          <div class="kv-list">
-            <div class="kv-row"><span>Order ID</span><span class="mono">${escapeHtml(row.order_id || "—")}</span></div>
-            <div class="kv-row"><span>Side</span><span class="mono">${escapeHtml(row.side || "—")}</span></div>
-            <div class="kv-row"><span>Notional</span><span class="mono">${escapeHtml(formatMoney(row.notional) || row.notional || "—")}</span></div>
-            <div class="kv-row"><span>Average price</span><span class="mono">${escapeHtml(row.avg_price || "—")}</span></div>
-          </div>
-        </section>
-        <section class="kv-box">
-          <h4>Timestamps</h4>
-          <div class="kv-list">
-            <div class="kv-row"><span>Submitted</span><span class="mono">${escapeHtml(row.submitted_at || "—")}</span></div>
-            <div class="kv-row"><span>Executed</span><span class="mono">${escapeHtml(row.executed_at || "—")}</span></div>
-            <div class="kv-row"><span>Filled</span><span class="mono">${escapeHtml(row.filled_at || "—")}</span></div>
-            <div class="kv-row"><span>Request</span><span class="mono">${escapeHtml(row.alpaca_request || "—")}</span></div>
-          </div>
-        </section>
-      </div>
+      <p class="trade-line trade-line-primary mono">${escapeHtml(compactTradeHeadline(row))}</p>
+      <p class="trade-line trade-line-secondary">${escapeHtml(compactTradeDetails(row))}</p>
     </article>
   `).join("");
   return `<section class="panel results"><div class="stack">${cards}</div></section>`;
@@ -388,7 +439,7 @@ function renderBotLog(records) {
   if (!records.length) {
     return "<section class=\"panel empty-state\"><h2>No matching log lines</h2><p>Adjust the filters to widen the result set.</p></section>";
   }
-  const lines = records.map((record) => `
+  const lines = compactBotLogRecords(records).map((record) => `
     <article class="log-line-card">
       <div class="line-topline">
         <span class="badge ${severityClass(record.message)}">${escapeHtml(record.logger)}</span>
@@ -410,12 +461,7 @@ function currentDataset() {
 }
 
 function updateStatusText(dataset) {
-  dom.statusText.textContent = `${TAB_CONFIG[state.activeTab].label}: ${dataset.sourceLabel}`;
-  dom.sourceText.textContent = dataset.source === "bundled"
-    ? "This tab is showing the last snapshot the bot committed to GitHub Pages."
-    : dataset.source === "local"
-      ? "This tab is showing a local override loaded in your browser only."
-      : "This tab does not have data yet.";
+  return dataset;
 }
 
 function syncTabButtons() {
@@ -508,82 +554,9 @@ async function loadBundledTab(tab) {
 }
 
 async function loadAllBundled() {
-  dom.statusText.textContent = "Loading committed snapshots.";
   await Promise.all(Object.keys(TAB_CONFIG).map((tab) => loadBundledTab(tab)));
   render();
 }
-
-async function handleFile(file) {
-  const rawText = await file.text();
-  const name = file.name.toLowerCase();
-  let tab = "";
-  let parsedType = "";
-  let records = [];
-  let headers = [];
-
-  try {
-    if (name.endsWith(".json") || name.endsWith(".jsonl")) {
-      tab = "decisions";
-      parsedType = "decisions";
-      records = parseDecisionLog(rawText);
-    } else if (name.endsWith(".tsv")) {
-      tab = "trades";
-      parsedType = "trades";
-      const parsed = parseTradesTsv(rawText);
-      records = parsed.rows;
-      headers = parsed.headers;
-    } else {
-      tab = "botlog";
-      parsedType = "botlog";
-      records = parseBotLog(rawText);
-    }
-  } catch (_error) {
-    dom.statusText.textContent = `Could not parse ${file.name}.`;
-    dom.sourceText.textContent = "Supported types are decision JSONL/JSON, trades TSV, and bot log text.";
-    return;
-  }
-
-  setDataset(tab, {
-    source: "local",
-    sourceLabel: `Loaded local override: ${file.name}.`,
-    rawText,
-    parsedType,
-    records,
-    headers,
-  });
-  state.activeTab = tab;
-  render();
-}
-
-function resetDragState() {
-  dom.dropzone.classList.remove("dragging");
-}
-
-dom.fileInput.addEventListener("change", async (event) => {
-  const file = event.target.files?.[0];
-  if (file) {
-    await handleFile(file);
-  }
-});
-
-dom.dropzone.addEventListener("dragover", (event) => {
-  event.preventDefault();
-  dom.dropzone.classList.add("dragging");
-});
-
-dom.dropzone.addEventListener("dragleave", resetDragState);
-dom.dropzone.addEventListener("drop", async (event) => {
-  event.preventDefault();
-  resetDragState();
-  const file = event.dataTransfer?.files?.[0];
-  if (file) {
-    await handleFile(file);
-  }
-});
-
-dom.dropzone.addEventListener("keydown", () => {
-  dom.fileInput.click();
-});
 
 for (const button of dom.tabButtons) {
   button.addEventListener("click", () => {
