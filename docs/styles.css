@@ -177,13 +177,44 @@ table td.mono,
   padding: 18px;
 }
 
+.controls-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.controls-kicker {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.controls-title {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
 .control {
   display: grid;
   gap: 8px;
 }
 
-.control-wide {
+.control-search {
   grid-column: span 2;
+}
+
+.control-action {
+  align-content: end;
+}
+
+.button-label {
+  opacity: 0;
 }
 
 label {
@@ -391,7 +422,15 @@ select {
     display: grid;
   }
 
+  .controls-head {
+    align-items: start;
+  }
+
   .control-wide {
+    grid-column: span 1;
+  }
+
+  .control-search {
     grid-column: span 1;
   }
 }

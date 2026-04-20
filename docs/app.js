@@ -41,8 +41,7 @@ const state = {
 const dom = {
   versionBadge: document.getElementById("versionBadge"),
   reloadBundled: document.getElementById("reloadBundled"),
-  symbolFilter: document.getElementById("symbolFilter"),
-  eventFilter: document.getElementById("eventFilter"),
+  applyFilters: document.getElementById("applyFilters"),
   textFilter: document.getElementById("textFilter"),
   limitInput: document.getElementById("limitInput"),
   summaryPanel: document.getElementById("summaryPanel"),
@@ -51,7 +50,7 @@ const dom = {
   tabButtons: Array.from(document.querySelectorAll(".tab-button")),
 };
 
-const filterInputs = [dom.symbolFilter, dom.eventFilter, dom.textFilter, dom.limitInput];
+const filterInputs = [dom.textFilter, dom.limitInput];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -272,39 +271,20 @@ function compactTradeDetails(row) {
 }
 
 function applyFilters(records, type) {
-  const symbolNeedle = dom.symbolFilter.value.trim().toLowerCase();
-  const eventNeedle = dom.eventFilter.value.trim().toLowerCase();
   const textNeedle = dom.textFilter.value.trim().toLowerCase();
 
   return records.filter((record) => {
     if (type === "decisions") {
-      const symbol = String(record.symbol || "").toLowerCase();
-      const event = String(record.event_type || "").toLowerCase();
       const haystack = JSON.stringify(record).toLowerCase();
-      return (
-        (!symbolNeedle || symbol.includes(symbolNeedle) || haystack.includes(symbolNeedle)) &&
-        (!eventNeedle || event.includes(eventNeedle) || haystack.includes(eventNeedle)) &&
-        (!textNeedle || haystack.includes(textNeedle))
-      );
+      return !textNeedle || haystack.includes(textNeedle);
     }
     if (type === "trades") {
-      const symbol = String(record.symbol || "").toLowerCase();
-      const status = String(record.status || "").toLowerCase();
       const haystack = JSON.stringify(record).toLowerCase();
-      return (
-        (!symbolNeedle || symbol.includes(symbolNeedle) || haystack.includes(symbolNeedle)) &&
-        (!eventNeedle || status.includes(eventNeedle) || haystack.includes(eventNeedle)) &&
-        (!textNeedle || haystack.includes(textNeedle))
-      );
+      return !textNeedle || haystack.includes(textNeedle);
     }
     if (type === "botlog") {
-      const logger = String(record.logger || "").toLowerCase();
       const haystack = `${record.timestamp} ${record.logger} ${record.message}`.toLowerCase();
-      return (
-        (!symbolNeedle || haystack.includes(symbolNeedle)) &&
-        (!eventNeedle || logger.includes(eventNeedle) || haystack.includes(eventNeedle)) &&
-        (!textNeedle || haystack.includes(textNeedle))
-      );
+      return !textNeedle || haystack.includes(textNeedle);
     }
     return true;
   });
@@ -316,9 +296,24 @@ function visibleRecords(records) {
   return [...records].reverse().slice(0, normalizedLimit);
 }
 
+function formatMarketClosedWaitMessage(count) {
+  return count > 1 ? `Signal changed while market was closed (${count}x)` : "Signal changed while market was closed";
+}
+
+function formatMarketClosedNextOpenMessage(nextOpen, count) {
+  return count > 1 ? `Market closed (${count}x). Next open ${nextOpen}` : `Market closed. Next open ${nextOpen}`;
+}
+
+function formatMarketClosedPairMessage(nextOpen, count) {
+  return count > 1
+    ? `Signal changed while market was closed (${count}x). Next open ${nextOpen}`
+    : `Signal changed while market was closed. Next open ${nextOpen}`;
+}
+
 function compactBotLogRecords(records) {
+  const chronological = [...records].reverse();
   const compacted = [];
-  for (const record of records) {
+  for (const record of chronological) {
     const message = String(record.message || "");
 
     if (message.includes("Checked Capitol signals for Ro Khanna: no new trades")) {
@@ -346,17 +341,17 @@ function compactBotLogRecords(records) {
 
     if (message === "Signal state changed but market is closed. Waiting for the next session.") {
       const previous = compacted[compacted.length - 1];
-      if (previous && previous._compactType === "market_closed_wait") {
+      if (previous && previous._compactType === "market_closed_pair_pending") {
         previous._count += 1;
         previous.timestamp = record.timestamp;
-        previous.message = `Signal changed while market was closed (${previous._count}x)`;
+        previous.message = formatMarketClosedWaitMessage(previous._count);
         continue;
       }
       compacted.push({
         ...record,
-        _compactType: "market_closed_wait",
+        _compactType: "market_closed_pair_pending",
         _count: 1,
-        message: "Signal changed while market was closed",
+        message: formatMarketClosedWaitMessage(1),
       });
       continue;
     }
@@ -364,10 +359,25 @@ function compactBotLogRecords(records) {
     if (message.startsWith("Market closed. Next open ")) {
       const nextOpen = message.replace("Market closed. Next open ", "");
       const previous = compacted[compacted.length - 1];
+      if (previous && previous._compactType === "market_closed_pair_pending") {
+        previous._compactType = "market_closed_pair";
+        previous._nextOpen = nextOpen;
+        previous.timestamp = record.timestamp;
+        previous.message = formatMarketClosedPairMessage(nextOpen, previous._count);
+
+        const earlier = compacted[compacted.length - 2];
+        if (earlier && earlier._compactType === "market_closed_pair" && earlier._nextOpen === nextOpen) {
+          earlier._count += previous._count;
+          earlier.timestamp = record.timestamp;
+          earlier.message = formatMarketClosedPairMessage(nextOpen, earlier._count);
+          compacted.pop();
+        }
+        continue;
+      }
       if (previous && previous._compactType === "market_closed_next_open" && previous._nextOpen === nextOpen) {
         previous._count += 1;
         previous.timestamp = record.timestamp;
-        previous.message = `Market closed (${previous._count}x). Next open ${nextOpen}`;
+        previous.message = formatMarketClosedNextOpenMessage(nextOpen, previous._count);
         continue;
       }
       compacted.push({
@@ -375,14 +385,14 @@ function compactBotLogRecords(records) {
         _compactType: "market_closed_next_open",
         _count: 1,
         _nextOpen: nextOpen,
-        message: `Market closed. Next open ${nextOpen}`,
+        message: formatMarketClosedNextOpenMessage(nextOpen, 1),
       });
       continue;
     }
 
     compacted.push(record);
   }
-  return compacted;
+  return compacted.reverse();
 }
 
 function renderSummary(cards) {
@@ -569,8 +579,17 @@ dom.reloadBundled.addEventListener("click", async () => {
   await loadAllBundled();
 });
 
+dom.applyFilters.addEventListener("click", () => {
+  render();
+});
+
 for (const input of filterInputs) {
-  input.addEventListener("input", render);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      render();
+    }
+  });
 }
 
 loadVersionBadge();

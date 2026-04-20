@@ -45,14 +45,17 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - [docs/data/recent_decisions.json](/Users/ecohen/Dev/trading/docs/data/recent_decisions.json)
 - [docs/data/recent_trades.tsv](/Users/ecohen/Dev/trading/docs/data/recent_trades.tsv)
 - Added shared version publishing through [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) so the bot and web app stay on the same visible version.
-- Bumped the shared version to `51.1` in [VERSION](/Users/ecohen/Dev/trading/VERSION), updated the docs / SOP notes, and restarted the live `10k` bot so new rationales use `BOT v51.1->...`.
+- Bumped the shared version through `51.3` in [VERSION](/Users/ecohen/Dev/trading/VERSION), kept [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) aligned, and reloaded the live `10k` bot so new rationales use the same shared version source.
 - The local and LAN viewer URLs were verified at:
 - [http://127.0.0.1:8011/](http://127.0.0.1:8011/)
-- [http://192.168.1.155:8011/](http://192.168.1.155:8011/)
+- [http://192.168.1.191:8011/](http://192.168.1.191:8011/)
 - The public viewer URL is [https://ec92009.github.io/trading/](https://ec92009.github.io/trading/) and may lag a minute or two behind the push while GitHub Pages refreshes.
 - The Runtime Log tab was cleaned up to hide repeated `no new trades` polling and compact repeated closed-market / stale-order noise.
+- The Runtime Log compactor was refined again so a `signal changed while market was closed` line and the following `Market closed. Next open ...` line collapse into a single combined entry before repeated pairs are grouped.
 - The Decision Log cards were simplified to remove the order-payload section.
 - The Trade Journal was compacted into a two-line mobile-friendly format:
 - line 1: submitted/status/side/symbol/notional/rationale
 - line 2: submitted/executed/filled
 - The upload / drag-and-drop panel and extra intro block were removed from the viewer so the page focuses on the committed `10k` snapshots only.
+- The filter bar was simplified to a single full-text search, `Show latest`, and an explicit `Apply Filters` button, with Enter-to-apply support.
+- The repo was synced forward to the latest `origin/main` first, with local research changes preserved across the fast-forward.

@@ -3,420 +3,150 @@
     "event_type": "order_submitted",
     "order": {
       "alpaca_request": {
-        "qty": 0.0160573,
-        "side": "sell",
+        "notional": 5000.0,
+        "side": "buy",
+        "symbol": "TSLA",
+        "time_in_force": "TimeInForce.DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "ef9f6271-ac2d-4b5b-8ca6-9979b851faa6",
+      "status": "OrderStatus.ACCEPTED",
+      "submitted_at": "2026-04-19T14:53:04Z"
+    },
+    "rationale": "rebalance buy to target $5,000.00",
+    "state": {
+      "cash_available": 10000.0,
+      "current_value": 0.0,
+      "deficit": 5000.0,
+      "notional": 5000.0,
+      "rebalance_reason": "manual overnight queue before next open",
+      "side": "BUY",
+      "target_value": 5000.0,
+      "trade_day": "2026-04-19",
+      "trigger_type": "rebalance"
+    },
+    "symbol": "TSLA",
+    "timestamp_utc": "2026-04-19T14:53:04Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "notional": 1250.0,
+        "side": "buy",
+        "symbol": "TSM",
+        "time_in_force": "TimeInForce.DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "79b61cc1-04f3-446a-8a2a-a2075a6b5736",
+      "status": "OrderStatus.ACCEPTED",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "cash_available": 10000.0,
+      "current_value": 0.0,
+      "deficit": 1250.0,
+      "notional": 1250.0,
+      "rebalance_reason": "manual overnight queue before next open",
+      "side": "BUY",
+      "target_value": 1250.0,
+      "trade_day": "2026-04-19",
+      "trigger_type": "rebalance"
+    },
+    "symbol": "TSM",
+    "timestamp_utc": "2026-04-19T14:53:05Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "notional": 1250.0,
+        "side": "buy",
+        "symbol": "NVDA",
+        "time_in_force": "TimeInForce.DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "2cf5312c-00cc-4a0d-94d3-b9e16771adba",
+      "status": "OrderStatus.ACCEPTED",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "cash_available": 10000.0,
+      "current_value": 0.0,
+      "deficit": 1250.0,
+      "notional": 1250.0,
+      "rebalance_reason": "manual overnight queue before next open",
+      "side": "BUY",
+      "target_value": 1250.0,
+      "trade_day": "2026-04-19",
+      "trigger_type": "rebalance"
+    },
+    "symbol": "NVDA",
+    "timestamp_utc": "2026-04-19T14:53:05Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "notional": 1250.0,
+        "side": "buy",
+        "symbol": "PLTR",
+        "time_in_force": "TimeInForce.DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "54075d1f-7bf9-4f47-b00a-b4cceadf83f4",
+      "status": "OrderStatus.ACCEPTED",
+      "submitted_at": "2026-04-19T14:53:05Z"
+    },
+    "rationale": "rebalance buy to target $1,250.00",
+    "state": {
+      "cash_available": 10000.0,
+      "current_value": 0.0,
+      "deficit": 1250.0,
+      "notional": 1250.0,
+      "rebalance_reason": "manual overnight queue before next open",
+      "side": "BUY",
+      "target_value": 1250.0,
+      "trade_day": "2026-04-19",
+      "trigger_type": "rebalance"
+    },
+    "symbol": "PLTR",
+    "timestamp_utc": "2026-04-19T14:53:05Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "notional": 1250.0,
+        "side": "buy",
         "symbol": "BTC/USD",
         "time_in_force": "TimeInForce.GTC",
         "type": "market"
       },
       "executed_at": null,
-      "id": "9beb79d0-b3cc-4999-9a68-664766b11e46",
+      "id": "fb0bf6e9-4a77-45a8-92b1-ec1155ca59e6",
       "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:30:20Z"
+      "submitted_at": "2026-04-19T14:53:05Z"
     },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "rationale": "rebalance buy to target $1,250.00",
     "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "current_value": 1207.76,
-      "excess": 1207.76,
-      "qty": 0.0160573,
-      "reference_price": 75215.34,
-      "target_value": 0.0,
-      "target_weight": 0.0,
-      "trigger_type": "copytrade_rebalance"
+      "cash_available": 10000.0,
+      "current_value": 0.0,
+      "deficit": 1250.0,
+      "notional": 1250.0,
+      "rebalance_reason": "manual overnight queue before next open",
+      "side": "BUY",
+      "target_value": 1250.0,
+      "trade_day": "2026-04-19",
+      "trigger_type": "rebalance"
     },
     "symbol": "BTC/USD",
-    "timestamp_utc": "2026-04-20T13:30:21Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 1694.99,
-        "side": "buy",
-        "symbol": "ACI",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:30:29Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 1694.99,
-      "target_value": 1694.99,
-      "target_weight": 0.1698,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "ACI",
-    "timestamp_utc": "2026-04-20T13:30:30Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 1675.02,
-        "side": "buy",
-        "symbol": "BMO",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "c028af38-0617-413f-acf2-792aa7064aa8",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:30:38Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 1675.02,
-      "target_value": 1675.02,
-      "target_weight": 0.1678,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "BMO",
-    "timestamp_utc": "2026-04-20T13:30:39Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 1144.97,
-        "side": "buy",
-        "symbol": "KO",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "428dc135-2fc0-4b92-90c1-3384c2f19fe0",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:30:43Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 1144.97,
-      "target_value": 1144.97,
-      "target_weight": 0.1147,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "KO",
-    "timestamp_utc": "2026-04-20T13:30:44Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 1030.17,
-        "side": "buy",
-        "symbol": "JPM",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "4ca9dfdf-3c74-49b7-a178-25b889c86d53",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:30:47Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 1030.17,
-      "target_value": 1030.17,
-      "target_weight": 0.1032,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "JPM",
-    "timestamp_utc": "2026-04-20T13:30:48Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 1022.18,
-        "side": "buy",
-        "symbol": "AMZN",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:30:54Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 1022.18,
-      "target_value": 1022.18,
-      "target_weight": 0.1024,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "AMZN",
-    "timestamp_utc": "2026-04-20T13:30:54Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 991.24,
-        "side": "buy",
-        "symbol": "MCD",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "496fbc7f-3e9e-41f6-b509-eb5add7a264b",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:31:00Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 991.24,
-      "target_value": 991.24,
-      "target_weight": 0.0993,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "MCD",
-    "timestamp_utc": "2026-04-20T13:31:01Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 929.35,
-        "side": "buy",
-        "symbol": "IT",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "9d91d921-c87b-4b3c-9802-a19db1a13af9",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:31:07Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 929.35,
-      "target_value": 929.35,
-      "target_weight": 0.0931,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "IT",
-    "timestamp_utc": "2026-04-20T13:31:07Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 616.9,
-        "side": "buy",
-        "symbol": "VIG",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "c783b96e-2ff9-461a-b14b-f2a0b86e3459",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:31:13Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 616.9,
-      "target_value": 616.9,
-      "target_weight": 0.0618,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "VIG",
-    "timestamp_utc": "2026-04-20T13:31:14Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 510.09,
-        "side": "buy",
-        "symbol": "AMRZ",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:31:20Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 510.09,
-      "target_value": 510.09,
-      "target_weight": 0.0511,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "AMRZ",
-    "timestamp_utc": "2026-04-20T13:31:21Z"
-  },
-  {
-    "event_type": "order_submitted",
-    "order": {
-      "alpaca_request": {
-        "notional": 368.35,
-        "side": "buy",
-        "symbol": "TD",
-        "time_in_force": "TimeInForce.DAY",
-        "type": "market"
-      },
-      "executed_at": null,
-      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
-      "status": "OrderStatus.PENDING_NEW",
-      "submitted_at": "2026-04-20T13:31:26Z"
-    },
-    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
-    "state": {
-      "active_queue": [
-        "VIG",
-        "AMRZ",
-        "TD",
-        "IT",
-        "AMZN",
-        "KO",
-        "MCD",
-        "JPM",
-        "ACI",
-        "BMO"
-      ],
-      "cash_available": 9978.19,
-      "deficit": 368.35,
-      "target_value": 368.35,
-      "target_weight": 0.0369,
-      "trigger_type": "copytrade_rebalance"
-    },
-    "symbol": "TD",
-    "timestamp_utc": "2026-04-20T13:31:27Z"
+    "timestamp_utc": "2026-04-19T14:53:05Z"
   }
 ]

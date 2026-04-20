@@ -38,21 +38,23 @@
       </section>
 
       <section class="panel controls">
-        <div class="control">
-          <label for="symbolFilter">Symbol</label>
-          <input id="symbolFilter" type="text" placeholder="AMZN, BTC/USD, VIG" />
+        <div class="controls-head">
+          <div>
+            <p class="controls-kicker">Filters</p>
+            <h2 class="controls-title">Narrow The Current View</h2>
+          </div>
         </div>
-        <div class="control">
-          <label for="eventFilter">Event / logger / status</label>
-          <input id="eventFilter" type="text" placeholder="order_submitted, copytrade, pending" />
-        </div>
-        <div class="control control-wide">
+        <div class="control control-search">
           <label for="textFilter">Text search</label>
           <input id="textFilter" type="text" placeholder="rebalance, Capitol, error, target" />
         </div>
         <div class="control">
           <label for="limitInput">Show latest</label>
           <input id="limitInput" type="number" min="1" step="1" value="120" />
+        </div>
+        <div class="control control-action">
+          <label class="button-label" for="applyFilters">Run filters</label>
+          <button id="applyFilters" class="button" type="button">Apply Filters</button>
         </div>
       </section>
 
