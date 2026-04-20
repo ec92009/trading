@@ -170,7 +170,7 @@ The hourly simulator originally cached market data only in memory, so every new 
 Fix:
 
 - added a persistent disk cache in [hourly_strategy.py](/Users/ecohen/Dev/trading/hourly_strategy.py)
-- raw hourly bars are now stored under `.cache/hourly_data/`
+- raw hourly bars are now stored under `/_cache/hourly_bars/`
 - cache files are local-only and ignored by git
 
 Result:

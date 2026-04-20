@@ -108,6 +108,7 @@ The repo has already started moving in this direction and should keep going.
 
 Before pushing any more aggressive strategy live, the bot should have:
 
+- autonomous Capitol signal refresh is now in place for the Ro Khanna `10K` path, so the remaining safety work is mostly broker / execution hardening rather than manual-data plumbing
 - max daily turnover guard
 - max daily realized loss guard
 - max orders per symbol per day

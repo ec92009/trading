@@ -162,7 +162,7 @@ That model lives in [hourly_strategy.py](/Users/ecohen/Dev/trading/hourly_strate
 The hourly simulator pulls stock and crypto bars from Alpaca.
 
 - in-process caching avoids repeat downloads within one run
-- disk caching now stores raw hourly bars under `.cache/hourly_data/`
+- disk caching now stores raw hourly bars under `/_cache/hourly_bars/`
 - cache files are local-only and not committed
 
 This makes reruns faster and keeps repeated research passes from asking Alpaca for the same data again and again.

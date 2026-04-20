@@ -13,6 +13,13 @@ All trades run against a **paper trading account** (no real money).
 
 Use this `README` for setup and operational scripts. For current strategy behavior and research conclusions, prefer the docs above.
 
+Current live state:
+
+- `bot.py` is still the 5-name basket bot
+- `bot_10k.py` is now the Ro Khanna daily copy-trade bot
+- the Khanna path refreshes Capitol Trades autonomously and stores visible disk cache under `_cache/`
+- the intended deployment model is now a robust Python service (`RSCP`), not a compiled binary workflow
+
 ---
 
 ## What this project does
@@ -37,11 +44,13 @@ trading/
 ├── trade_log.py      # Thread-safe TSV log of pending/filled orders
 ├── add_asset.py      # TUI for adding a new asset to the bot
 ├── main.py           # Check account balance
+├── bot_10k.py        # Ro Khanna 10K live bot entrypoint
+├── khanna_daily/     # Khanna live bot + market-data + signal-refresh helpers
 ├── portfolio.py      # View positions and pending orders
 ├── queue_orders.py   # Place multiple orders at once
 ├── dashboard.py      # Unified web control panel at http://localhost:8080
 ├── status.py         # matplotlib chart (interactive window or PNG)
-├── .cache/           # Local raw hourly market-data cache (quarterly symbol files, not committed)
+├── _cache/           # Visible local cache root for hourly bars, daily bars, and politician refresh state
 ├── bot.log           # Live log output (not committed)
 ├── bot_decisions.jsonl # Structured decision + order-status journal (not committed)
 └── trades.tsv        # Order state log (not committed)
@@ -100,12 +109,10 @@ cd ~/Dev/trading && source .venv/bin/activate
 | `python3 status.py` | Open matplotlib chart window |
 | `SAVE_ONLY=1 python3 status.py` | Save chart to `status.png` |
 | `python3 add_asset.py` | TUI to add a new asset to the bot |
+| `python3 bot_10k.py` | Run the autonomous Ro Khanna 10K copy-trade bot |
 | `python3 optimize_hourly_strategies.py` | Run the five-contender benchmark (`basket buy-and-hold`, `SPY`, `rebalance-only`, `stop/trigger`, `stop/trigger + rebalance`) on the `2023` train / `2024-2026Q1` holdout |
-| `python3 walk_forward_hourly.py` | Run rolling walk-forward validation across repeated train/test windows for the same five contenders |
 | `python3 refit_bot_strategy.py` | Refit the current strategy on all available history for live bot defaults |
 | `python3 copytrade_demo.py` | Run the Capitol Trades copy-trade research script on the local signal file using the shared Alpaca cache and normalized active weights |
-| `python3 backfill_capitol_trades.py` | Refresh the local Capitol Trades signal file from a public politician profile |
-| `python3 warm_hourly_cache.py` | Warm the shared Alpaca-backed quarter cache from a symbol list or a politician's disclosed universe |
 
 ---
 
@@ -145,6 +152,20 @@ Important:
 | **Cooldown** | Present in research and config fields, but currently inactive while the live bot stays rebalance-only |
 | **Cash buffer** | Keep stop-sale and rebalance-sale proceeds in cash until rebalance redeploys them |
 | **Rebalance** | Rebalance once per trading day, five minutes before the stock-market close, toward target weights |
+
+### Khanna `10K` behavior
+
+- `bot_10k.py` runs the Ro Khanna daily copy-trade book rather than the 5-name basket
+- it refreshes Capitol Trades autonomously on startup and then every 15 minutes
+- it still uses `copytrade_signals.json` as the local canonical signal file, but it now updates that file itself
+- it stores market data and politician refresh metadata under `_cache/hourly_bars`, `_cache/daily_bars`, and `_cache/politicians`
+- it now also maintains per-politician yearly signal caches under `_cache/politicians/<politician_slug>/<YYYY>/signals.json`
+
+### Service posture
+
+- the bot is still ordinary interpreted Python, not a compiled executable
+- the operating assumption is an always-on machine or dedicated host, a pinned venv, and a supervised process
+- the current direction is RSCP: robust Python service composition rather than packaging-first deployment
 
 > **Note:** Alpaca does not support broker-native fractional stop orders for this setup. The logic is software-managed, so the bot must be running for stops, trails, and rebalances to happen.
 
@@ -272,6 +293,30 @@ The control panel shows one Chart.js panel per watched asset:
 - Recent bot log output for quick troubleshooting
 
 Use `--no-browser` to skip auto-opening.
+
+### GitHub Pages log viewer
+
+There is also a static log viewer under [`docs/`](/Users/ecohen/Dev/trading/docs) for GitHub Pages.
+It reads local `bot_decisions*.jsonl`, `bot.log`, and `trades*.tsv` files directly in the browser and does not upload them anywhere.
+
+To publish it on GitHub Pages:
+
+```bash
+git add docs README.md
+git commit -m "Add GitHub Pages log viewer"
+git push origin main
+```
+
+Then enable **Settings -> Pages -> Deploy from a branch** and choose:
+
+- Branch: `main`
+- Folder: `/docs`
+
+After Pages finishes building, the viewer will be available at:
+
+```text
+https://ec92009.github.io/trading/
+```
 
 ### Matplotlib dashboard (`status.py`)
 

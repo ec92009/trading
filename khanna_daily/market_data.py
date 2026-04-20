@@ -12,9 +12,11 @@ import copytrade_demo as demo
 import hourly_strategy
 
 HERE = Path(__file__).resolve().parent.parent
-CACHE_DIR = HERE / ".cache" / "daily_data"
+CACHE_ROOT = HERE / "_cache"
+CACHE_DIR = CACHE_ROOT / "daily_bars"
 SYMBOL_CACHE_DIR = CACHE_DIR / "symbols"
-REJECTED_SYMBOLS_PATH = CACHE_DIR / "rejected_symbols.json"
+POLITICIANS_CACHE_DIR = CACHE_ROOT / "politicians"
+REJECTED_SYMBOLS_PATH = POLITICIANS_CACHE_DIR / "rejected_symbols.json"
 
 
 def _daily_cache_path(symbol: str, quarter_start: str) -> Path:

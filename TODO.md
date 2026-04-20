@@ -4,6 +4,9 @@
 
 - Continue simplifying the codebase around the current long-term assumptions: Alpaca as the broker path, fractional stocks as the default, and fewer broker-agnostic compatibility leftovers.
 - Clean up the live bot code around the new production posture: current basket weights, rebalance-only execution, and inactive stop/trigger parameters that now exist mainly for research mode.
+- Decide whether the autonomous Capitol refresh path should stay Khanna-only or become a reusable framework for other politician bots too.
+- Decide whether `copytrade_signals.json` should remain the canonical merged signal file or whether politician-specific cached snapshots under `/_cache/politicians/` should become first-class live artifacts.
+- Decide whether additional politician refresh jobs should be turned on in the live bot now that yearly politician caches exist for Khanna, Mullin, Gottheimer, Hern, and Taylor.
 - Decide whether the live bot should support more than one crypto symbol now that off-hours monitoring is keyed off asset class instead of a hardcoded BTC path.
 - Decide whether same-day startup rebalance should be allowed again near the close, or whether one rebalance per day is the desired live rule.
 - Handle dust positions more explicitly so tiny leftovers like the residual `AAPL` share do not trigger repeated cleanup attempts.
@@ -25,3 +28,4 @@
 
 - Run the upgraded [copytrade_demo.py](/Users/ecohen/Dev/trading/copytrade_demo.py) on Mullin with normalized active weights, then compare those results against `SPY` over the same actionable window.
 - Backfill Josh Gottheimer and compare his actionable publication history and symbol cleanliness against Mullin before committing to a single Capitol source.
+- Decide whether Khanna's live `60`-day half-life should stay intentionally smoother than the shorter-memory research winners, or whether the live bot should move closer to the stronger but more twitchy research settings.

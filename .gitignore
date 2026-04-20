@@ -9,8 +9,9 @@ venv/
 .DS_Store
 *.png
 trades.tsv
+trades*.tsv
 bot_state.json
 bot_state*.json
 copytrade_state*.json
 bot_decisions*.jsonl
-.cache/
+_cache/

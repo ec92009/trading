@@ -51,6 +51,7 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - The Ro Khanna daily live path now runs through:
 - [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py)
 - [khanna_daily/market_data.py](/Users/ecohen/Dev/trading/khanna_daily/market_data.py)
+- [khanna_daily/signal_updater.py](/Users/ecohen/Dev/trading/khanna_daily/signal_updater.py)
 - The live policy is:
 - Ro Khanna only
 - minimum disclosure band `'< 1K'`
@@ -58,10 +59,20 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - half-life `60` calendar days
 - next-trading-day execution
 - target weights normalized from active point balances
+- Capitol Trades refresh now happens autonomously:
+- the bot refreshes Khanna signals on startup
+- it checks again every `15` minutes while running
+- the local signal file remains [copytrade_signals.json](/Users/ecohen/Dev/trading/copytrade_signals.json), but the bot no longer depends on a manual refresh step
 - The daily cache warm is now effectively complete for the current Khanna universe:
 - daily cache spans the actionable window from `2024-02-07` through `2026-04-20`
 - the current Khanna build resolves offline from cache after one Alpaca-backed warm pass
-- The current live build also persists an Alpaca rejection list under [`.cache/daily_data/rejected_symbols.json`](/Users/ecohen/Dev/trading/.cache/daily_data/rejected_symbols.json).
+- The visible cache root is now [/_cache](/Users/ecohen/Dev/trading/_cache):
+- hourly bars live under [/_cache/hourly_bars](/Users/ecohen/Dev/trading/_cache/hourly_bars)
+- daily bars live under [/_cache/daily_bars](/Users/ecohen/Dev/trading/_cache/daily_bars)
+- politician refresh metadata lives under [/_cache/politicians](/Users/ecohen/Dev/trading/_cache/politicians)
+- The current live build persists an Alpaca rejection list under [rejected_symbols.json](/Users/ecohen/Dev/trading/_cache/politicians/rejected_symbols.json), a Khanna refresh status file under [ro_khanna_refresh.json](/Users/ecohen/Dev/trading/_cache/politicians/ro_khanna_refresh.json), and politician-specific yearly signal caches under paths like:
+- [/_cache/politicians/ro_khanna/2026/signals.json](/Users/ecohen/Dev/trading/_cache/politicians/ro_khanna/2026/signals.json)
+- [/_cache/politicians/markwayne_mullin/2026/signals.json](/Users/ecohen/Dev/trading/_cache/politicians/markwayne_mullin/2026/signals.json)
 - Current rejected symbols include:
 - `7410Z`
 - `DE1`
@@ -93,6 +104,20 @@ Current merged signal file now contains:
 - `Markwayne Mullin`: `115` rows
 
 Total rows in [copytrade_signals.json](/Users/ecohen/Dev/trading/copytrade_signals.json): `10942`
+
+Per-politician yearly cache status:
+
+- `Ro Khanna`: cached under `2024`, `2025`, and `2026`
+- `Josh Gottheimer`: cached under `2023`, `2024`, `2025`, and `2026`
+- `Kevin Hern`: cached under `2023`, `2024`, `2025`, and `2026`
+- `David Taylor`: cached under `2025` and `2026`
+- `Markwayne Mullin`: cached under `2025` and `2026`
+
+Current Mullin refresh note:
+
+- Mullin's public Capitol profile (`M001190`) was checked after the yearly cache build
+- no new signals were found beyond the current local merged signal file
+- Mullin refresh metadata now lives under [markwayne_mullin_refresh.json](/Users/ecohen/Dev/trading/_cache/politicians/markwayne_mullin_refresh.json)
 
 Current read on who to test next after Mullin:
 

@@ -19,5 +19,6 @@ Working preferences for `~/Dev/trading`.
 - Consult [RESULTS.md](RESULTS.md) before strategy research or simulation changes so new work starts from the latest findings, known hiccups, and current conclusions.
 - Consult [REALISM.md](REALISM.md) before making simulator execution or broker-compatibility changes so the realism backlog stays consistent.
 - Consult [STRATEGY.md](STRATEGY.md) for the current sandbox strategy mechanics and terminology.
+- Consult [RESEARCH.md](RESEARCH.md) before changing the Capitol / Khanna live path so the autonomous signal-refresh and `_cache/` layout assumptions stay aligned.
 - Consult [bot_refit_results.json](bot_refit_results.json) before changing live bot defaults so production parameter updates stay aligned with the latest full-history refit.
 - Consult [TODO.md](TODO.md) for the active follow-up list after finishing research or implementation work.

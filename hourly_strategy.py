@@ -27,7 +27,8 @@ from alpaca_env import load_alpaca_credentials
 
 ET = ZoneInfo("America/New_York")
 HERE = Path(__file__).parent
-CACHE_DIR = HERE / ".cache" / "hourly_data"
+CACHE_ROOT = HERE / "_cache"
+CACHE_DIR = CACHE_ROOT / "hourly_bars"
 CACHE_VERSION = 4
 SYMBOL_CACHE_DIR = CACHE_DIR / "symbols"
 

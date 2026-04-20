@@ -174,6 +174,137 @@ class BotBehaviorTests(unittest.TestCase):
         self.assertIn("AAPL", market)
         self.assertEqual(skipped, {"7410Z": "alpaca rejected symbol"})
 
+    def test_khanna_signal_updater_parses_trade_detail(self):
+        signal_updater = importlib.import_module("khanna_daily.signal_updater")
+        importlib.reload(signal_updater)
+
+        html = """
+        <html><body>
+        <h1>Ro Khanna bought Bank of Montreal (BMO:US) on 2026-03-16</h1>
+        <div>buy</div>
+        <div>1K–15K</div>
+        <div>Ro Khanna</div>
+        <div>BMO:US</div>
+        <div>Bank of Montreal</div>
+        <div>Traded</div><div>2026-03-16</div>
+        <div>Published</div><div>2026-04-09</div>
+        <div>Filing Summary</div>
+        </body></html>
+        """
+        self.assertEqual(
+            signal_updater._parse_trade_detail_html(html, trade_id="20003796681"),
+            {
+                "politician": "Ro Khanna",
+                "published_at": "2026-04-09",
+                "side": "buy",
+                "size_band": "1K-15K",
+                "source": "https://www.capitoltrades.com/trades/20003796681",
+                "symbol": "BMO",
+                "traded_at": "2026-03-16",
+            },
+        )
+
+    def test_khanna_signal_updater_merges_new_ro_khanna_trades(self):
+        signal_updater = importlib.import_module("khanna_daily.signal_updater")
+        importlib.reload(signal_updater)
+
+        existing_rows = [
+            {
+                "politician": "Ro Khanna",
+                "published_at": "2026-04-09",
+                "side": "buy",
+                "size_band": "1K-15K",
+                "source": "https://www.capitoltrades.com/trades/20003796681",
+                "symbol": "BMO",
+                "traded_at": "2026-03-16",
+            }
+        ]
+        new_row = {
+            "politician": "Ro Khanna",
+            "published_at": "2026-04-20",
+            "side": "buy",
+            "size_band": "50K-100K",
+            "source": "https://www.capitoltrades.com/trades/20003799999",
+            "symbol": "AMZN",
+            "traded_at": "2026-04-18",
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "copytrade_signals.json"
+            path.write_text(json.dumps(existing_rows, indent=2))
+
+            with patch.object(signal_updater, "_fetch_trade_ids", side_effect=[["20003799999", "20003796681"], ["20003796681"]]), patch.object(
+                signal_updater,
+                "_fetch_trade_record",
+                return_value=new_row,
+            ):
+                result = signal_updater.refresh_politician_signals(path=path, max_pages=4)
+
+            merged_rows = json.loads(path.read_text())
+            self.assertEqual(result["added"], 1)
+            self.assertEqual(result["pages_scanned"], 2)
+            self.assertEqual(merged_rows[-1], new_row)
+
+    def test_khanna_signal_updater_rebuilds_politician_year_caches(self):
+        signal_updater = importlib.import_module("khanna_daily.signal_updater")
+        importlib.reload(signal_updater)
+
+        rows = [
+            {
+                "politician": "Ro Khanna",
+                "published_at": "2026-04-09",
+                "side": "buy",
+                "size_band": "1K-15K",
+                "source": "https://www.capitoltrades.com/trades/20003796681",
+                "symbol": "BMO",
+                "traded_at": "2026-03-16",
+            },
+            {
+                "politician": "Josh Gottheimer",
+                "published_at": "2025-08-24",
+                "side": "sell",
+                "size_band": "15K-50K",
+                "source": "https://www.capitoltrades.com/trades/20003790000",
+                "symbol": "MSFT",
+                "traded_at": "2025-08-10",
+            },
+        ]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "copytrade_signals.json"
+            cache_dir = Path(tmpdir) / "politicians"
+            path.write_text(json.dumps(rows, indent=2))
+
+            with patch.object(signal_updater, "POLITICIANS_CACHE_DIR", cache_dir):
+                result = signal_updater.rebuild_politician_year_caches(path=path)
+
+            self.assertEqual(result, {"politicians": 2, "year_files": 2})
+            self.assertEqual(
+                json.loads((cache_dir / "ro_khanna" / "2026" / "signals.json").read_text()),
+                [rows[0]],
+            )
+            self.assertEqual(
+                json.loads((cache_dir / "josh_gottheimer" / "2025" / "signals.json").read_text()),
+                [rows[1]],
+            )
+
+    def test_khanna_live_refreshes_signals_on_startup(self):
+        with install_alpaca_stubs():
+            live = importlib.import_module("khanna_daily.live")
+            importlib.reload(live)
+
+            manager = live.CopyTradeLiveManager()
+            with patch.object(live.signal_updater, "refresh_politician_signals", return_value={"added": 1, "pages_scanned": 1, "total_rows": 2}) as refresh_mock, patch.object(
+                manager,
+                "load_state",
+            ), patch.object(manager.order_sync, "sync_trade_log"), patch.object(manager, "evaluate"), patch.object(
+                manager,
+                "save_state",
+            ):
+                manager.startup_sync()
+
+            refresh_mock.assert_called_once()
+
     def test_copytrade_live_uses_inclusive_60_day_policy(self):
         with install_alpaca_stubs():
             copytrade_live = importlib.import_module("copytrade_live")
