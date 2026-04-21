@@ -213,32 +213,19 @@ class CopyTradeLiveManager:
         rows = []
         allocated_total = 0.0
         _, target_value_by_symbol = self._target_value_by_symbol(target_weights)
-        simulation_equity = float(result.get("final_equity") or 0.0)
-        simulation_positions = result.get("positions") or {}
-        point_scale = 0.0
-        if simulation_equity > 0:
-            point_scale = sum(
-                max(0.0, float(item.get("value") or 0.0)) / simulation_equity
-                for item in simulation_positions.values()
-            )
+        current_points = result.get("current_points") or {}
         for symbol in sorted(set(target_weights) | set(positions)):
             position = positions.get(symbol)
             current_value = float(getattr(position, "market_value", 0.0) or 0.0)
             qty = float(getattr(position, "qty", 0.0) or 0.0) if position else 0.0
             current_weight = (current_value / equity) if equity > 0 else 0.0
             allocated_total += current_value
-            simulation_position = simulation_positions.get(symbol) or {}
-            points = 0.0
-            if simulation_equity > 0:
-                points = float(simulation_position.get("value") or 0.0) / simulation_equity
-                if point_scale > 0:
-                    points = points / point_scale
             rows.append(
                 {
                     "symbol": symbol,
                     "target_weight": round(target_weights.get(symbol, 0.0), 6),
                     "current_weight": round(current_weight, 6),
-                    "points": round(points, 4),
+                    "points": round(float(current_points.get(symbol, 0.0) or 0.0), 4),
                     "current_value": round(current_value, 2),
                     "qty": round(qty, 8 if "/" in symbol else 6),
                     "target_value": round(target_value_by_symbol.get(symbol, 0.0), 2),

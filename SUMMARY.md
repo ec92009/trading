@@ -70,3 +70,7 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Restored a dedicated asset filter as a dropdown so symbol filtering is field-based rather than broad text search.
 - Reworked the `Last Portfolio` columns to `Asset / Target Weight / Current Weight / Points / Current Balance`, using the active simulation state to expose the current point distribution.
 - Bumped the shared bot/web version to `51.4`, cache-busted the local viewer assets in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), refreshed [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json), and restarted the live `10K` bot on the patched code.
+- Corrected the `Last Portfolio` `Points` column so it now shows the simulator's actual current decayed point balances instead of a weight-derived stand-in.
+- Tightened the Runtime Log compactor again so long overnight closed-market stretches collapse into a single session-style summary, and repeated `Waiting on N pending order(s)...` loops also collapse into one operator-readable card.
+- Refined the Trade Journal second line to plain elapsed timing like `Submitted ... / Executed 3 seconds later / Filled 0 seconds later`.
+- Bumped the shared bot/web version again to `51.5` so the local and published viewer pick up the latest cache-busted assets for this polish cycle.

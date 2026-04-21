@@ -346,29 +346,51 @@ function compactTradeHeadline(row) {
 function compactTradeDetails(row) {
   const submitted = row.submitted_at || "—";
   const executed = row.executed_at || row.filled_at || "";
+  const filled = row.filled_at || row.executed_at || "";
   let executedPart = "Executed — later";
+  let filledPart = "Filled";
+
+  const formatElapsed = (fromValue, toValue) => {
+    if (!fromValue || !toValue || fromValue === "—") {
+      return null;
+    }
+    const fromDate = new Date(fromValue.replace(" UTC", "Z"));
+    const toDate = new Date(toValue.replace(" UTC", "Z"));
+    const deltaSeconds = Math.max(0, Math.round((toDate.getTime() - fromDate.getTime()) / 1000));
+    if (!Number.isFinite(deltaSeconds)) {
+      return null;
+    }
+    return `${deltaSeconds} second${deltaSeconds === 1 ? "" : "s"} later`;
+  };
+
   if (submitted !== "—" && executed) {
-    const submittedDate = new Date(submitted.replace(" UTC", "Z"));
-    const executedDate = new Date(executed.replace(" UTC", "Z"));
-    const deltaSeconds = Math.max(0, Math.round((executedDate.getTime() - submittedDate.getTime()) / 1000));
-    if (Number.isFinite(deltaSeconds)) {
-      const hours = String(Math.floor(deltaSeconds / 3600)).padStart(2, "0");
-      const minutes = String(Math.floor((deltaSeconds % 3600) / 60)).padStart(2, "0");
-      const seconds = String(deltaSeconds % 60).padStart(2, "0");
-      executedPart = `Executed ${hours}:${minutes}:${seconds} later`;
+    const elapsed = formatElapsed(submitted, executed);
+    if (elapsed) {
+      executedPart = `Executed ${elapsed}`;
     }
   }
   const status = String(row.status || "").toLowerCase();
-  let finalPart = "Pending";
+  let finalStatus = "Pending";
   if (status === "filled") {
-    finalPart = "Filled";
+    finalStatus = "Filled";
   } else if (status === "partial_fill_canceled") {
-    finalPart = "Partial fill canceled";
+    finalStatus = "Partial fill canceled";
   } else if (status) {
-    finalPart = status.replaceAll("_", " ");
-    finalPart = finalPart.charAt(0).toUpperCase() + finalPart.slice(1);
+    finalStatus = status.replaceAll("_", " ");
+    finalStatus = finalStatus.charAt(0).toUpperCase() + finalStatus.slice(1);
   }
-  return [`Submitted ${submitted}`, executedPart, finalPart].join(" / ");
+
+  if (filled) {
+    const elapsed = formatElapsed(executed || submitted, filled);
+    if (elapsed) {
+      filledPart = `${finalStatus} ${elapsed}`;
+    } else {
+      filledPart = finalStatus;
+    }
+  } else {
+    filledPart = finalStatus;
+  }
+  return [`Submitted ${submitted}`, executedPart, filledPart].join(" / ");
 }
 
 function applyFilters(records, type) {
@@ -422,6 +444,30 @@ function formatMarketClosedPairMessage(nextOpen, count) {
   return count > 1
     ? `Signal changed while market was closed (${count}x). Next open ${nextOpen}`
     : `Signal changed while market was closed. Next open ${nextOpen}`;
+}
+
+function formatClosedSnapshotMessage(nextOpen, count) {
+  return count > 1
+    ? `Market closed (${count}x). Snapshots refreshed. Next open ${nextOpen}`
+    : `Market closed. Snapshots refreshed. Next open ${nextOpen}`;
+}
+
+function formatClosedSessionMessage(nextOpen, closedCount, snapshotCount) {
+  const closedPart = closedCount > 1 ? `Market closed (${closedCount}x).` : "Market closed.";
+  const snapshotPart = snapshotCount > 0
+    ? ` Snapshots refreshed${snapshotCount > 1 ? ` (${snapshotCount}x)` : ""}.`
+    : "";
+  return `${closedPart}${snapshotPart} Next open ${nextOpen}`;
+}
+
+function formatPendingSettlementMessage(pendingCount, repeatCount, tracked) {
+  const base = repeatCount > 1
+    ? `Waiting on ${pendingCount} pending order(s) to settle (${repeatCount}x).`
+    : `Waiting on ${pendingCount} pending order(s) to settle.`;
+  if (tracked) {
+    return `${base} Still tracking them for later loops.`;
+  }
+  return base;
 }
 
 function simplifyOrderSyncMessage(message) {
@@ -503,6 +549,14 @@ function compactBotLogRecords(records) {
     if (message.startsWith("Market closed. Next open ")) {
       const nextOpen = message.replace("Market closed. Next open ", "");
       const previous = compacted[compacted.length - 1];
+      const mergeIntoClosedSession = (target, closedIncrement = 0, snapshotIncrement = 0) => {
+        target._compactType = "market_closed_session";
+        target._nextOpen = nextOpen;
+        target._closedCount = (target._closedCount || 0) + closedIncrement;
+        target._snapshotCount = (target._snapshotCount || 0) + snapshotIncrement;
+        target.timestamp = record.timestamp;
+        target.message = formatClosedSessionMessage(nextOpen, target._closedCount, target._snapshotCount);
+      };
       if (previous && previous._compactType === "market_closed_pair_pending") {
         previous._compactType = "market_closed_pair";
         previous._nextOpen = nextOpen;
@@ -518,18 +572,119 @@ function compactBotLogRecords(records) {
         }
         continue;
       }
-      if (previous && previous._compactType === "market_closed_next_open" && previous._nextOpen === nextOpen) {
-        previous._count += 1;
+      if (previous && previous._compactType === "closed_snapshot_pending") {
+        mergeIntoClosedSession(previous, 1, 1);
+        const earlier = compacted[compacted.length - 2];
+        if (earlier && earlier._compactType === "market_closed_session" && earlier._nextOpen === nextOpen) {
+          earlier._closedCount += previous._closedCount;
+          earlier._snapshotCount += previous._snapshotCount;
+          earlier.timestamp = record.timestamp;
+          earlier.message = formatClosedSessionMessage(nextOpen, earlier._closedCount, earlier._snapshotCount);
+          compacted.pop();
+        }
+        continue;
+      }
+      if (previous && previous._compactType === "market_closed_session" && previous._nextOpen === nextOpen) {
+        previous._closedCount += 1;
         previous.timestamp = record.timestamp;
-        previous.message = formatMarketClosedNextOpenMessage(nextOpen, previous._count);
+        previous.message = formatClosedSessionMessage(nextOpen, previous._closedCount, previous._snapshotCount || 0);
+        continue;
+      }
+      if (previous && previous._compactType === "market_closed_next_open" && previous._nextOpen === nextOpen) {
+        mergeIntoClosedSession(previous, 1, 0);
         continue;
       }
       compacted.push({
         ...record,
-        _compactType: "market_closed_next_open",
-        _count: 1,
+        _compactType: "market_closed_session",
+        _closedCount: 1,
+        _snapshotCount: 0,
         _nextOpen: nextOpen,
-        message: formatMarketClosedNextOpenMessage(nextOpen, 1),
+        message: formatClosedSessionMessage(nextOpen, 1, 0),
+      });
+      continue;
+    }
+
+    if (message.startsWith("Published updated remote snapshot files: ")) {
+      const previous = compacted[compacted.length - 1];
+      if (previous && previous._compactType === "market_closed_session") {
+        previous._snapshotCount = (previous._snapshotCount || 0) + 1;
+        previous.timestamp = record.timestamp;
+        previous.message = formatClosedSessionMessage(previous._nextOpen, previous._closedCount || 0, previous._snapshotCount);
+        continue;
+      }
+      if (previous && previous._compactType === "market_closed_next_open") {
+        previous._compactType = "market_closed_session";
+        previous._closedCount = previous._count || 1;
+        previous._snapshotCount = 1;
+        previous.timestamp = record.timestamp;
+        previous.message = formatClosedSessionMessage(previous._nextOpen, previous._closedCount, previous._snapshotCount);
+        continue;
+      }
+      compacted.push({
+        ...record,
+        _compactType: "closed_snapshot_pending",
+        _closedCount: 0,
+        _snapshotCount: 1,
+        message: "Snapshots refreshed",
+      });
+      continue;
+    }
+
+    if (message.startsWith("Waiting on ") && message.includes(" pending order(s) to settle before the next cycle.")) {
+      const match = message.match(/^Waiting on\s+(\d+)\s+pending order\(s\)/);
+      const pendingCount = match?.[1] || "?";
+      const previous = compacted[compacted.length - 1];
+      if (
+        previous
+        && previous._compactType === "pending_settlement"
+        && previous._pendingCount === pendingCount
+      ) {
+        previous._repeatCount += 1;
+        previous.timestamp = record.timestamp;
+        previous.message = formatPendingSettlementMessage(
+          previous._pendingCount,
+          previous._repeatCount,
+          previous._tracked,
+        );
+        continue;
+      }
+      compacted.push({
+        ...record,
+        _compactType: "pending_settlement",
+        _pendingCount: pendingCount,
+        _repeatCount: 1,
+        _tracked: false,
+        message: formatPendingSettlementMessage(pendingCount, 1, false),
+      });
+      continue;
+    }
+
+    if (message.startsWith("Still tracking ") && message.includes(" pending order(s); will continue syncing on later loops.")) {
+      const match = message.match(/^Still tracking\s+(\d+)\s+pending order\(s\)/);
+      const pendingCount = match?.[1] || "?";
+      const previous = compacted[compacted.length - 1];
+      if (
+        previous
+        && previous._compactType === "pending_settlement"
+        && previous._pendingCount === pendingCount
+      ) {
+        previous._tracked = true;
+        previous.timestamp = record.timestamp;
+        previous.message = formatPendingSettlementMessage(
+          previous._pendingCount,
+          previous._repeatCount,
+          true,
+        );
+        continue;
+      }
+      compacted.push({
+        ...record,
+        _compactType: "pending_settlement",
+        _pendingCount: pendingCount,
+        _repeatCount: 0,
+        _tracked: true,
+        message: formatPendingSettlementMessage(pendingCount, 0, true),
       });
       continue;
     }

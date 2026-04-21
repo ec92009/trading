@@ -79,8 +79,8 @@ class RemoteSnapshotTests(unittest.TestCase):
 
             self.assertEqual(len(changed), 5)
             version_payload = json.loads((docs_data / "version.json").read_text(encoding="utf-8"))
-            self.assertEqual(version_payload["version"], "51.4")
-            self.assertEqual(version_payload["display"], "v51.4")
+            self.assertEqual(version_payload["version"], "51.5")
+            self.assertEqual(version_payload["display"], "v51.5")
             bot_log_snapshot = (docs_data / "recent_bot.log").read_text(encoding="utf-8")
             self.assertIn("first line", bot_log_snapshot)
             self.assertIn("second line", bot_log_snapshot)

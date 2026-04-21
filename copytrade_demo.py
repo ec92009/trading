@@ -598,6 +598,7 @@ def simulate_with_market(
         "final_equity": final_equity,
         "return_pct": round((final_equity / capital - 1) * 100, 2),
         "cash": round(cash, 2),
+        "current_points": {symbol: round(points, 4) for symbol, points in sorted(raw_points.items()) if points > 0},
         "positions": open_positions,
         "signal_window": {
             "first_published_at": min(signal.published_at for signal in eligible),
