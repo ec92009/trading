@@ -1,5 +1,3 @@
-2026-04-21 19:49:30 [portfolio] Waiting on 11 pending order(s) to settle before the next cycle.
-2026-04-21 19:49:49 [portfolio] Still tracking 11 pending order(s); will continue syncing on later loops.
 2026-04-21 19:50:54 [portfolio] Waiting on 11 pending order(s) to settle before the next cycle.
 2026-04-21 19:51:14 [portfolio] Waiting on 11 pending order(s) to settle before the next cycle.
 2026-04-21 19:51:33 [portfolio] Waiting on 11 pending order(s) to settle before the next cycle.
@@ -198,3 +196,5 @@
 2026-04-21 20:53:17 [portfolio] ORDER SYNC AMZN pending → partial_fill_canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v50.0->Khanna copy-trade rebalance
 2026-04-21 20:53:20 [portfolio] ORDER SYNC AMRZ pending → partial_fill_canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v50.0->Khanna copy-trade rebalance
 2026-04-21 20:53:22 [portfolio] ORDER SYNC TD pending → partial_fill_canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v50.0->Khanna copy-trade rebalance
+2026-04-21 20:53:38 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_decisions.json, docs/data/recent_portfolio.json
+2026-04-21 20:54:24 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
