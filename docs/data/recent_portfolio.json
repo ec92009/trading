@@ -1,0 +1,109 @@
+{
+  "as_of": "2026-04-21T14:53:31.946149-04:00",
+  "strategy": "Khanna daily-bar copy-trade",
+  "equity": 9967.3,
+  "cash": 3167.58,
+  "allocated": 6799.72,
+  "target_queue": [
+    "VIG",
+    "AMRZ",
+    "TD",
+    "IT",
+    "AMZN",
+    "KO",
+    "MCD",
+    "JPM",
+    "ACI",
+    "BMO"
+  ],
+  "positions": [
+    {
+      "symbol": "BMO",
+      "qty": 10.995996,
+      "current_value": 1668.97,
+      "current_weight": 0.167445,
+      "target_weight": 0.1678,
+      "target_value": 1672.5
+    },
+    {
+      "symbol": "ACI",
+      "qty": 77.0,
+      "current_value": 1314.78,
+      "current_weight": 0.131909,
+      "target_weight": 0.1698,
+      "target_value": 1692.44
+    },
+    {
+      "symbol": "JPM",
+      "qty": 3.290437,
+      "current_value": 1032.6,
+      "current_weight": 0.103599,
+      "target_weight": 0.1032,
+      "target_value": 1028.62
+    },
+    {
+      "symbol": "MCD",
+      "qty": 3.176644,
+      "current_value": 958.71,
+      "current_weight": 0.096186,
+      "target_weight": 0.0993,
+      "target_value": 989.75
+    },
+    {
+      "symbol": "IT",
+      "qty": 5.945177,
+      "current_value": 935.12,
+      "current_weight": 0.093818,
+      "target_weight": 0.0931,
+      "target_value": 927.95
+    },
+    {
+      "symbol": "AMZN",
+      "qty": 2.0,
+      "current_value": 500.78,
+      "current_weight": 0.050242,
+      "target_weight": 0.1024,
+      "target_value": 1020.64
+    },
+    {
+      "symbol": "AMRZ",
+      "qty": 5.0,
+      "current_value": 283.3,
+      "current_weight": 0.028423,
+      "target_weight": 0.0511,
+      "target_value": 509.33
+    },
+    {
+      "symbol": "TD",
+      "qty": 1.0,
+      "current_value": 105.46,
+      "current_weight": 0.010581,
+      "target_weight": 0.0369,
+      "target_value": 367.79
+    },
+    {
+      "symbol": "BTC/USD",
+      "qty": 0.0,
+      "current_value": 0.0,
+      "current_weight": 0.0,
+      "target_weight": 0.0,
+      "target_value": 0.0
+    },
+    {
+      "symbol": "KO",
+      "qty": 0.0,
+      "current_value": 0.0,
+      "current_weight": 0.0,
+      "target_weight": 0.1147,
+      "target_value": 1143.24
+    },
+    {
+      "symbol": "VIG",
+      "qty": 0.0,
+      "current_value": 0.0,
+      "current_weight": 0.0,
+      "target_weight": 0.0618,
+      "target_value": 615.97
+    }
+  ]
+}

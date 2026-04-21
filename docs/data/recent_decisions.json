@@ -660,5 +660,285 @@
     },
     "symbol": "TD",
     "timestamp_utc": "2026-04-21T18:28:00Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20T13:32:58Z",
+      "filled_at": "2026-04-20T13:32:58Z",
+      "filled_qty": 77.0,
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-21T18:52:26Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20T13:32:41Z",
+      "filled_at": "2026-04-20T13:32:41Z",
+      "filled_qty": 2.0,
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-21T18:52:27Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20T13:31:59Z",
+      "filled_at": "2026-04-20T13:31:59Z",
+      "filled_qty": 5.0,
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-21T18:52:27Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20T13:32:02Z",
+      "filled_at": "2026-04-20T13:32:02Z",
+      "filled_qty": 1.0,
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "canceled"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-21T18:52:28Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20 13:32:58 UTC",
+      "filled_at": "2026-04-20 13:32:58 UTC",
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "pending",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "16.8300",
+      "logged_executed_at": "2026-04-20 13:32:58 UTC",
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "pending",
+      "previous_status": "partial_fill_canceled"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-21T18:52:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20 13:32:41 UTC",
+      "filled_at": "2026-04-20 13:32:41 UTC",
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "pending",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "247.9200",
+      "logged_executed_at": "2026-04-20 13:32:41 UTC",
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "pending",
+      "previous_status": "partial_fill_canceled"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-21T18:52:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20 13:31:59 UTC",
+      "filled_at": "2026-04-20 13:31:59 UTC",
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "pending",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "57.5200",
+      "logged_executed_at": "2026-04-20 13:31:59 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "pending",
+      "previous_status": "partial_fill_canceled"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-21T18:52:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20 13:32:02 UTC",
+      "filled_at": "2026-04-20 13:32:02 UTC",
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "pending",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "105.4800",
+      "logged_executed_at": "2026-04-20 13:32:02 UTC",
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "pending",
+      "previous_status": "partial_fill_canceled"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-21T18:52:56Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1694.99, \"side\": \"buy\", \"symbol\": \"ACI\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 16.83,
+      "executed_at": "2026-04-20T13:32:58Z",
+      "filled_at": "2026-04-20T13:32:58Z",
+      "filled_qty": 77.0,
+      "id": "e46baa7b-b9fb-430e-bfec-119e229f9e77",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:30:29Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "16.8300",
+      "logged_executed_at": "2026-04-20 13:32:58 UTC",
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:30:29 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "ACI",
+    "timestamp_utc": "2026-04-21T18:53:14Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 1022.18, \"side\": \"buy\", \"symbol\": \"AMZN\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-20T13:32:41Z",
+      "filled_at": "2026-04-20T13:32:41Z",
+      "filled_qty": 2.0,
+      "id": "1f25f596-bc79-480a-b813-4db02d0f7aca",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:30:54Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "247.9200",
+      "logged_executed_at": "2026-04-20 13:32:41 UTC",
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:30:54 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-21T18:53:17Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 510.09, \"side\": \"buy\", \"symbol\": \"AMRZ\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 57.52,
+      "executed_at": "2026-04-20T13:31:59Z",
+      "filled_at": "2026-04-20T13:31:59Z",
+      "filled_qty": 5.0,
+      "id": "1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:31:20Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "57.5200",
+      "logged_executed_at": "2026-04-20 13:31:59 UTC",
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:31:20 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMRZ",
+    "timestamp_utc": "2026-04-21T18:53:20Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{\"notional\": 368.35, \"side\": \"buy\", \"symbol\": \"TD\", \"time_in_force\": \"TimeInForce.DAY\", \"type\": \"market\"}",
+      "avg_price": 105.48,
+      "executed_at": "2026-04-20T13:32:02Z",
+      "filled_at": "2026-04-20T13:32:02Z",
+      "filled_qty": 1.0,
+      "id": "abeda6c8-43b6-47ac-a3be-235100ca0f1b",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-20T13:31:26Z"
+    },
+    "rationale": "BOT v50.0->Khanna copy-trade rebalance",
+    "state": {
+      "logged_avg_price": "105.4800",
+      "logged_executed_at": "2026-04-20 13:32:02 UTC",
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-20 13:31:26 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "TD",
+    "timestamp_utc": "2026-04-21T18:53:22Z"
   }
 ]
