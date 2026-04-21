@@ -629,9 +629,26 @@ class PortfolioManager:
 
     def canonical_order_status(self, order) -> str:
         status = str(getattr(order, "status", "pending")).lower()
-        if status in {"filled", "canceled", "cancelled", "rejected", "expired"}:
+        if "." in status:
+            status = status.rsplit(".", 1)[-1]
+        if status in {"filled", "canceled", "cancelled", "rejected", "expired", "partially_filled"}:
             return status
         return "pending"
+
+    def journal_order_status(self, order, current_status: str | None = None) -> str:
+        status = self.canonical_order_status(order)
+        filled_qty = _safe_float(getattr(order, "filled_qty", None))
+        if status == "partially_filled":
+            if getattr(order, "canceled_at", None) or str(current_status or "").startswith("partial_fill_"):
+                return "partial_fill_canceled"
+            return "pending"
+        if status in {"canceled", "cancelled"} and filled_qty and filled_qty > 0:
+            return "partial_fill_canceled"
+        if status == "expired" and filled_qty and filled_qty > 0:
+            return "partial_fill_expired"
+        if status == "rejected" and filled_qty and filled_qty > 0:
+            return "partial_fill_rejected"
+        return status
 
     def sync_trade_log(self):
         pending_count = 0
@@ -640,7 +657,11 @@ class PortfolioManager:
             if not order_id:
                 continue
             current_status = str(row.get("status") or "pending").lower()
-            if current_status in {"canceled", "cancelled", "rejected", "expired"}:
+            if current_status in {"partial_fill_canceled", "partial_fill_expired", "partial_fill_rejected"}:
+                continue
+            if current_status in {"canceled", "cancelled", "rejected", "expired"} and (
+                (row.get("executed_at") or row.get("filled_at") or row.get("avg_price") or row.get("filled_qty"))
+            ):
                 continue
             if current_status == "filled" and (row.get("executed_at") or row.get("filled_at")) and row.get("avg_price"):
                 continue
@@ -653,19 +674,23 @@ class PortfolioManager:
                 if current_status == "pending":
                     pending_count += 1
                 continue
-            synced_status = self.canonical_order_status(order)
+            synced_status = self.journal_order_status(order, current_status=current_status)
             filled_avg_price = _safe_float(getattr(order, "filled_avg_price", None))
             if filled_avg_price is None:
                 filled_avg_price = _safe_float(getattr(order, "avg_fill_price", None))
+            filled_qty = _safe_float(getattr(order, "filled_qty", None))
             submitted_at = getattr(order, "submitted_at", None)
             filled_at = getattr(order, "filled_at", None)
             needs_update = synced_status != current_status
             needs_update = needs_update or bool(submitted_at and not row.get("submitted_at"))
-            if synced_status == "filled":
+            if synced_status == "filled" or synced_status.startswith("partial_fill_"):
                 needs_update = needs_update or (
                     filled_avg_price is not None and not row.get("avg_price")
                 )
                 needs_update = needs_update or bool(filled_at and not row.get("executed_at"))
+                needs_update = needs_update or (
+                    filled_qty is not None and str(row.get("filled_qty") or "").strip() == ""
+                )
             if synced_status == "pending":
                 pending_count += 1
             if not needs_update:
@@ -673,17 +698,19 @@ class PortfolioManager:
             trade_log.update_order(
                 order_id,
                 synced_status,
-                avg_price=filled_avg_price if synced_status == "filled" else None,
+                avg_price=filled_avg_price if synced_status == "filled" or synced_status.startswith("partial_fill_") else None,
+                filled_qty=filled_qty if synced_status == "filled" or synced_status.startswith("partial_fill_") else None,
                 submitted_at=submitted_at,
-                filled_at=filled_at if synced_status == "filled" else None,
+                filled_at=filled_at if synced_status == "filled" or synced_status.startswith("partial_fill_") else None,
             )
             submitted_at_s = _format_order_timestamp(submitted_at)
-            executed_at_s = _format_order_timestamp(filled_at) if synced_status == "filled" else None
+            executed_at_s = _format_order_timestamp(filled_at) if synced_status == "filled" or synced_status.startswith("partial_fill_") else None
             self.logger.info(
                 f"ORDER SYNC {row.get('symbol')} {current_status} → {synced_status} "
                 f"id={order_id} submitted_at={submitted_at_s or row.get('submitted_at') or '—'} "
                 f"executed_at={executed_at_s or row.get('executed_at') or '—'} "
                 f"avg_price={filled_avg_price if filled_avg_price is not None else '—'} "
+                f"filled_qty={filled_qty if filled_qty is not None else '—'} "
                 f"rationale={row.get('rationale') or 'Synchronized local state with Alpaca.'}"
             )
             log_decision(
@@ -696,6 +723,7 @@ class PortfolioManager:
                     "logged_submitted_at": row.get("submitted_at") or None,
                     "logged_executed_at": row.get("executed_at") or None,
                     "logged_avg_price": row.get("avg_price") or None,
+                    "logged_filled_qty": row.get("filled_qty") or None,
                 },
                 order={
                     "id": str(order_id),
@@ -705,6 +733,7 @@ class PortfolioManager:
                     "executed_at": executed_at_s or row.get("executed_at") or None,
                     "filled_at": executed_at_s or row.get("filled_at") or None,
                     "avg_price": round(filled_avg_price, 4) if filled_avg_price is not None else None,
+                    "filled_qty": filled_qty,
                 },
             )
         return pending_count

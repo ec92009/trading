@@ -620,6 +620,42 @@ class BotBehaviorTests(unittest.TestCase):
             self.assertEqual(sync_mock.call_count, 3)
             self.assertEqual(sleep_mock.call_count, 2)
 
+    def test_sync_trade_log_marks_partial_fill_canceled_orders(self):
+        with install_alpaca_stubs():
+            bot = importlib.import_module("bot")
+            importlib.reload(bot)
+            trade_log = importlib.import_module("trade_log")
+            importlib.reload(trade_log)
+
+            with tempfile.TemporaryDirectory() as tmp:
+                temp_log = Path(tmp) / "trades_10k.tsv"
+                with patch.object(trade_log, "LOG_PATH", temp_log), patch.object(bot, "trade_log", trade_log):
+                    trade_log.log_order(
+                        "AMZN",
+                        "order-1",
+                        "BUY",
+                        1000.0,
+                        alpaca_request="{}",
+                        rationale="test",
+                        submitted_at="2026-04-21T13:30:00Z",
+                    )
+                    manager = bot.PortfolioManager([])
+                    partial = SimpleNamespace(
+                        status="OrderStatus.CANCELED",
+                        filled_qty="2",
+                        filled_avg_price="247.92",
+                        submitted_at="2026-04-21T13:30:00Z",
+                        filled_at="2026-04-21T13:32:00Z",
+                    )
+                    with patch.object(manager, "lookup_order", return_value=partial):
+                        pending = manager.sync_trade_log()
+
+                    self.assertEqual(pending, 0)
+                    rows = trade_log.all_rows()
+                    self.assertEqual(rows[0]["status"], "partial_fill_canceled")
+                    self.assertEqual(rows[0]["avg_price"], "247.9200")
+                    self.assertEqual(rows[0]["filled_qty"], "2")
+
     def test_khanna_live_waits_for_pending_order_settlement_after_rebalance(self):
         with install_alpaca_stubs():
             live = importlib.import_module("khanna_daily.live")
@@ -648,6 +684,78 @@ class BotBehaviorTests(unittest.TestCase):
 
             rebalance_mock.assert_called_once()
             sync_until_mock.assert_called_once()
+
+    def test_khanna_live_retries_incomplete_orders_without_full_rebalance(self):
+        with install_alpaca_stubs():
+            live = importlib.import_module("khanna_daily.live")
+            importlib.reload(live)
+
+            manager = live.CopyTradeLiveManager()
+            result = {
+                "trade_window": {"first_trade_day": "2026-04-20", "last_trade_day": "2026-04-21"},
+                "effective_queue_limit": 10,
+                "active_queue": ["AMZN"],
+                "positions": {"AMZN": {"weight": 1.0}},
+            }
+            signature = live._signature_for(result, {"AMZN": 1.0})
+            manager.last_rebalance_signature = signature
+            with patch.object(manager, "market_open", return_value=True), patch.object(
+                manager,
+                "cancel_open_orders",
+                return_value=0,
+            ), patch.object(manager, "now_et", return_value=datetime(2026, 4, 21, 14, 0, tzinfo=timezone.utc)), patch.object(
+                manager,
+                "simulate_target_book",
+                return_value=result,
+            ), patch.object(manager, "complete_incomplete_orders", return_value=1) as completion_mock, patch.object(
+                manager,
+                "rebalance_to_weights",
+            ) as rebalance_mock, patch.object(
+                manager.order_sync,
+                "sync_trade_log_until_settled",
+            ) as sync_until_mock, patch.object(manager, "save_state"):
+                manager.evaluate(reason="Khanna copy-trade rebalance")
+
+            completion_mock.assert_called_once()
+            rebalance_mock.assert_not_called()
+            sync_until_mock.assert_called_once()
+
+    def test_khanna_live_completion_caps_attempts_per_asset(self):
+        with install_alpaca_stubs():
+            live = importlib.import_module("khanna_daily.live")
+            importlib.reload(live)
+
+            manager = live.CopyTradeLiveManager()
+            rationale = live.basket_bot._versioned_rationale("Khanna copy-trade rebalance")
+            fake_rows = [
+                {
+                    "symbol": "AMZN",
+                    "order_id": f"order-{index}",
+                    "side": "BUY",
+                    "status": "partial_fill_canceled",
+                    "rationale": rationale,
+                }
+                for index in range(5)
+            ]
+            result = {"active_queue": ["AMZN"]}
+            fake_account = SimpleNamespace(equity="1000", cash="500")
+            fake_position = SimpleNamespace(market_value="250", qty="1", current_price="250")
+            with patch.object(live.trade_log, "all_rows", return_value=fake_rows), patch.object(
+                live.basket_bot.trading,
+                "get_account",
+                return_value=fake_account,
+            ), patch.object(manager, "current_positions", return_value={"AMZN": fake_position}), patch.object(
+                manager,
+                "submit_buy_notional",
+            ) as submit_buy_mock:
+                submitted = manager.complete_incomplete_orders(
+                    {"AMZN": 0.5},
+                    result,
+                    reason="Khanna copy-trade rebalance",
+                )
+
+            self.assertEqual(submitted, 0)
+            submit_buy_mock.assert_not_called()
 
 
 class AddAssetTests(unittest.TestCase):

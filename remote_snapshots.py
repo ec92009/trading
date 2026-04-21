@@ -16,6 +16,7 @@ PUBLIC_VERSION_PATH = DOCS_DATA_DIR / "version.json"
 RECENT_BOT_LOG_PATH = DOCS_DATA_DIR / "recent_bot.log"
 RECENT_DECISIONS_PATH = DOCS_DATA_DIR / "recent_decisions.json"
 RECENT_TRADES_PATH = DOCS_DATA_DIR / "recent_trades.tsv"
+RECENT_PORTFOLIO_PATH = DOCS_DATA_DIR / "recent_portfolio.json"
 
 SNAPSHOT_PUBLISH_INTERVAL = int(os.getenv("REMOTE_SNAPSHOT_PUBLISH_INTERVAL", "900"))
 BOT_LOG_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_BOT_LOG_SNAPSHOT_LIMIT", "200"))
@@ -78,6 +79,7 @@ def write_snapshot_files(
     bot_log_path: Path,
     decision_log_path: Path,
     trade_log_path: Path,
+    portfolio_snapshot: dict | None = None,
     bot_log_limit: int = BOT_LOG_SNAPSHOT_LIMIT,
     decision_limit: int = DECISION_SNAPSHOT_LIMIT,
     trade_limit: int = TRADE_SNAPSHOT_LIMIT,
@@ -111,6 +113,13 @@ def write_snapshot_files(
         RECENT_TRADES_PATH.write_text(trade_text, encoding="utf-8")
         changed.append(RECENT_TRADES_PATH)
 
+    if portfolio_snapshot is not None:
+        portfolio_text = json.dumps(portfolio_snapshot, indent=2) + "\n"
+        current_portfolio_text = RECENT_PORTFOLIO_PATH.read_text(encoding="utf-8") if RECENT_PORTFOLIO_PATH.exists() else None
+        if current_portfolio_text != portfolio_text:
+            RECENT_PORTFOLIO_PATH.write_text(portfolio_text, encoding="utf-8")
+            changed.append(RECENT_PORTFOLIO_PATH)
+
     return changed
 
 
@@ -121,6 +130,7 @@ class RemoteSnapshotPublisher:
         bot_log_path: Path,
         decision_log_path: Path,
         trade_log_path: Path,
+        portfolio_snapshot_provider=None,
         logger: logging.Logger | None = None,
         interval_seconds: int = SNAPSHOT_PUBLISH_INTERVAL,
         enabled: bool = REMOTE_SNAPSHOT_PUBLISH_ENABLED,
@@ -128,6 +138,7 @@ class RemoteSnapshotPublisher:
         self.bot_log_path = bot_log_path
         self.decision_log_path = decision_log_path
         self.trade_log_path = trade_log_path
+        self.portfolio_snapshot_provider = portfolio_snapshot_provider
         self.interval_seconds = max(60, interval_seconds)
         self.logger = logger or logging.getLogger("remote_snapshots")
         self.enabled = enabled
@@ -148,6 +159,7 @@ class RemoteSnapshotPublisher:
             bot_log_path=self.bot_log_path,
             decision_log_path=self.decision_log_path,
             trade_log_path=self.trade_log_path,
+            portfolio_snapshot=self.portfolio_snapshot_provider() if self.portfolio_snapshot_provider else None,
         )
         if not changed:
             return

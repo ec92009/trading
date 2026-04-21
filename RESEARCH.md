@@ -92,6 +92,28 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - `VIG`
 - `AMRZ`
 - `TD`
+- The live execution model is heartbeat-driven rather than interrupt-driven:
+- the bot wakes every `30` seconds
+- on each heartbeat it notices market state, Capitol disclosure changes, and Alpaca order-status changes
+- outside disclosure changes, it does not run a fresh time-based rebalance
+- instead, during market hours it now only retries incomplete trades from the current active Khanna book
+- partial-fill and cancel reconciliation has been tightened so the local trade journal now distinguishes `filled`, `canceled`, and `partial_fill_canceled`
+- incomplete-order completion is capped at `5` attempts per asset, with retry rationales preserving the bot version and attempt number
+
+## `10K` Viewer Status
+
+- The committed web viewer under [docs/](/Users/ecohen/Dev/trading/docs) now has four tabs:
+- Runtime Log
+- Decision Log
+- Trade Journal
+- Last Portfolio
+- The Runtime Log view now simplifies order-sync lines for human reading while preserving the original rationale/version trail.
+- The Trade Journal now renders compact two-line entries and shows elapsed time from submission to execution.
+- The Last Portfolio view now exposes:
+- target weight
+- current weight
+- derived point distribution
+- current balance
 
 ## Local Capitol Dataset
 

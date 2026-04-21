@@ -147,7 +147,7 @@ table td.mono,
 
 .tablist {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -409,6 +409,43 @@ select {
   font-size: 0.9rem;
 }
 
+.portfolio-meta {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
+
+.portfolio-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+  padding: 14px 12px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.portfolio-table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.portfolio-table td:nth-child(2),
+.portfolio-table th:nth-child(2),
+.portfolio-table td:nth-child(3),
+.portfolio-table th:nth-child(3),
+.portfolio-table td:nth-child(4),
+.portfolio-table th:nth-child(4),
+.portfolio-table td:nth-child(5),
+.portfolio-table th:nth-child(5),
+.portfolio-table td:nth-child(6),
+.portfolio-table th:nth-child(6) {
+  text-align: right;
+}
+
 @media (max-width: 900px) {
   .bundle-panel,
   .controls,
@@ -432,5 +469,10 @@ select {
 
   .control-search {
     grid-column: span 1;
+  }
+
+  .portfolio-table {
+    display: block;
+    overflow-x: auto;
   }
 }

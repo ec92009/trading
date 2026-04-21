@@ -18,7 +18,7 @@ from pathlib import Path
 FIELDS = [
     "symbol", "order_id", "side", "notional",
     "status", "alpaca_request", "rationale",
-    "submitted_at", "executed_at", "filled_at", "avg_price",
+    "submitted_at", "executed_at", "filled_at", "avg_price", "filled_qty",
 ]
 
 
@@ -90,6 +90,7 @@ def log_order(
             "executed_at":  "",
             "filled_at":    "",
             "avg_price":    "",
+            "filled_qty":   "",
         })
         _write(rows)
 
@@ -97,6 +98,7 @@ def update_order(
     order_id: str,
     status: str,
     avg_price: float = None,
+    filled_qty: float = None,
     submitted_at=None,
     filled_at=None,
 ):
@@ -108,12 +110,14 @@ def update_order(
                 row["status"] = status
                 if submitted_at is not None:
                     row["submitted_at"] = _format_timestamp(submitted_at) or row.get("submitted_at", "")
-                if status == "filled":
+                if filled_at is not None or status == "filled" or filled_qty not in (None, ""):
                     executed_at = _format_timestamp(filled_at) or row.get("executed_at", "") or _now()
                     row["executed_at"] = executed_at
-                    row["filled_at"] = executed_at
+                    row["filled_at"] = _format_timestamp(filled_at) or row.get("filled_at", "") or executed_at
                 if avg_price is not None:
                     row["avg_price"] = f"{avg_price:.4f}"
+                if filled_qty is not None:
+                    row["filled_qty"] = f"{filled_qty:.8f}".rstrip("0").rstrip(".")
                 break
         _write(rows)
 

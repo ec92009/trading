@@ -59,3 +59,14 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - The upload / drag-and-drop panel and extra intro block were removed from the viewer so the page focuses on the committed `10k` snapshots only.
 - The filter bar was simplified to a single full-text search, `Show latest`, and an explicit `Apply Filters` button, with Enter-to-apply support.
 - The repo was synced forward to the latest `origin/main` first, with local research changes preserved across the fast-forward.
+- Added a fourth `Last Portfolio` tab to the viewer, backed by committed portfolio snapshots in [docs/data/recent_portfolio.json](/Users/ecohen/Dev/trading/docs/data/recent_portfolio.json).
+- Added shared snapshot publishing support for the portfolio view in [remote_snapshots.py](/Users/ecohen/Dev/trading/remote_snapshots.py).
+- Fixed the trade journal / order sync path so partial fills are preserved as `partial_fill_canceled` with `filled_qty`, instead of lingering as `pending` or collapsing into plain `canceled`.
+- Fixed the Khanna completion logic so, when a disclosure-driven rebalance is underfilled, later open-market heartbeat cycles only retry the incomplete symbols rather than running a fresh full rebalance.
+- Capped incomplete-order retries at `5` attempts per asset, and made retry rationales explicit with the current bot version and attempt number.
+- Fixed a rationale-matching bug where older incomplete `v50.0` Khanna orders were being ignored after the bot version advanced, which had left excess cash stranded in the `10K` paper account.
+- Verified the live fix against the real `10K` account: the patched completion path immediately submitted catch-up buys for `KO`, `VIG`, `AMZN`, `ACI`, `TD`, and `AMRZ`, reducing idle cash.
+- Tightened the Runtime Log viewer so `ORDER SYNC ...` entries render as simplified operator-readable lines instead of raw IDs and plumbing details.
+- Restored a dedicated asset filter as a dropdown so symbol filtering is field-based rather than broad text search.
+- Reworked the `Last Portfolio` columns to `Asset / Target Weight / Current Weight / Points / Current Balance`, using the active simulation state to expose the current point distribution.
+- Bumped the shared bot/web version to `51.4`, cache-busted the local viewer assets in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), refreshed [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json), and restarted the live `10K` bot on the patched code.

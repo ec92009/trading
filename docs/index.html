@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trading Log Viewer</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=51.4" />
   </head>
   <body>
     <main class="app-shell">
@@ -34,6 +34,7 @@
           <button class="tab-button is-active" data-tab="botlog" type="button" role="tab" aria-selected="true">Runtime Log</button>
           <button class="tab-button" data-tab="decisions" type="button" role="tab" aria-selected="false">Decision Log</button>
           <button class="tab-button" data-tab="trades" type="button" role="tab" aria-selected="false">Trade Journal</button>
+          <button class="tab-button" data-tab="portfolio" type="button" role="tab" aria-selected="false">Last Portfolio</button>
         </div>
       </section>
 
@@ -43,6 +44,12 @@
             <p class="controls-kicker">Filters</p>
             <h2 class="controls-title">Narrow The Current View</h2>
           </div>
+        </div>
+        <div class="control">
+          <label for="assetFilter">Asset</label>
+          <select id="assetFilter">
+            <option value="">All assets</option>
+          </select>
         </div>
         <div class="control control-search">
           <label for="textFilter">Text search</label>
@@ -73,6 +80,6 @@
       </article>
     </template>
 
-    <script src="./app.js"></script>
+    <script src="./app.js?v=51.4"></script>
   </body>
 </html>

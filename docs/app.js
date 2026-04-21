@@ -14,6 +14,11 @@ const TAB_CONFIG = {
     bundledPath: "./data/recent_trades.tsv",
     bundledLabel: "committed trade journal",
   },
+  portfolio: {
+    label: "Last Portfolio",
+    bundledPath: "./data/recent_portfolio.json",
+    bundledLabel: "committed portfolio snapshot",
+  },
 };
 
 function emptyDataset(type) {
@@ -35,6 +40,7 @@ const state = {
     botlog: emptyDataset("botlog"),
     decisions: emptyDataset("decisions"),
     trades: emptyDataset("trades"),
+    portfolio: emptyDataset("portfolio"),
   },
 };
 
@@ -42,6 +48,7 @@ const dom = {
   versionBadge: document.getElementById("versionBadge"),
   reloadBundled: document.getElementById("reloadBundled"),
   applyFilters: document.getElementById("applyFilters"),
+  assetFilter: document.getElementById("assetFilter"),
   textFilter: document.getElementById("textFilter"),
   limitInput: document.getElementById("limitInput"),
   summaryPanel: document.getElementById("summaryPanel"),
@@ -50,7 +57,7 @@ const dom = {
   tabButtons: Array.from(document.querySelectorAll(".tab-button")),
 };
 
-const filterInputs = [dom.textFilter, dom.limitInput];
+const filterInputs = [dom.assetFilter, dom.textFilter, dom.limitInput];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -81,6 +88,14 @@ function parseDecisionLog(text) {
     throw new Error("Not a decision log");
   }
   return records;
+}
+
+function parsePortfolioSnapshot(text) {
+  const payload = JSON.parse(text);
+  if (!payload || !Array.isArray(payload.positions)) {
+    throw new Error("Not a portfolio snapshot");
+  }
+  return payload;
 }
 
 function parseTradesTsv(text) {
@@ -121,6 +136,64 @@ function parseBotLog(text) {
   return records;
 }
 
+function recordSymbol(record, type) {
+  if (type === "decisions") return String(record.symbol || "");
+  if (type === "trades") return String(record.symbol || "");
+  if (type === "portfolio") return String(record.symbol || "");
+  if (type === "botlog") {
+    const message = String(record.message || "");
+    const patterns = [
+      /^ORDER SYNC\s+(\S+)/,
+      /^Canceled stale open order\s+(\S+)/,
+      /^Canceled stale open orders:\s+(\S+)/,
+      /^BUY\s+\$[0-9.,]+\s+(\S+)/,
+      /^SELL\s+[0-9.]+\s+(\S+)/,
+      /\[rebalance sell\s+(\S+)\]/,
+      /\[stop sell\s+(\S+)\]/,
+    ];
+    for (const pattern of patterns) {
+      const match = message.match(pattern);
+      if (match) {
+        return String(match[1] || "");
+      }
+    }
+  }
+  return "";
+}
+
+function assetOptionsForDataset(dataset) {
+  return [...new Set(dataset.records.map((record) => recordSymbol(record, dataset.parsedType)).filter(Boolean))].sort();
+}
+
+function allAssetOptions() {
+  const allSymbols = new Set();
+  for (const dataset of Object.values(state.datasets)) {
+    for (const symbol of assetOptionsForDataset(dataset)) {
+      allSymbols.add(symbol);
+    }
+  }
+  return [...allSymbols].sort();
+}
+
+function syncAssetFilterOptions() {
+  const dataset = currentDataset();
+  const options = dataset.parsedType === "botlog" ? allAssetOptions() : assetOptionsForDataset(dataset);
+  const previousValue = dom.assetFilter.value;
+  dom.assetFilter.innerHTML = "";
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = "All assets";
+  dom.assetFilter.appendChild(allOption);
+  for (const symbol of options) {
+    const option = document.createElement("option");
+    option.value = symbol;
+    option.textContent = symbol;
+    dom.assetFilter.appendChild(option);
+  }
+  dom.assetFilter.disabled = false;
+  dom.assetFilter.value = options.includes(previousValue) ? previousValue : "";
+}
+
 function summarize(dataset) {
   if (dataset.parsedType === "decisions") {
     const symbols = new Set(dataset.records.map((record) => record.symbol).filter(Boolean));
@@ -143,6 +216,14 @@ function summarize(dataset) {
       ["Symbols", symbols.size || 0],
       ["Pending", pending],
       ["Buys", buys],
+    ];
+  }
+  if (dataset.parsedType === "portfolio") {
+    return [
+      ["Positions", dataset.records.length],
+      ["Allocated", formatMoney(dataset.meta?.allocated) || "—"],
+      ["Cash", formatMoney(dataset.meta?.cash) || "—"],
+      ["Equity", formatMoney(dataset.meta?.equity) || "—"],
     ];
   }
   if (dataset.parsedType === "botlog") {
@@ -252,7 +333,7 @@ function tradeRequestSummary(row) {
 
 function compactTradeHeadline(row) {
   const submitted = row.submitted_at || row.executed_at || row.filled_at || "—";
-  const status = String(row.status || "unknown");
+  const status = String(row.status || "unknown").replaceAll("_", " ");
   const side = String(row.side || "—").toUpperCase();
   const symbol = row.symbol || "—";
   const amount = formatMoney(row.notional) || row.notional || "—";
@@ -263,17 +344,43 @@ function compactTradeHeadline(row) {
 }
 
 function compactTradeDetails(row) {
-  return [
-    `Submitted ${row.submitted_at || "—"}`,
-    `Executed ${row.executed_at || "—"}`,
-    `Filled ${row.filled_at || "—"}`,
-  ].join(" / ");
+  const submitted = row.submitted_at || "—";
+  const executed = row.executed_at || row.filled_at || "";
+  let executedPart = "Executed — later";
+  if (submitted !== "—" && executed) {
+    const submittedDate = new Date(submitted.replace(" UTC", "Z"));
+    const executedDate = new Date(executed.replace(" UTC", "Z"));
+    const deltaSeconds = Math.max(0, Math.round((executedDate.getTime() - submittedDate.getTime()) / 1000));
+    if (Number.isFinite(deltaSeconds)) {
+      const hours = String(Math.floor(deltaSeconds / 3600)).padStart(2, "0");
+      const minutes = String(Math.floor((deltaSeconds % 3600) / 60)).padStart(2, "0");
+      const seconds = String(deltaSeconds % 60).padStart(2, "0");
+      executedPart = `Executed ${hours}:${minutes}:${seconds} later`;
+    }
+  }
+  const status = String(row.status || "").toLowerCase();
+  let finalPart = "Pending";
+  if (status === "filled") {
+    finalPart = "Filled";
+  } else if (status === "partial_fill_canceled") {
+    finalPart = "Partial fill canceled";
+  } else if (status) {
+    finalPart = status.replaceAll("_", " ");
+    finalPart = finalPart.charAt(0).toUpperCase() + finalPart.slice(1);
+  }
+  return [`Submitted ${submitted}`, executedPart, finalPart].join(" / ");
 }
 
 function applyFilters(records, type) {
+  const assetNeedle = dom.assetFilter.value.trim();
   const textNeedle = dom.textFilter.value.trim().toLowerCase();
 
   return records.filter((record) => {
+    if (assetNeedle) {
+      if (recordSymbol(record, type) !== assetNeedle) {
+        return false;
+      }
+    }
     if (type === "decisions") {
       const haystack = JSON.stringify(record).toLowerCase();
       return !textNeedle || haystack.includes(textNeedle);
@@ -286,13 +393,20 @@ function applyFilters(records, type) {
       const haystack = `${record.timestamp} ${record.logger} ${record.message}`.toLowerCase();
       return !textNeedle || haystack.includes(textNeedle);
     }
+    if (type === "portfolio") {
+      const haystack = JSON.stringify(record).toLowerCase();
+      return !textNeedle || haystack.includes(textNeedle);
+    }
     return true;
   });
 }
 
-function visibleRecords(records) {
+function visibleRecords(records, type) {
   const limit = Number.parseInt(dom.limitInput.value, 10);
   const normalizedLimit = Number.isFinite(limit) && limit > 0 ? limit : 120;
+  if (type === "portfolio") {
+    return [...records].slice(0, normalizedLimit);
+  }
   return [...records].reverse().slice(0, normalizedLimit);
 }
 
@@ -310,6 +424,28 @@ function formatMarketClosedPairMessage(nextOpen, count) {
     : `Signal changed while market was closed. Next open ${nextOpen}`;
 }
 
+function simplifyOrderSyncMessage(message) {
+  const match = message.match(
+    /^ORDER SYNC\s+(\S+)\s+(\S+)\s+→\s+(\S+).*?(?:avg_price=([0-9.]+|—))?(?:\s+filled_qty=([0-9.]+|—))?.*?rationale=(.*)$/
+  );
+  if (!match) {
+    return message;
+  }
+  const [, symbol, fromStatus, toStatus, avgPrice, filledQty, rationale] = match;
+  const cleanStatus = String(toStatus || "").replaceAll("_", " ");
+  const parts = [`${symbol}: ${String(fromStatus || "").replaceAll("_", " ")} -> ${cleanStatus}`];
+  if (avgPrice && avgPrice !== "—") {
+    parts.push(`avg ${formatMoney(avgPrice) || avgPrice}`);
+  }
+  if (filledQty && filledQty !== "—") {
+    parts.push(`filled qty ${filledQty}`);
+  }
+  if (rationale) {
+    parts.push(rationale.trim());
+  }
+  return parts.join(" / ");
+}
+
 function compactBotLogRecords(records) {
   const chronological = [...records].reverse();
   const compacted = [];
@@ -317,6 +453,14 @@ function compactBotLogRecords(records) {
     const message = String(record.message || "");
 
     if (message.includes("Checked Capitol signals for Ro Khanna: no new trades")) {
+      continue;
+    }
+
+    if (message.startsWith("ORDER SYNC ")) {
+      compacted.push({
+        ...record,
+        message: simplifyOrderSyncMessage(message),
+      });
       continue;
     }
 
@@ -461,6 +605,40 @@ function renderBotLog(records) {
   return `<section class="panel results"><div class="stack">${lines}</div></section>`;
 }
 
+function renderPortfolio(records, dataset) {
+  if (!records.length) {
+    return "<section class=\"panel empty-state\"><h2>No portfolio snapshot</h2><p>The bot has not published a holdings snapshot yet.</p></section>";
+  }
+  const rows = records.map((row) => `
+    <tr>
+      <td class="mono">${escapeHtml(row.symbol)}</td>
+      <td class="mono">${escapeHtml(formatPercent(row.target_weight) || "—")}</td>
+      <td class="mono">${escapeHtml(formatPercent(row.current_weight) || "—")}</td>
+      <td class="mono">${escapeHtml(String(row.points ?? "—"))}</td>
+      <td class="mono">${escapeHtml(formatMoney(row.current_value) || "—")}</td>
+    </tr>
+  `).join("");
+  return `
+    <section class="panel results">
+      <p class="portfolio-meta">
+        Snapshot ${escapeHtml(dataset.meta?.as_of || "—")} / Strategy ${escapeHtml(dataset.meta?.strategy || "—")}
+      </p>
+      <table class="portfolio-table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Target Weight</th>
+            <th>Current Weight</th>
+            <th>Points</th>
+            <th>Current Balance</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>
+  `;
+}
+
 function renderEmptyForTab(tab) {
   const label = TAB_CONFIG[tab].label;
   return `<h2>${escapeHtml(label)}</h2><p>No data loaded for this tab yet.</p>`;
@@ -485,6 +663,7 @@ function syncTabButtons() {
 function render() {
   syncTabButtons();
   const dataset = currentDataset();
+  syncAssetFilterOptions();
   renderSummary(dataset.summary);
   updateStatusText(dataset);
 
@@ -494,12 +673,14 @@ function render() {
     return;
   }
 
-  const filtered = visibleRecords(applyFilters(dataset.records, dataset.parsedType));
+  const filtered = visibleRecords(applyFilters(dataset.records, dataset.parsedType), dataset.parsedType);
   let html = "";
   if (dataset.parsedType === "decisions") {
     html = renderDecisionCards(filtered);
   } else if (dataset.parsedType === "trades") {
     html = renderTradesCards(filtered);
+  } else if (dataset.parsedType === "portfolio") {
+    html = renderPortfolio(filtered, dataset);
   } else if (dataset.parsedType === "botlog") {
     html = renderBotLog(filtered);
   } else {
@@ -522,6 +703,7 @@ function setDataset(tab, payload) {
     parsedType: payload.parsedType,
     records: payload.records,
     headers: payload.headers || [],
+    meta: payload.meta || null,
     summary: summarize(payload),
   };
 }
@@ -550,6 +732,20 @@ async function loadBundledTab(tab) {
     const parsed = parseTradesTsv(rawText);
     records = parsed.rows;
     headers = parsed.headers;
+  } else if (tab === "portfolio") {
+    const parsed = parsePortfolioSnapshot(rawText);
+    records = parsed.positions;
+    headers = ["symbol", "qty", "current_value", "target_weight", "target_value", "current_weight"];
+    setDataset(tab, {
+      source: "bundled",
+      sourceLabel: `Showing ${config.bundledLabel}.`,
+      rawText,
+      parsedType: tab,
+      records,
+      headers,
+      meta: parsed,
+    });
+    return;
   } else {
     records = parseBotLog(rawText);
   }
