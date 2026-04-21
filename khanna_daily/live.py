@@ -366,16 +366,16 @@ class CopyTradeLiveManager:
             (result.get("trade_window") or {}).get("last_trade_day"),
         )
         self.rebalance_to_weights(target_weights, result, reason=reason)
-        self.order_sync.sync_trade_log()
+        self.order_sync.sync_trade_log_until_settled()
         self.last_rebalance_signature = signature
         self.save_state()
 
     def startup_sync(self):
         self.refresh_signals_if_due(force=True)
         self.load_state()
-        self.order_sync.sync_trade_log()
+        self.order_sync.sync_trade_log_until_settled()
         self.evaluate(force=False, reason="Khanna copy-trade rebalance")
-        self.order_sync.sync_trade_log()
+        self.order_sync.sync_trade_log_until_settled()
         self.save_state()
         self.snapshot_publisher.publish_if_due(force=True)
 
@@ -388,12 +388,15 @@ class CopyTradeLiveManager:
         while True:
             try:
                 self.refresh_signals_if_due()
-                self.order_sync.sync_trade_log()
+                pending_count = self.order_sync.sync_trade_log()
                 clock = self.market_clock()
                 if not clock.is_open:
                     self.logger.info(f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}")
                 self.evaluate(reason="Khanna copy-trade rebalance")
-                self.order_sync.sync_trade_log()
+                if pending_count > 0:
+                    self.order_sync.sync_trade_log_until_settled()
+                else:
+                    self.order_sync.sync_trade_log()
                 self.save_state()
                 self.snapshot_publisher.publish_if_due()
                 time.sleep(POLL_INTERVAL)

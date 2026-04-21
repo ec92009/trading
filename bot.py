@@ -634,6 +634,7 @@ class PortfolioManager:
         return "pending"
 
     def sync_trade_log(self):
+        pending_count = 0
         for row in trade_log.all_rows():
             order_id = row.get("order_id")
             if not order_id:
@@ -649,6 +650,8 @@ class PortfolioManager:
                 self.logger.error(f"ORDER SYNC ERROR {order_id}: {exc}")
                 continue
             if not order:
+                if current_status == "pending":
+                    pending_count += 1
                 continue
             synced_status = self.canonical_order_status(order)
             filled_avg_price = _safe_float(getattr(order, "filled_avg_price", None))
@@ -663,6 +666,8 @@ class PortfolioManager:
                     filled_avg_price is not None and not row.get("avg_price")
                 )
                 needs_update = needs_update or bool(filled_at and not row.get("executed_at"))
+            if synced_status == "pending":
+                pending_count += 1
             if not needs_update:
                 continue
             trade_log.update_order(
@@ -702,6 +707,18 @@ class PortfolioManager:
                     "avg_price": round(filled_avg_price, 4) if filled_avg_price is not None else None,
                 },
             )
+        return pending_count
+
+    def sync_trade_log_until_settled(self, *, timeout_seconds: int = 120, poll_interval_seconds: int = 5):
+        deadline = time.time() + max(1, timeout_seconds)
+        pending_count = self.sync_trade_log()
+        while pending_count > 0 and time.time() < deadline:
+            self.logger.info("Waiting on %s pending order(s) to settle before the next cycle.", pending_count)
+            time.sleep(max(1, poll_interval_seconds))
+            pending_count = self.sync_trade_log()
+        if pending_count > 0:
+            self.logger.info("Still tracking %s pending order(s); will continue syncing on later loops.", pending_count)
+        return pending_count
 
     def should_monitor_bot(self, bot: Bot, market_is_open: bool) -> bool:
         if bot.cfg.asset_class == "stock":
@@ -846,6 +863,7 @@ class PortfolioManager:
                 self.logger.error(f"REBALANCE BUY FAILED {bot.cfg.symbol}: {exc}")
 
         time.sleep(2)
+        self.sync_trade_log_until_settled()
         for bot in self.bots:
             pos = bot.refresh_position()
             if pos:
@@ -868,14 +886,14 @@ class PortfolioManager:
                 self.rebalance_portfolio("startup sync")
             except Exception as exc:
                 self.logger.error(f"STARTUP REBALANCE ERROR: {exc}")
-        self.sync_trade_log()
+        self.sync_trade_log_until_settled()
         self.save_state()
 
     def run(self):
         self.startup_sync()
         while True:
             try:
-                self.sync_trade_log()
+                pending_count = self.sync_trade_log()
                 clock = self.market_clock()
                 now = clock.timestamp
                 monitored_any = False
@@ -894,7 +912,10 @@ class PortfolioManager:
                     self.logger.info(
                         f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}"
                     )
-                self.sync_trade_log()
+                if pending_count > 0:
+                    self.sync_trade_log_until_settled()
+                else:
+                    self.sync_trade_log()
                 self.save_state()
                 sleep_for = min(cfg.poll_interval for cfg in (bot.cfg for bot in self.bots))
                 time.sleep(sleep_for)

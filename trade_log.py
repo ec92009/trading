@@ -132,3 +132,10 @@ def all_rows() -> list[dict]:
     """Return all rows (for inspection / status display)."""
     with _lock:
         return _read()
+
+
+def pending_rows() -> list[dict]:
+    """Return rows whose terminal settlement has not been recorded yet."""
+    with _lock:
+        rows = _read()
+    return [row for row in rows if str(row.get("status") or "pending").lower() == "pending"]
