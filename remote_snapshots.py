@@ -143,6 +143,7 @@ class RemoteSnapshotPublisher:
         self.publish_once()
 
     def publish_once(self):
+        self._sync_branch()
         changed = write_snapshot_files(
             bot_log_path=self.bot_log_path,
             decision_log_path=self.decision_log_path,
@@ -172,6 +173,17 @@ class RemoteSnapshotPublisher:
             self.logger.info("Published updated remote snapshot files: %s", ", ".join(rel_paths))
         except Exception as exc:
             self.logger.error("REMOTE SNAPSHOT PUBLISH ERROR: %s", exc)
+
+    def _sync_branch(self):
+        branch = self._run_git(["git", "branch", "--show-current"]).strip() or "main"
+        self._run_git(["git", "fetch", "origin", branch])
+        counts = self._run_git(["git", "rev-list", "--left-right", "--count", f"{branch}...origin/{branch}"]).strip()
+        ahead_str, behind_str = (counts.split() + ["0", "0"])[:2]
+        ahead = int(ahead_str)
+        behind = int(behind_str)
+        if ahead == 0 and behind == 0:
+            return
+        self._run_git(["git", "pull", "--rebase", "origin", branch])
 
     def _run_git(self, cmd: list[str]) -> str:
         result = subprocess.run(

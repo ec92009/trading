@@ -103,6 +103,27 @@ class RemoteSnapshotTests(unittest.TestCase):
 
             publish_mock.assert_called_once_with(force=True)
 
+    def test_remote_snapshot_publisher_syncs_before_writing(self):
+        remote_snapshots = importlib.import_module("remote_snapshots")
+        importlib.reload(remote_snapshots)
+
+        publisher = remote_snapshots.RemoteSnapshotPublisher(
+            bot_log_path=Path("bot_10k.log"),
+            decision_log_path=Path("bot_decisions_10k.jsonl"),
+            trade_log_path=Path("trades_10k.tsv"),
+            enabled=True,
+        )
+
+        with patch.object(publisher, "_sync_branch") as sync_mock, patch.object(
+            remote_snapshots,
+            "write_snapshot_files",
+            return_value=[],
+        ) as write_mock:
+            publisher.publish_once()
+
+        sync_mock.assert_called_once_with()
+        write_mock.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
