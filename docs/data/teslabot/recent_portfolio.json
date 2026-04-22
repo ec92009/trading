@@ -1,54 +1,18 @@
 {
-  "as_of": "2026-04-22T12:36:31.543058+00:00",
+  "as_of": "2026-04-22T12:43:13.186524+00:00",
   "strategy": "TeslaBot basket rebalance",
-  "equity": 356.47,
-  "cash": -0.01,
-  "allocated": 356.48,
+  "equity": 0.0,
+  "cash": 0.0,
+  "allocated": 0.0,
   "positions": [
     {
-      "symbol": "TSLA",
-      "target_weight": 0.5,
-      "current_weight": 0.494658,
-      "points": null,
-      "current_value": 176.33,
-      "qty": 0.453724,
-      "target_value": 178.24
-    },
-    {
-      "symbol": "TSM",
-      "target_weight": 0.125,
-      "current_weight": 0.126278,
-      "points": null,
-      "current_value": 45.01,
-      "qty": 0.121628,
-      "target_value": 44.56
-    },
-    {
-      "symbol": "NVDA",
-      "target_weight": 0.125,
-      "current_weight": 0.124448,
-      "points": null,
-      "current_value": 44.36,
-      "qty": 0.220773,
-      "target_value": 44.56
-    },
-    {
-      "symbol": "PLTR",
-      "target_weight": 0.125,
-      "current_weight": 0.126493,
-      "points": null,
-      "current_value": 45.09,
-      "qty": 0.305122,
-      "target_value": 44.56
-    },
-    {
       "symbol": "BTC/USD",
-      "target_weight": 0.125,
-      "current_weight": 0.128155,
+      "target_weight": 0.2,
+      "current_weight": 0.0,
       "points": null,
-      "current_value": 45.68,
-      "qty": 0.00058421,
-      "target_value": 44.56
+      "current_value": 0.0,
+      "qty": 0.0,
+      "target_value": 0.0
     }
   ]
 }
