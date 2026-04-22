@@ -14,7 +14,8 @@ Recent viewer polish:
 - `Last Portfolio` now shows `Asset / Target Weight / Current Weight / Points / Current Balance`
 - the `Points` column now uses the simulator's actual current decayed point balances
 - the Runtime Log compactor now collapses repeated closed-market snapshot churn and repeated `Waiting on N pending order(s)...` loops
-- the Trade Journal second line now reads in plain elapsed seconds, for example `Submitted ... / Executed 3 seconds later / Filled 0 seconds later`
+- the Runtime Log `Show latest` control now counts visible UI cards after compaction, so the limit matches what the operator sees on screen
+- the Trade Journal second line now reads in shorter operator-friendly timing, for example `Submitted ... / Executed in 3 s. / Filled immediately`
 
 Each tab reads the matching committed snapshot from `docs/data/` by default.
 

@@ -309,14 +309,16 @@ Use `--no-browser` to skip auto-opening.
 ### GitHub Pages log viewer
 
 There is also a static log viewer under [`docs/`](/Users/ecohen/Dev/trading/docs) for GitHub Pages.
-It now opens with three explicit tabs for:
+It now opens with four explicit tabs for:
 
 - the runtime log
 - the structured decision log
 - the trade journal
+- the last portfolio snapshot
 
 Each tab renders the underlying `10k` bot file in a more human-readable format, and the running `10k` bot periodically publishes fresh committed snapshots into `docs/data/` so the latest view stays available on GitHub Pages even when you are away from the machine.
 The page also shows the shared bot/app version badge sourced from the repo `VERSION`.
+The Runtime Log `Show latest` control counts visible compacted UI entries, and the Trade Journal timing line now uses concise phrasing like `Executed in 1 s.` and `Filled immediately`.
 
 To publish it on GitHub Pages:
 

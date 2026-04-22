@@ -74,3 +74,9 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Tightened the Runtime Log compactor again so long overnight closed-market stretches collapse into a single session-style summary, and repeated `Waiting on N pending order(s)...` loops also collapse into one operator-readable card.
 - Refined the Trade Journal second line to plain elapsed timing like `Submitted ... / Executed 3 seconds later / Filled 0 seconds later`.
 - Bumped the shared bot/web version again to `51.5` so the local and published viewer pick up the latest cache-busted assets for this polish cycle.
+- Added a repo-level `Show Me` SOP in [AGENTS.md](/Users/ecohen/Dev/trading/AGENTS.md) so future viewer requests default to running the local `docs/` server, pushing committed `main` for GitHub Pages when asked, and reporting localhost / LAN / public URLs plus the visible version.
+- Synced the repo to the latest GitHub `main`, preserved the unrelated local research work, and pushed the committed viewer state so the public site stayed current.
+- Refined the Trade Journal timing line again so the operator sees shorter phrasing like `Executed in 1 s.` and `Filled immediately`.
+- Changed the Runtime Log `Show latest` control to count visible compacted UI cards instead of raw log lines, and made the label explicit on that tab as `Show latest UI entries`.
+- Refreshed the viewer docs in [README.md](/Users/ecohen/Dev/trading/README.md) and [docs/README.md](/Users/ecohen/Dev/trading/docs/README.md) to match the current four-tab `docs/` viewer behavior.
+- Bumped the shared bot/web version to `53.0`, refreshed the cache-busted viewer assets in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), kept [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) aligned, and pushed `main` so GitHub Pages can publish the update.
