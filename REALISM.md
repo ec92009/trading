@@ -1,6 +1,6 @@
 # REALISM.md
 
-Notes for making the simulator and live bot more realistic before trusting more strategy changes.
+Notes for making the simulator and deployed bots more realistic before trusting more strategy changes.
 
 ## Why This Matters
 
@@ -104,11 +104,11 @@ The engine should treat:
 
 The repo has already started moving in this direction and should keep going.
 
-## Live Bot Safety Rails
+## Deployed Bot Safety Rails
 
-Before pushing any more aggressive strategy live, the bot should have:
+Before pushing any more aggressive strategy live, TeslaBot or CopyBot should have:
 
-- autonomous Capitol signal refresh is now in place for the Ro Khanna `10K` path, so the remaining safety work is mostly broker / execution hardening rather than manual-data plumbing
+- autonomous Capitol signal refresh is now in place for the Ro Khanna CopyBot path, so the remaining safety work is mostly broker / execution hardening rather than manual-data plumbing
 - max daily turnover guard
 - max daily realized loss guard
 - max orders per symbol per day

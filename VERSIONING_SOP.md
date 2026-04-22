@@ -1,7 +1,7 @@
 # Versioning SOP
 
-- This versioning scheme is for the live bot and its user-facing control surfaces.
-- Apply it when the live bot, dashboard, launchd service flow, or visible bot release badge changes.
+- This versioning scheme is for TeslaBot, CopyBot, and their user-facing control surfaces.
+- Apply it when either bot, the viewer/dashboard, the launchd service flow, or a visible bot release badge changes.
 - Pure cache-layout changes under `/_cache/` are not automatic version bumps by themselves unless they also change the operator-facing bot flow or visible control surfaces.
 - Do not treat simulation-only research reruns, optimizer result files, or backtest parameter experiments as automatic version bumps by themselves.
 - Use visible app versions in the form `vX.Y`.

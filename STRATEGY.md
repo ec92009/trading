@@ -1,6 +1,6 @@
 # Sandbox Strategy
 
-This file describes the current sandbox strategy and the live profile it now feeds.
+This file describes the current sandbox strategy and the TeslaBot profile it historically fed.
 
 ## Operating Assumptions
 
@@ -28,7 +28,7 @@ The current default target weights are:
 - `PLTR`: `12.5%`
 - `BTC/USD`: `12.5%`
 
-These weights are the current live profile and the current simulator defaults. Historical benchmark results in [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md) may refer to older equal-weight runs unless noted otherwise.
+These weights are the current TeslaBot profile and the current simulator defaults. Historical benchmark results in [RESULTS.md](/Users/ecohen/Dev/trading/RESULTS.md) may refer to older equal-weight runs unless noted otherwise.
 
 ## What The Strategy Tries To Do
 
@@ -51,7 +51,7 @@ So the strategy is trying to do two things at once:
 
 At the start of a run, the initial cash is allocated by target weight.
 
-- The default simulator path now uses fractional sizing for both stocks and crypto so entry and rebalance math better match the live bot.
+- The default simulator path now uses fractional sizing for both stocks and crypto so entry and rebalance math better match TeslaBot.
 - Whole-share stock mode is still available as an explicit comparison setting for research runs.
 - Any leftover entry cash stays as cash until a later rebalance deploys it.
 
@@ -116,7 +116,7 @@ The simulator computes total portfolio value and target dollar values from the c
 2. holds sale proceeds in cash
 3. buys underweight positions from available cash
 
-By default, stock trims and stock buys are fractional too, matching the live bot's notional-style stock behavior more closely.
+By default, stock trims and stock buys are fractional too, matching TeslaBot's notional-style stock behavior more closely.
 The default simulator path also enforces a minimum rebalance gap and minimum order notional so tiny churn does not qualify as a trade.
 
 The current default simulator path does not enforce a same-day re-entry guard, so a name can stop earlier in the day and still be bought back near the close if rebalance wants it.
@@ -129,11 +129,11 @@ The sandbox now uses an hourly stock-session clock plus BTC's 24x7 market:
 - any crypto symbol can still trigger stops and trail updates overnight and on weekends
 - rebalance does not happen overnight or on non-trading days
 
-The live bot is still more conservative than the simulator here:
+TeslaBot is still more conservative than the simulator here:
 
-- the live bot rebalances near the close on trading days
-- the live bot now uses a cash buffer too
-- the live bot now keeps `MANAGE_CRYPTO_24X7 = True`, so crypto risk monitoring keeps running off-hours
+- TeslaBot rebalances near the close on trading days
+- TeslaBot now uses a cash buffer too
+- TeslaBot now keeps `MANAGE_CRYPTO_24X7 = True`, so crypto risk monitoring keeps running off-hours
 
 ## Cooldown Semantics
 
@@ -177,7 +177,7 @@ Important caveats include:
 - stop execution is now next-tradable-bar and gap-aware, but it is still an hourly-bar approximation
 - whole-share stock mode still exists for comparison work, so published results should note whether they used live-parity fractional stocks or comparison-mode whole shares
 - parameter optimization can overfit very easily
-- the live bot and simulator still differ in a few important behaviors
+- TeslaBot and the simulator still differ in a few important behaviors
 - the current production refit is in-sample and should not be treated like the validated 2023 / 9-quarter benchmark
 
 Strong backtest results should still be treated as hypotheses, not proof.

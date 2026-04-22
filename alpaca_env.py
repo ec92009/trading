@@ -25,13 +25,13 @@ def _first_set(*names: str) -> str | None:
 def load_alpaca_credentials(profile: str | None = None) -> dict[str, str]:
     profile_key = (profile or "").strip().upper().replace("-", "_")
     if profile_key == "10K":
-        api_key = _first_set("ALPACA_10K_API_KEY", "ALPACA_API_KEY")
-        secret_key = _first_set("ALPACA_10K_SECRET_KEY", "ALPACA_SECRET_KEY")
-        base_url = _first_set("ALPACA_10K_BASE_URL", "ALPACA__10K_BASE_URL", "ALPACA_BASE_URL")
+        api_key = _first_set("COPYBOT_API_KEY", "ALPACA_10K_API_KEY", "ALPACA_API_KEY")
+        secret_key = _first_set("COPYBOT_SECRET_KEY", "ALPACA_10K_SECRET_KEY", "ALPACA_SECRET_KEY")
+        base_url = _first_set("COPYBOT_BASE_URL", "ALPACA_10K_BASE_URL", "ALPACA_BASE_URL")
     else:
-        api_key = _first_set("ALPACA_API_KEY")
-        secret_key = _first_set("ALPACA_SECRET_KEY")
-        base_url = _first_set("ALPACA_BASE_URL")
+        api_key = _first_set("TESLABOT_API_KEY", "ALPACA_API_KEY")
+        secret_key = _first_set("TESLABOT_SECRET_KEY", "ALPACA_SECRET_KEY")
+        base_url = _first_set("TESLABOT_BASE_URL", "ALPACA_BASE_URL")
     return {
         "api_key": api_key or "",
         "secret_key": secret_key or "",

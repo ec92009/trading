@@ -79,9 +79,9 @@ EDITABLE_FIELDS = [
 
 def read_env_settings(path: Path = ENV_PATH) -> dict[str, str]:
     settings = {
-        "ALPACA_API_KEY": "",
-        "ALPACA_SECRET_KEY": "",
-        "ALPACA_BASE_URL": "https://paper-api.alpaca.markets",
+        "TESLABOT_API_KEY": "",
+        "TESLABOT_SECRET_KEY": "",
+        "TESLABOT_BASE_URL": "https://paper-api.alpaca.markets",
     }
     if not path.exists():
         return settings
@@ -91,6 +91,12 @@ def read_env_settings(path: Path = ENV_PATH) -> dict[str, str]:
         key, value = line.split("=", 1)
         if key in settings:
             settings[key] = value.strip()
+        elif key == "ALPACA_API_KEY" and not settings["TESLABOT_API_KEY"]:
+            settings["TESLABOT_API_KEY"] = value.strip()
+        elif key == "ALPACA_SECRET_KEY" and not settings["TESLABOT_SECRET_KEY"]:
+            settings["TESLABOT_SECRET_KEY"] = value.strip()
+        elif key == "ALPACA_BASE_URL" and not settings["TESLABOT_BASE_URL"]:
+            settings["TESLABOT_BASE_URL"] = value.strip()
     return settings
 
 
@@ -107,9 +113,9 @@ def visible_version(path: Path = VERSION_PATH) -> str:
 
 def save_env_settings(api_key: str, secret_key: str, base_url: str, path: Path = ENV_PATH):
     values = {
-        "ALPACA_API_KEY": api_key.strip(),
-        "ALPACA_SECRET_KEY": secret_key.strip(),
-        "ALPACA_BASE_URL": base_url.strip() or "https://paper-api.alpaca.markets",
+        "TESLABOT_API_KEY": api_key.strip(),
+        "TESLABOT_SECRET_KEY": secret_key.strip(),
+        "TESLABOT_BASE_URL": base_url.strip() or "https://paper-api.alpaca.markets",
     }
     path.write_text("\n".join(f"{k}={v}" for k, v in values.items()) + "\n")
     os.environ.update(values)
@@ -150,7 +156,7 @@ def lan_ip() -> str | None:
 
 def credentials_configured() -> bool:
     env = read_env_settings()
-    return bool(env["ALPACA_API_KEY"] and env["ALPACA_SECRET_KEY"])
+    return bool(env["TESLABOT_API_KEY"] and env["TESLABOT_SECRET_KEY"])
 
 
 def split_top_level(text: str) -> list[str]:
@@ -546,10 +552,10 @@ def alpaca_clients():
     from alpaca.trading.client import TradingClient
 
     env = read_env_settings()
-    key = env["ALPACA_API_KEY"]
-    secret = env["ALPACA_SECRET_KEY"]
+    key = env["TESLABOT_API_KEY"]
+    secret = env["TESLABOT_SECRET_KEY"]
     if not key or not secret:
-        raise RuntimeError("Add Alpaca paper credentials first.")
+        raise RuntimeError("Add TeslaBot Alpaca paper credentials first.")
     return (
         TradingClient(api_key=key, secret_key=secret, paper=True),
         StockHistoricalDataClient(api_key=key, secret_key=secret),
@@ -668,8 +674,8 @@ def gather_state() -> dict:
         },
         "credentials": {
             "configured": credentials_configured(),
-            "api_key_hint": mask_value(env["ALPACA_API_KEY"]),
-            "base_url": env["ALPACA_BASE_URL"] or "https://paper-api.alpaca.markets",
+            "api_key_hint": mask_value(env["TESLABOT_API_KEY"]),
+            "base_url": env["TESLABOT_BASE_URL"] or "https://paper-api.alpaca.markets",
         },
         "sharing": {
             "lan_ip": wifi_ip,
@@ -687,7 +693,7 @@ def gather_state() -> dict:
         except Exception as exc:
             state["errors"].append(str(exc))
     else:
-        state["errors"].append("Add Alpaca paper credentials to unlock account data and asset validation.")
+        state["errors"].append("Add TeslaBot Alpaca paper credentials to unlock account data and asset validation.")
     return state
 
 

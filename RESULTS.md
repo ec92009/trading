@@ -14,7 +14,7 @@ This file is the current research handoff. It focuses on:
 The repo now has two distinct research modes that should not be confused:
 
 - benchmark mode: train on `2023-01-01` through `2023-12-31`, then test on the 9-quarter holdout `2024-01-02` through `2026-03-31`
-- production-refit mode: fit on all available history through `2026-04-01` to generate live bot defaults after the benchmark work is already understood
+- production-refit mode: fit on all available history through `2026-04-01` to generate TeslaBot defaults after the benchmark work is already understood
 
 Core basket:
 
@@ -29,7 +29,7 @@ The benchmark results below are the most trustworthy strategy comparison results
 Current engine note:
 
 - the simulator now executes stop sells on the next tradable bar using the worse of the stop floor and the next tradable open
-- the default simulator path now uses fractional stock sizing to better match the live bot's notional stock orders
+- the default simulator path now uses fractional stock sizing to better match TeslaBot's notional stock orders
 - the default simulator path now assumes Alpaca-style settlement: crypto proceeds settle immediately, while stock sale proceeds release on the next trading day
 - the default simulator path now blocks tiny churn with explicit minimum rebalance and minimum order notionals
 - the benchmark and refit artifacts cited below were rerun after those changes
@@ -207,8 +207,8 @@ Important caution:
 
 - the full-history refit is in-sample only
 - its raw train result is now far more sane than the old pathological artifact, but it still underperforms buy-and-hold on the same full-history window
-- it is useful as a parameter-generation step for the live bot, not as a replacement for the 2023 / 9-quarter benchmark
-- because the holdout still does not beat buy-and-hold, the live bot defaults should stay conservative and should not auto-promote the in-sample refit winner
+- it is useful as a parameter-generation step for TeslaBot, not as a replacement for the 2023 / 9-quarter benchmark
+- because the holdout still does not beat buy-and-hold, TeslaBot defaults should stay conservative and should not auto-promote the in-sample refit winner
 
 ## Major Hiccups And Fixes
 
@@ -241,7 +241,7 @@ Fix:
 
 We found an important behavior gap:
 
-- live bot blocks same-day re-entry after a trade
+- TeslaBot blocks same-day re-entry after a trade
 - simulator originally only blocked repeat trades within the same bar
 
 This matters because same-day close re-entry can materially change outcomes.
@@ -270,29 +270,29 @@ Fix:
 
 ### 5. Cooldown Semantics Needed Clarification
 
-We clarified that the live bot cooldown is in trading days, not calendar days.
+We clarified that the TeslaBot cooldown is in trading days, not calendar days.
 
 Current live behavior:
 
 - after a stop, skip the next `N` trading sessions
 - become stop-eligible again on the following trading session
 
-## Live Bot Status
+## TeslaBot Status
 
-The live bot in [bot.py](/Users/ecohen/Dev/trading/bot.py) has been updated to align more closely with the current best practical strategy:
+The old ~$350 Alpaca basket bot in [bot.py](/Users/ecohen/Dev/trading/bot.py), now referred to as TeslaBot, has been updated to align more closely with the current best practical basket strategy:
 
 - partial stop sells
 - trading-day cooldown
 - cash-buffer bookkeeping
 - end-of-day rebalance
 
-But the live bot is still not identical to the simulator.
+But TeslaBot is still not identical to the simulator.
 
 Key current difference:
 
-- the live bot now monitors crypto 24x7 and keeps proceeds in cash rather than parking them into BTC
+- TeslaBot now monitors crypto 24x7 and keeps proceeds in cash rather than parking them into BTC
 
-See [TODO.md](/Users/ecohen/Dev/trading/TODO.md) for remaining live-bot decisions.
+This is no longer the main production bot; Ro Khanna CopyBot is the current live path. See [TODO.md](/Users/ecohen/Dev/trading/TODO.md) for remaining TeslaBot and CopyBot decisions.
 
 ## Current Conclusion
 

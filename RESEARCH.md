@@ -11,17 +11,17 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - live-parity fractional stock sizing
 - minimum trade thresholds
 - shared quarterly symbol cache files instead of exact-window cache files
-- Under the current corrected benchmark setup, the serious contenders for the live 5-name basket are now:
+- Under the current corrected benchmark setup, the serious contenders for the TeslaBot 5-name basket are now:
 - basket buy-and-hold
 - rebalance-only
 - Stop-heavy variants no longer lead out of sample.
-- Current live posture is intentionally calmer:
+- Current TeslaBot posture is intentionally calmer:
 - `TSLA 50%`
 - `TSM 12.5%`
 - `NVDA 12.5%`
 - `PLTR 12.5%`
 - `BTC/USD 12.5%`
-- live execution stays rebalance-only for now
+- TeslaBot execution stays rebalance-only for now
 
 ## Benchmark Convention
 
@@ -34,7 +34,7 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 
 - Capitol now looks more interesting than the old stop-overlay path as a source of actual stock-picking edge.
 - We now have a broader local Capitol dataset, not just Mullin.
-- The `10K` live bot path has now been repointed away from the old basket bot and onto the Ro Khanna daily copy-trade flow in [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py).
+- The ~$10K Alpaca path is now the Ro Khanna daily CopyBot in [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py), while the old basket bot in [bot.py](/Users/ecohen/Dev/trading/bot.py) is now TeslaBot.
 - Mullin actionable history is short:
 - actionable `published_at` window starts `2025-08-13`
 - current local actionable history runs through `2026-03-10`
@@ -46,13 +46,13 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - entries use the next trading day open
 - positions use Alpaca-style fractional sizing
 
-## Khanna Live Deployment Status
+## Copy Bot Deployment Status
 
-- The Ro Khanna daily live path now runs through:
+- The Ro Khanna daily CopyBot path now runs through:
 - [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py)
 - [khanna_daily/market_data.py](/Users/ecohen/Dev/trading/khanna_daily/market_data.py)
 - [khanna_daily/signal_updater.py](/Users/ecohen/Dev/trading/khanna_daily/signal_updater.py)
-- The live policy is:
+- The CopyBot policy is:
 - Ro Khanna only
 - minimum disclosure band `'< 1K'`
 - max active queue `10`
@@ -60,7 +60,7 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - next-trading-day execution
 - target weights normalized from active point balances
 - Capitol Trades refresh now happens autonomously:
-- the bot refreshes Khanna signals on startup
+- CopyBot refreshes Khanna signals on startup
 - it checks again every `15` minutes while running
 - the local signal file remains [copytrade_signals.json](/Users/ecohen/Dev/trading/copytrade_signals.json), but the bot no longer depends on a manual refresh step
 - The daily cache warm is now effectively complete for the current Khanna universe:
@@ -70,7 +70,7 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - hourly bars live under [/_cache/hourly_bars](/Users/ecohen/Dev/trading/_cache/hourly_bars)
 - daily bars live under [/_cache/daily_bars](/Users/ecohen/Dev/trading/_cache/daily_bars)
 - politician refresh metadata lives under [/_cache/politicians](/Users/ecohen/Dev/trading/_cache/politicians)
-- The current live build persists an Alpaca rejection list under [rejected_symbols.json](/Users/ecohen/Dev/trading/_cache/politicians/rejected_symbols.json), a Khanna refresh status file under [ro_khanna_refresh.json](/Users/ecohen/Dev/trading/_cache/politicians/ro_khanna_refresh.json), and politician-specific yearly signal caches under paths like:
+- The current CopyBot build persists an Alpaca rejection list under [rejected_symbols.json](/Users/ecohen/Dev/trading/_cache/politicians/rejected_symbols.json), a Khanna refresh status file under [ro_khanna_refresh.json](/Users/ecohen/Dev/trading/_cache/politicians/ro_khanna_refresh.json), and politician-specific yearly signal caches under paths like:
 - [/_cache/politicians/ro_khanna/2026/signals.json](/Users/ecohen/Dev/trading/_cache/politicians/ro_khanna/2026/signals.json)
 - [/_cache/politicians/markwayne_mullin/2026/signals.json](/Users/ecohen/Dev/trading/_cache/politicians/markwayne_mullin/2026/signals.json)
 - Current rejected symbols include:
@@ -78,10 +78,10 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - `DE1`
 - `SPX`
 - Working policy:
-- any symbol Alpaca rejects or cannot support for live pricing/trading should be ignored by the live Khanna bot
+- any symbol Alpaca rejects or cannot support for live pricing/trading should be ignored by the Khanna CopyBot
 - symbols with no Alpaca market data remain excluded from the actionable book
 - After the cache warm and rejection persistence pass, the remaining skipped symbols on the Khanna run are now mostly genuine `no market data` names rather than transient network misses.
-- The current cached Khanna target book for the `10K` bot resolves to:
+- The current cached Khanna target book for CopyBot resolves to:
 - `ACI`
 - `BMO`
 - `KO`
@@ -93,14 +93,14 @@ Current state for `~/Dev/trading` as of `2026-04-20`.
 - `AMRZ`
 - `TD`
 - The live execution model is heartbeat-driven rather than interrupt-driven:
-- the bot wakes every `30` seconds
+- CopyBot wakes every `30` seconds
 - on each heartbeat it notices market state, Capitol disclosure changes, and Alpaca order-status changes
 - outside disclosure changes, it does not run a fresh time-based rebalance
 - instead, during market hours it now only retries incomplete trades from the current active Khanna book
 - partial-fill and cancel reconciliation has been tightened so the local trade journal now distinguishes `filled`, `canceled`, and `partial_fill_canceled`
 - incomplete-order completion is capped at `5` attempts per asset, with retry rationales preserving the bot version and attempt number
 
-## `10K` Viewer Status
+## Copy Bot Viewer Status
 
 - The committed web viewer under [docs/](/Users/ecohen/Dev/trading/docs) now has four tabs:
 - Runtime Log
@@ -360,7 +360,7 @@ Practical takeaway:
 
 ## Current Conclusion
 
-- For the main 5-name basket, buy-and-hold and rebalance-only remain the only credible live postures under the corrected simulator.
+- For the main 5-name basket, buy-and-hold and rebalance-only remain the only credible TeslaBot postures under the corrected simulator.
 - For Capitol, Mullin still looks promising as a standalone normalized strategy, but the edge is modest and the actionable history is short.
 - The strongest new Mullin finding is that explicit point decay matters more than the older queue-only tweaks.
 - For `50K+` Mullin, the strategy wants very high decay, which effectively says the latest large event dominates the older ones.

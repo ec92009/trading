@@ -1,13 +1,13 @@
 # Summary
 
-This thread moved the repo from a partially manual Khanna paper-trading setup into a much more autonomous live posture.
+This thread moved the repo from a partially manual Khanna paper-trading setup into a much more autonomous copy-bot posture.
 
 ## What changed
 
-- Confirmed the `10K` bot is now the Ro Khanna daily copy-trade path through [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py), not the old 5-name basket manager.
+- Confirmed CopyBot is now the Ro Khanna daily copy-trade path through [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py), while the old 5-name basket manager in [bot.py](/Users/ecohen/Dev/trading/bot.py) is now TeslaBot.
 - Finished the daily market-data warm so the Khanna target book resolves from cache instead of depending on live Alpaca fetches during startup.
 - Added persistent unsupported-symbol handling so Alpaca rejects like `7410Z`, `DE1`, and `SPX` are remembered and skipped automatically.
-- Added autonomous Capitol Trades refresh in [khanna_daily/signal_updater.py](/Users/ecohen/Dev/trading/khanna_daily/signal_updater.py), with the Khanna bot checking on startup and every 15 minutes.
+- Added autonomous Capitol Trades refresh in [khanna_daily/signal_updater.py](/Users/ecohen/Dev/trading/khanna_daily/signal_updater.py), with CopyBot checking on startup and every 15 minutes.
 - Renamed the hidden `.cache` tree to visible [/_cache](/Users/ecohen/Dev/trading/_cache) and standardized it into:
 - [/_cache/hourly_bars](/Users/ecohen/Dev/trading/_cache/hourly_bars)
 - [/_cache/daily_bars](/Users/ecohen/Dev/trading/_cache/daily_bars)
@@ -18,7 +18,7 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 
 ## Current live status
 
-- The `10K` bot is running and healthy on the closed-market loop.
+- CopyBot is running and healthy on the closed-market loop.
 - It is autonomously checking Capitol Trades for Ro Khanna.
 - Current Khanna refresh metadata is in [ro_khanna_refresh.json](/Users/ecohen/Dev/trading/_cache/politicians/ro_khanna_refresh.json).
 - Current Mullin refresh metadata is in [markwayne_mullin_refresh.json](/Users/ecohen/Dev/trading/_cache/politicians/markwayne_mullin_refresh.json).
@@ -28,7 +28,7 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 
 - The bot remains ordinary interpreted Python, not a compiled binary.
 - The preferred deployment model is RSCP: robust Python service composition on an always-on machine or dedicated host, with pinned dependencies and a supervised process.
-- The main open design question is whether the autonomous politician refresh framework should remain Khanna-only in the live bot or expand to more politicians now that yearly caches exist for the broader dataset.
+- The main open design question is whether the autonomous politician refresh framework should remain Khanna-only in CopyBot or expand to more politicians now that yearly caches exist for the broader dataset.
 
 ## Where to look next
 
@@ -45,7 +45,7 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - [docs/data/recent_decisions.json](/Users/ecohen/Dev/trading/docs/data/recent_decisions.json)
 - [docs/data/recent_trades.tsv](/Users/ecohen/Dev/trading/docs/data/recent_trades.tsv)
 - Added shared version publishing through [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) so the bot and web app stay on the same visible version.
-- Bumped the shared version through `51.3` in [VERSION](/Users/ecohen/Dev/trading/VERSION), kept [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) aligned, and reloaded the live `10k` bot so new rationales use the same shared version source.
+- Bumped the shared version through `51.3` in [VERSION](/Users/ecohen/Dev/trading/VERSION), kept [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) aligned, and reloaded CopyBot so new rationales use the same shared version source.
 - The local and LAN viewer URLs were verified at:
 - [http://127.0.0.1:8011/](http://127.0.0.1:8011/)
 - [http://192.168.1.191:8011/](http://192.168.1.191:8011/)
@@ -56,7 +56,7 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - The Trade Journal was compacted into a two-line mobile-friendly format:
 - line 1: submitted/status/side/symbol/notional/rationale
 - line 2: submitted/executed/filled
-- The upload / drag-and-drop panel and extra intro block were removed from the viewer so the page focuses on the committed `10k` snapshots only.
+- The upload / drag-and-drop panel and extra intro block were removed from the viewer so the page focuses on the committed copy-bot snapshots only.
 - The filter bar was simplified to a single full-text search, `Show latest`, and an explicit `Apply Filters` button, with Enter-to-apply support.
 - The repo was synced forward to the latest `origin/main` first, with local research changes preserved across the fast-forward.
 - Added a fourth `Last Portfolio` tab to the viewer, backed by committed portfolio snapshots in [docs/data/recent_portfolio.json](/Users/ecohen/Dev/trading/docs/data/recent_portfolio.json).
@@ -64,12 +64,12 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Fixed the trade journal / order sync path so partial fills are preserved as `partial_fill_canceled` with `filled_qty`, instead of lingering as `pending` or collapsing into plain `canceled`.
 - Fixed the Khanna completion logic so, when a disclosure-driven rebalance is underfilled, later open-market heartbeat cycles only retry the incomplete symbols rather than running a fresh full rebalance.
 - Capped incomplete-order retries at `5` attempts per asset, and made retry rationales explicit with the current bot version and attempt number.
-- Fixed a rationale-matching bug where older incomplete `v50.0` Khanna orders were being ignored after the bot version advanced, which had left excess cash stranded in the `10K` paper account.
-- Verified the live fix against the real `10K` account: the patched completion path immediately submitted catch-up buys for `KO`, `VIG`, `AMZN`, `ACI`, `TD`, and `AMRZ`, reducing idle cash.
+- Fixed a rationale-matching bug where older incomplete `v50.0` Khanna orders were being ignored after the bot version advanced, which had left excess cash stranded in the copy-bot paper account.
+- Verified the live fix against the real copy-bot account: the patched completion path immediately submitted catch-up buys for `KO`, `VIG`, `AMZN`, `ACI`, `TD`, and `AMRZ`, reducing idle cash.
 - Tightened the Runtime Log viewer so `ORDER SYNC ...` entries render as simplified operator-readable lines instead of raw IDs and plumbing details.
 - Restored a dedicated asset filter as a dropdown so symbol filtering is field-based rather than broad text search.
 - Reworked the `Last Portfolio` columns to `Asset / Target Weight / Current Weight / Points / Current Balance`, using the active simulation state to expose the current point distribution.
-- Bumped the shared bot/web version to `51.4`, cache-busted the local viewer assets in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), refreshed [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json), and restarted the live `10K` bot on the patched code.
+- Bumped the shared bot/web version to `51.4`, cache-busted the local viewer assets in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), refreshed [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json), and restarted CopyBot on the patched code.
 - Corrected the `Last Portfolio` `Points` column so it now shows the simulator's actual current decayed point balances instead of a weight-derived stand-in.
 - Tightened the Runtime Log compactor again so long overnight closed-market stretches collapse into a single session-style summary, and repeated `Waiting on N pending order(s)...` loops also collapse into one operator-readable card.
 - Refined the Trade Journal second line to plain elapsed timing like `Submitted ... / Executed 3 seconds later / Filled 0 seconds later`.
@@ -83,3 +83,17 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Split the inline environment and web-viewer workflow guidance out of [AGENTS.md](/Users/ecohen/Dev/trading/AGENTS.md) into [ENVIRONMENT_SOP.md](/Users/ecohen/Dev/trading/ENVIRONMENT_SOP.md) and [SHOW_ME_SOP.md](/Users/ecohen/Dev/trading/SHOW_ME_SOP.md), leaving `AGENTS.md` as a pointer file like the existing research-context section.
 - Updated the workspace install preference from `pip` to `uv`, including the setup snippet in [README.md](/Users/ecohen/Dev/trading/README.md) and the package-management guidance in [ENVIRONMENT_SOP.md](/Users/ecohen/Dev/trading/ENVIRONMENT_SOP.md).
 - Refreshed the root doc index in [README.md](/Users/ecohen/Dev/trading/README.md) so the new SOP files are listed alongside the research and strategy docs.
+
+## Latest Session
+
+- Standardized the repo naming so the old ~$350 basket account is documented as `TeslaBot` and the ~$10K Ro Khanna account is documented as `CopyBot`.
+- Refreshed the Markdown docs to distinguish TeslaBot from CopyBot instead of calling both “the live bot” or “the 10K bot”.
+- Added a top-level comparison table in [README.md](/Users/ecohen/Dev/trading/README.md) covering entrypoints, accounts, roles, cadence, and the new `.env` variable names.
+- Updated the documented credential names to `TESLABOT_API_KEY`, `TESLABOT_SECRET_KEY`, `TESLABOT_BASE_URL`, `COPYBOT_API_KEY`, `COPYBOT_SECRET_KEY`, and `COPYBOT_BASE_URL`.
+- Updated [alpaca_env.py](/Users/ecohen/Dev/trading/alpaca_env.py) so TeslaBot reads `TESLABOT_*` first and CopyBot reads `COPYBOT_*` first, with the older `ALPACA_*` names retained as fallback compatibility.
+- Updated [dashboard.py](/Users/ecohen/Dev/trading/dashboard.py) so the TeslaBot dashboard reads and writes `TESLABOT_*` env settings.
+- Fixed the stale `ALPACA__10K_BASE_URL` typo while touching the shared Alpaca credential loader.
+- Installed `pytest` into the repo venv with `uv` and ran [tests/test_repo_audit.py](/Users/ecohen/Dev/trading/tests/test_repo_audit.py) successfully: `37 passed` with one dependency deprecation warning from `websockets.legacy`.
+- Restarted both launchd services and verified they were healthy afterward:
+- `com.trading.bot` for TeslaBot
+- `com.trading.bot.10k` for CopyBot

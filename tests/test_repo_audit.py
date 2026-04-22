@@ -819,9 +819,9 @@ class DashboardAndStatusTests(unittest.TestCase):
                 env_path = Path(tmp) / ".env"
                 dashboard.save_env_settings("key123", "secret456", "", path=env_path)
                 values = dashboard.read_env_settings(env_path)
-                self.assertEqual(values["ALPACA_API_KEY"], "key123")
-                self.assertEqual(values["ALPACA_SECRET_KEY"], "secret456")
-                self.assertEqual(values["ALPACA_BASE_URL"], "https://paper-api.alpaca.markets")
+                self.assertEqual(values["TESLABOT_API_KEY"], "key123")
+                self.assertEqual(values["TESLABOT_SECRET_KEY"], "secret456")
+                self.assertEqual(values["TESLABOT_BASE_URL"], "https://paper-api.alpaca.markets")
 
     def test_version_rendering_uses_v_prefix(self):
         with install_alpaca_stubs():

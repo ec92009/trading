@@ -19,7 +19,7 @@ Recent viewer polish:
 
 Each tab reads the matching committed snapshot from `docs/data/` by default.
 
-The running `10k` bot publishes fresh committed snapshots for:
+The running CopyBot publishes fresh committed snapshots for:
 
 - `recent_bot.log`
 - `recent_decisions.json`
