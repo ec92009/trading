@@ -33,6 +33,7 @@ CopyBot publishes fresh committed snapshots for:
 - `version.json`
 
 TeslaBot can publish the same file set into its own bundle when remote snapshot publishing is enabled for the basket bot.
+The CopyBot bundle is expected to reflect the real `10K` Khanna account even for direct-import snapshot jobs, not the smaller TeslaBot account.
 
 Open `docs/index.html` locally for quick testing, or publish the `docs/` folder with GitHub Pages.
 

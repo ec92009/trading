@@ -110,6 +110,9 @@ class BotBehaviorTests(unittest.TestCase):
             self.assertAlmostEqual(live.HALF_LIFE_DAYS, 60.0)
             self.assertAlmostEqual(live.DAILY_DECAY_PCT, 0.01148597964710385)
             self.assertEqual(live.IGNORED_SYMBOLS, {"SPX"})
+            self.assertEqual(live.os.getenv("ALPACA_PROFILE"), "10K")
+            self.assertEqual(live.os.getenv("BOT_LOG_SUFFIX"), "10k")
+            self.assertEqual(live.basket_bot.BOT_FILE_SUFFIX, "10k")
 
     def test_khanna_daily_market_data_collapses_hourly_rows(self):
         market_data = importlib.import_module("khanna_daily.market_data")

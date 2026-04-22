@@ -111,3 +111,9 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Generated committed snapshot files for both bots so the shared public viewer already has content behind the new switcher.
 - Refreshed the viewer docs in [README.md](/Users/ecohen/Dev/trading/README.md) and [docs/README.md](/Users/ecohen/Dev/trading/docs/README.md) to describe the shared dual-bot viewer.
 - Bumped the shared visible bot/web version to `53.1`, aligned the cache-busted asset URLs in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), and refreshed the published snapshot metadata.
+- Fixed a CopyBot profile-binding bug where direct imports of [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py) could reuse TeslaBot defaults and publish the wrong account into the public CopyBot snapshot bundle.
+- Made [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py) self-default to `ALPACA_PROFILE=10K`, `BOT_LOG_SUFFIX=10k`, and remote snapshot publishing before importing the shared basket module, so direct imports behave like [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py).
+- Refreshed the committed [docs/data/copybot/recent_portfolio.json](/Users/ecohen/Dev/trading/docs/data/copybot/recent_portfolio.json) snapshot so the public CopyBot viewer now shows the real roughly `$10K` Khanna account instead of the old roughly `$356` TeslaBot account.
+- Revalidated the live CopyBot bundle after the fix: the public `Last Portfolio` view now centers on `ACI`, `BMO`, `KO`, `JPM`, `AMZN`, `MCD`, `IT`, `VIG`, `AMRZ`, and `TD`.
+- Added a regression check in [tests/test_repo_audit.py](/Users/ecohen/Dev/trading/tests/test_repo_audit.py) so future direct imports of `khanna_daily.live` stay pinned to the `10K` profile and `10k` log suffix.
+- Bumped the shared visible bot/web version again to `53.2` so the published viewer badge reflects the CopyBot snapshot-account fix.

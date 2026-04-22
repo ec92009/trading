@@ -140,6 +140,7 @@ cd ~/Dev/trading && source .venv/bin/activate
 
 This is the current live trading path in the repo. It runs the Ro Khanna daily copy-trade strategy on the user's roughly `$10K` Alpaca paper account.
 
+- `khanna_daily.live` now defaults itself to the `10K` Alpaca profile and `10k` log suffix before importing the shared basket module, so direct imports and snapshot jobs stay pinned to the CopyBot account instead of silently falling back to TeslaBot
 - refreshes Capitol Trades autonomously on startup and then every `15` minutes
 - uses [copytrade_signals.json](/Users/ecohen/Dev/trading/copytrade_signals.json) as the local canonical signal file, while updating it automatically
 - stores market data and politician refresh metadata under `/_cache/hourly_bars`, `/_cache/daily_bars`, and `/_cache/politicians`
@@ -339,6 +340,7 @@ It now opens with a `CopyBot` / `TeslaBot` switcher plus four explicit tabs for:
 Each tab renders the underlying committed snapshot bundle in a more human-readable format. `CopyBot` publishes into `docs/data/copybot/`, and `TeslaBot` can publish the same bundle shape into `docs/data/teslabot/`, so the public site can expose both bots from one viewer shell.
 The page also shows the shared bot/app version badge sourced from the repo `VERSION`.
 The Runtime Log `Show latest` control counts visible compacted UI entries, and the Trade Journal timing line now uses concise phrasing like `Executed in 1 s.` and `Filled immediately`.
+The CopyBot bundle should now reflect the real `$10K` Khanna account even when snapshot jobs import `khanna_daily.live` directly, rather than falling back to the smaller TeslaBot account.
 
 To publish it on GitHub Pages:
 

@@ -8,6 +8,10 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
+os.environ.setdefault("ALPACA_PROFILE", "10K")
+os.environ.setdefault("BOT_LOG_SUFFIX", "10k")
+os.environ.setdefault("ENABLE_REMOTE_SNAPSHOT_PUBLISH", "1")
+
 import bot as basket_bot
 import copytrade_demo as demo
 import remote_snapshots
@@ -219,12 +223,15 @@ class CopyTradeLiveManager:
             position = positions.get(symbol)
             current_value = float(getattr(position, "market_value", 0.0) or 0.0)
             qty = float(getattr(position, "qty", 0.0) or 0.0) if position else 0.0
+            target_weight = round(target_weights.get(symbol, 0.0), 6)
+            if target_weight <= 0 and abs(current_value) < 0.01 and abs(qty) < 1e-9:
+                continue
             current_weight = (current_value / equity) if equity > 0 else 0.0
             allocated_total += current_value
             rows.append(
                 {
                     "symbol": symbol,
-                    "target_weight": round(target_weights.get(symbol, 0.0), 6),
+                    "target_weight": target_weight,
                     "current_weight": round(current_weight, 6),
                     "points": round(float(current_points.get(symbol, 0.0) or 0.0), 4),
                     "current_value": round(current_value, 2),
