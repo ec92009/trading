@@ -29,6 +29,7 @@ from alpaca.trading.requests import GetCalendarRequest, GetOrdersRequest, Market
 
 import trade_log
 from alpaca_env import load_alpaca_credentials
+from remote_snapshots import RemoteSnapshotPublisher
 
 logging.basicConfig(
     level=logging.INFO,
@@ -66,6 +67,7 @@ BOT_FILE_SUFFIX = (os.getenv("BOT_LOG_SUFFIX") or "").strip()
 LOG_PATH = Path(__file__).parent / (f"bot_{BOT_FILE_SUFFIX}.log" if BOT_FILE_SUFFIX else "bot.log")
 STATE_PATH = Path(__file__).parent / (f"bot_state_{BOT_FILE_SUFFIX}.json" if BOT_FILE_SUFFIX else "bot_state.json")
 DECISION_LOG_PATH = Path(__file__).parent / (f"bot_decisions_{BOT_FILE_SUFFIX}.jsonl" if BOT_FILE_SUFFIX else "bot_decisions.jsonl")
+TRADE_LOG_PATH = Path(__file__).parent / (f"trades_{BOT_FILE_SUFFIX}.tsv" if BOT_FILE_SUFFIX else "trades.tsv")
 LIVE_REBALANCE_ONLY = True
 
 # Crypto holdings still need live risk monitoring even when the equity market
@@ -559,6 +561,14 @@ class PortfolioManager:
         self.bot_by_symbol = {bot.cfg.symbol: bot for bot in bots}
         self.logger = logging.getLogger("portfolio")
         self.last_rebalance_day: date | None = None
+        self.snapshot_publisher = RemoteSnapshotPublisher(
+            bot_log_path=LOG_PATH,
+            decision_log_path=DECISION_LOG_PATH,
+            trade_log_path=getattr(trade_log, "LOG_PATH", TRADE_LOG_PATH),
+            bundle_name="teslabot",
+            portfolio_snapshot_provider=self.build_portfolio_snapshot,
+            logger=self.logger,
+        )
 
     def market_clock(self):
         return trading.get_clock()
@@ -581,6 +591,41 @@ class PortfolioManager:
 
     def current_positions(self):
         return {p.symbol: p for p in trading.get_all_positions()}
+
+    def build_portfolio_snapshot(self) -> dict:
+        account = trading.get_account()
+        equity = float(account.equity)
+        cash = float(account.cash)
+        positions = self.current_positions()
+        rows = []
+        allocated_total = 0.0
+        for bot in self.bots:
+            symbol = normalize_symbol(bot.cfg.symbol)
+            position = positions.get(symbol)
+            current_value = float(getattr(position, "market_value", 0.0) or 0.0)
+            qty = float(getattr(position, "qty", 0.0) or 0.0) if position else 0.0
+            current_weight = (current_value / equity) if equity > 0 else 0.0
+            allocated_total += current_value
+            rows.append(
+                {
+                    "symbol": bot.cfg.symbol,
+                    "target_weight": round(bot.cfg.target_weight, 6),
+                    "current_weight": round(current_weight, 6),
+                    "points": None,
+                    "current_value": round(current_value, 2),
+                    "qty": round(qty, 8 if bot.cfg.asset_class == "crypto" else 6),
+                    "target_value": round(equity * bot.cfg.target_weight, 2),
+                }
+            )
+        rows.sort(key=lambda row: row["target_weight"], reverse=True)
+        return {
+            "as_of": datetime.now(timezone.utc).isoformat(),
+            "strategy": "TeslaBot basket rebalance",
+            "equity": round(equity, 2),
+            "cash": round(cash, 2),
+            "allocated": round(allocated_total, 2),
+            "positions": rows,
+        }
 
     def state_payload(self) -> dict:
         return {
@@ -917,6 +962,7 @@ class PortfolioManager:
                 self.logger.error(f"STARTUP REBALANCE ERROR: {exc}")
         self.sync_trade_log_until_settled()
         self.save_state()
+        self.snapshot_publisher.publish_if_due(force=True)
 
     def run(self):
         self.startup_sync()
@@ -946,6 +992,7 @@ class PortfolioManager:
                 else:
                     self.sync_trade_log()
                 self.save_state()
+                self.snapshot_publisher.publish_if_due()
                 sleep_for = min(cfg.poll_interval for cfg in (bot.cfg for bot in self.bots))
                 time.sleep(sleep_for)
             except Exception as exc:

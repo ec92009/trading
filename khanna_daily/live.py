@@ -98,6 +98,7 @@ class CopyTradeLiveManager:
             bot_log_path=basket_bot.LOG_PATH,
             decision_log_path=basket_bot.DECISION_LOG_PATH,
             trade_log_path=trade_log.LOG_PATH,
+            bundle_name="copybot",
             portfolio_snapshot_provider=self.build_portfolio_snapshot,
             logger=self.logger,
         )

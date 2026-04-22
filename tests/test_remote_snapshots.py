@@ -19,6 +19,7 @@ class RemoteSnapshotTests(unittest.TestCase):
             decision_log = root / "bot_decisions_10k.jsonl"
             trade_log = root / "trades_10k.tsv"
             docs_data = root / "docs" / "data"
+            bundle_dir = docs_data / "copybot"
 
             bot_log.write_text(
                 "\n".join(
@@ -52,19 +53,12 @@ class RemoteSnapshotTests(unittest.TestCase):
 
             with patch.object(remote_snapshots, "DOCS_DATA_DIR", docs_data), patch.object(
                 remote_snapshots, "PUBLIC_VERSION_PATH", docs_data / "version.json"
-            ), patch.object(
-                remote_snapshots, "RECENT_BOT_LOG_PATH", docs_data / "recent_bot.log"
-            ), patch.object(
-                remote_snapshots, "RECENT_DECISIONS_PATH", docs_data / "recent_decisions.json"
-            ), patch.object(
-                remote_snapshots, "RECENT_TRADES_PATH", docs_data / "recent_trades.tsv"
-            ), patch.object(
-                remote_snapshots, "RECENT_PORTFOLIO_PATH", docs_data / "recent_portfolio.json"
             ):
                 changed = remote_snapshots.write_snapshot_files(
                     bot_log_path=bot_log,
                     decision_log_path=decision_log,
                     trade_log_path=trade_log,
+                    bundle_name="copybot",
                     portfolio_snapshot={
                         "as_of": "2026-04-21T14:00:00Z",
                         "equity": 10000.0,
@@ -79,19 +73,20 @@ class RemoteSnapshotTests(unittest.TestCase):
 
             self.assertEqual(len(changed), 5)
             version_payload = json.loads((docs_data / "version.json").read_text(encoding="utf-8"))
-            self.assertEqual(version_payload["version"], "51.5")
-            self.assertEqual(version_payload["display"], "v51.5")
-            bot_log_snapshot = (docs_data / "recent_bot.log").read_text(encoding="utf-8")
+            expected_version = Path("VERSION").read_text(encoding="utf-8").strip()
+            self.assertEqual(version_payload["version"], expected_version)
+            self.assertEqual(version_payload["display"], f"v{expected_version}")
+            bot_log_snapshot = (bundle_dir / "recent_bot.log").read_text(encoding="utf-8")
             self.assertIn("first line", bot_log_snapshot)
             self.assertIn("second line", bot_log_snapshot)
             self.assertNotIn("startup", bot_log_snapshot)
-            decision_rows = json.loads((docs_data / "recent_decisions.json").read_text(encoding="utf-8"))
+            decision_rows = json.loads((bundle_dir / "recent_decisions.json").read_text(encoding="utf-8"))
             self.assertEqual([row["symbol"] for row in decision_rows], ["TSLA", "AMZN"])
-            trade_snapshot = (docs_data / "recent_trades.tsv").read_text(encoding="utf-8")
+            trade_snapshot = (bundle_dir / "recent_trades.tsv").read_text(encoding="utf-8")
             self.assertIn("TSLA\t2\tBUY\t200.00\tpending", trade_snapshot)
             self.assertIn("AMZN\t3\tBUY\t300.00\tfilled", trade_snapshot)
             self.assertNotIn("AAPL\t1\tBUY\t100.00\tpending", trade_snapshot)
-            portfolio_snapshot = json.loads((docs_data / "recent_portfolio.json").read_text(encoding="utf-8"))
+            portfolio_snapshot = json.loads((bundle_dir / "recent_portfolio.json").read_text(encoding="utf-8"))
             self.assertEqual(portfolio_snapshot["cash"], 500.0)
             self.assertEqual(portfolio_snapshot["positions"][0]["symbol"], "AMZN")
 
@@ -123,6 +118,7 @@ class RemoteSnapshotTests(unittest.TestCase):
             bot_log_path=Path("bot_10k.log"),
             decision_log_path=Path("bot_decisions_10k.jsonl"),
             trade_log_path=Path("trades_10k.tsv"),
+            bundle_name="copybot",
             enabled=True,
         )
 

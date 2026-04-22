@@ -329,14 +329,14 @@ Use `--no-browser` to skip auto-opening.
 ### GitHub Pages log viewer
 
 There is also a static log viewer under [`docs/`](/Users/ecohen/Dev/trading/docs) for GitHub Pages.
-It now opens with four explicit tabs for:
+It now opens with a `CopyBot` / `TeslaBot` switcher plus four explicit tabs for:
 
 - the runtime log
 - the structured decision log
 - the trade journal
 - the last portfolio snapshot
 
-Each tab renders the underlying `CopyBot` files in a more human-readable format, and the running `CopyBot` periodically publishes fresh committed snapshots into `docs/data/` so the latest view stays available on GitHub Pages even when you are away from the machine.
+Each tab renders the underlying committed snapshot bundle in a more human-readable format. `CopyBot` publishes into `docs/data/copybot/`, and `TeslaBot` can publish the same bundle shape into `docs/data/teslabot/`, so the public site can expose both bots from one viewer shell.
 The page also shows the shared bot/app version badge sourced from the repo `VERSION`.
 The Runtime Log `Show latest` control counts visible compacted UI entries, and the Trade Journal timing line now uses concise phrasing like `Executed in 1 s.` and `Filled immediately`.
 

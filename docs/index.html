@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trading Log Viewer</title>
-    <link rel="stylesheet" href="./styles.css?v=53.0" />
+    <title>Trading Bot Viewer</title>
+    <link rel="stylesheet" href="./styles.css?v=53.1" />
   </head>
   <body>
     <main class="app-shell">
@@ -13,15 +13,31 @@
           <p class="eyebrow">GitHub Pages</p>
           <p id="versionBadge" class="version-badge">v—</p>
         </div>
-        <h1>Trading Log Viewer</h1>
+        <h1 id="viewerTitle">CopyBot Viewer</h1>
+        <p id="viewerSubtitle" class="hero-subtitle">
+          Switch between the committed CopyBot and TeslaBot snapshot bundles.
+        </p>
       </header>
+
+      <section class="panel source-panel">
+        <div>
+          <p class="bundle-label">Viewer source</p>
+          <p id="bundleDescription" class="muted">
+            CopyBot publishes the committed public snapshots for this site.
+          </p>
+        </div>
+        <div class="bundle-switcher" role="tablist" aria-label="Viewer source tabs">
+          <button id="bundle-copybot" class="bundle-button is-active" data-bundle="copybot" type="button" role="tab" aria-selected="true">CopyBot</button>
+          <button id="bundle-teslabot" class="bundle-button" data-bundle="teslabot" type="button" role="tab" aria-selected="false">TeslaBot</button>
+        </div>
+      </section>
 
       <section class="panel bundle-panel">
         <div>
-          <p class="bundle-label">Committed `10k` snapshots</p>
-          <p class="muted">
-            The running bot publishes fresh copies of the runtime log, decision log,
-            and trade journal into this site.
+          <p id="bundleLabel" class="bundle-label">Committed CopyBot snapshots</p>
+          <p id="bundleSummary" class="muted">
+            The running CopyBot publishes fresh copies of the runtime log, decision log,
+            trade journal, and last portfolio snapshot into this site.
           </p>
         </div>
         <div class="bundle-actions">
@@ -80,6 +96,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=53.0"></script>
+    <script src="./app.js?v=53.1"></script>
   </body>
 </html>

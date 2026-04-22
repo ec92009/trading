@@ -1,8 +1,11 @@
-# Trading Log Viewer
+# Trading Bot Viewer
 
-Static GitHub Pages app for viewing local trading logs in the browser.
+Static GitHub Pages app for viewing committed CopyBot and TeslaBot logs in the browser.
 
-The page now opens with four dedicated tabs:
+The page now opens with a bot switcher plus four dedicated tabs:
+
+- CopyBot
+- TeslaBot
 
 - Runtime Log
 - Decision Log
@@ -17,15 +20,19 @@ Recent viewer polish:
 - the Runtime Log `Show latest` control now counts visible UI cards after compaction, so the limit matches what the operator sees on screen
 - the Trade Journal second line now reads in shorter operator-friendly timing, for example `Submitted ... / Executed in 3 s. / Filled immediately`
 
-Each tab reads the matching committed snapshot from `docs/data/` by default.
+Each view reads the matching committed bundle from `docs/data/copybot/` or `docs/data/teslabot/`.
 
-The running CopyBot publishes fresh committed snapshots for:
+Committed snapshot bundles now live under `docs/data/copybot/` and `docs/data/teslabot/`.
+
+CopyBot publishes fresh committed snapshots for:
 
 - `recent_bot.log`
 - `recent_decisions.json`
 - `recent_trades.tsv`
 - `recent_portfolio.json`
 - `version.json`
+
+TeslaBot can publish the same file set into its own bundle when remote snapshot publishing is enabled for the basket bot.
 
 Open `docs/index.html` locally for quick testing, or publish the `docs/` folder with GitHub Pages.
 

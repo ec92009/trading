@@ -1,23 +1,38 @@
 const TAB_CONFIG = {
   botlog: {
     label: "Runtime Log",
-    bundledPath: "./data/recent_bot.log",
+    fileName: "recent_bot.log",
     bundledLabel: "committed runtime log",
   },
   decisions: {
     label: "Decision Log",
-    bundledPath: "./data/recent_decisions.json",
+    fileName: "recent_decisions.json",
     bundledLabel: "committed decision log",
   },
   trades: {
     label: "Trade Journal",
-    bundledPath: "./data/recent_trades.tsv",
+    fileName: "recent_trades.tsv",
     bundledLabel: "committed trade journal",
   },
   portfolio: {
     label: "Last Portfolio",
-    bundledPath: "./data/recent_portfolio.json",
+    fileName: "recent_portfolio.json",
     bundledLabel: "committed portfolio snapshot",
+  },
+};
+
+const BUNDLE_CONFIG = {
+  copybot: {
+    label: "CopyBot",
+    heroTitle: "CopyBot Viewer",
+    description: "CopyBot publishes the committed public snapshots for this site.",
+    summary: "The running CopyBot publishes fresh copies of the runtime log, decision log, trade journal, and last portfolio snapshot into this site.",
+  },
+  teslabot: {
+    label: "TeslaBot",
+    heroTitle: "TeslaBot Viewer",
+    description: "TeslaBot reuses the same committed viewer shell for its basket-bot logs and portfolio snapshot.",
+    summary: "The committed TeslaBot bundle mirrors the runtime log, decision log, trade journal, and last portfolio snapshot for the legacy basket bot.",
   },
 };
 
@@ -31,21 +46,38 @@ function emptyDataset(type) {
     records: [],
     headers: [],
     summary: [],
+    meta: null,
+  };
+}
+
+function emptyBundleState() {
+  return {
+    loaded: false,
+    datasets: {
+      botlog: emptyDataset("botlog"),
+      decisions: emptyDataset("decisions"),
+      trades: emptyDataset("trades"),
+      portfolio: emptyDataset("portfolio"),
+    },
   };
 }
 
 const state = {
+  activeBundle: "copybot",
   activeTab: "botlog",
-  datasets: {
-    botlog: emptyDataset("botlog"),
-    decisions: emptyDataset("decisions"),
-    trades: emptyDataset("trades"),
-    portfolio: emptyDataset("portfolio"),
+  bundles: {
+    copybot: emptyBundleState(),
+    teslabot: emptyBundleState(),
   },
 };
 
 const dom = {
   versionBadge: document.getElementById("versionBadge"),
+  viewerTitle: document.getElementById("viewerTitle"),
+  viewerSubtitle: document.getElementById("viewerSubtitle"),
+  bundleDescription: document.getElementById("bundleDescription"),
+  bundleLabel: document.getElementById("bundleLabel"),
+  bundleSummary: document.getElementById("bundleSummary"),
   reloadBundled: document.getElementById("reloadBundled"),
   applyFilters: document.getElementById("applyFilters"),
   assetFilter: document.getElementById("assetFilter"),
@@ -56,6 +88,7 @@ const dom = {
   resultsPanel: document.getElementById("resultsPanel"),
   summaryCardTemplate: document.getElementById("summaryCardTemplate"),
   tabButtons: Array.from(document.querySelectorAll(".tab-button")),
+  bundleButtons: Array.from(document.querySelectorAll(".bundle-button")),
 };
 
 const filterInputs = [dom.assetFilter, dom.textFilter, dom.limitInput];
@@ -67,6 +100,10 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function bundlePath(bundle, tab) {
+  return `./data/${bundle}/${TAB_CONFIG[tab].fileName}`;
 }
 
 function parseDecisionLog(text) {
@@ -162,13 +199,21 @@ function recordSymbol(record, type) {
   return "";
 }
 
+function currentBundleState() {
+  return state.bundles[state.activeBundle];
+}
+
+function currentDataset() {
+  return currentBundleState().datasets[state.activeTab];
+}
+
 function assetOptionsForDataset(dataset) {
   return [...new Set(dataset.records.map((record) => recordSymbol(record, dataset.parsedType)).filter(Boolean))].sort();
 }
 
 function allAssetOptions() {
   const allSymbols = new Set();
-  for (const dataset of Object.values(state.datasets)) {
+  for (const dataset of Object.values(currentBundleState().datasets)) {
     for (const symbol of assetOptionsForDataset(dataset)) {
       allSymbols.add(symbol);
     }
@@ -199,7 +244,7 @@ function summarize(dataset) {
   if (dataset.parsedType === "decisions") {
     const symbols = new Set(dataset.records.map((record) => record.symbol).filter(Boolean));
     const submitted = dataset.records.filter((record) => record.event_type === "order_submitted").length;
-    const targetChanges = dataset.records.filter((record) => (record.state?.trigger_type || "").includes("copytrade")).length;
+    const targetChanges = dataset.records.filter((record) => String(record.state?.trigger_type || "").includes("copytrade")).length;
     return [
       ["Entries", dataset.records.length],
       ["Symbols", symbols.size || 0],
@@ -210,7 +255,6 @@ function summarize(dataset) {
   if (dataset.parsedType === "trades") {
     const symbols = new Set(dataset.records.map((row) => row.symbol).filter(Boolean));
     const pending = dataset.records.filter((row) => (row.status || "").toLowerCase() === "pending").length;
-    const filled = dataset.records.filter((row) => (row.status || "").toLowerCase() === "filled").length;
     const buys = dataset.records.filter((row) => (row.side || "").toLowerCase() === "buy").length;
     return [
       ["Rows", dataset.records.length],
@@ -316,22 +360,6 @@ function decisionNarrative(record) {
   return `${record.rationale || "No rationale recorded."}${trigger ? ` ${trigger}` : ""}${target}`;
 }
 
-function tradeRequestSummary(row) {
-  try {
-    const parsed = JSON.parse(row.alpaca_request || "{}");
-    if (parsed.notional !== undefined) {
-      return `${String(parsed.side || row.side || "").toUpperCase()} ${row.symbol} for ${formatMoney(parsed.notional) || parsed.notional}`;
-    }
-    if (parsed.qty !== undefined) {
-      return `${String(parsed.side || row.side || "").toUpperCase()} ${row.symbol} for ${parsed.qty} units`;
-    }
-  } catch (_error) {
-    return null;
-  }
-  const amount = formatMoney(row.notional) || row.notional || "—";
-  return `${String(row.side || "").toUpperCase()} ${row.symbol} for ${amount}`;
-}
-
 function compactTradeHeadline(row) {
   const submitted = row.submitted_at || row.executed_at || row.filled_at || "—";
   const status = String(row.status || "unknown").replaceAll("_", " ");
@@ -402,28 +430,13 @@ function applyFilters(records, type) {
   const textNeedle = dom.textFilter.value.trim().toLowerCase();
 
   return records.filter((record) => {
-    if (assetNeedle) {
-      if (recordSymbol(record, type) !== assetNeedle) {
-        return false;
-      }
+    if (assetNeedle && recordSymbol(record, type) !== assetNeedle) {
+      return false;
     }
-    if (type === "decisions") {
-      const haystack = JSON.stringify(record).toLowerCase();
-      return !textNeedle || haystack.includes(textNeedle);
-    }
-    if (type === "trades") {
-      const haystack = JSON.stringify(record).toLowerCase();
-      return !textNeedle || haystack.includes(textNeedle);
-    }
-    if (type === "botlog") {
-      const haystack = `${record.timestamp} ${record.logger} ${record.message}`.toLowerCase();
-      return !textNeedle || haystack.includes(textNeedle);
-    }
-    if (type === "portfolio") {
-      const haystack = JSON.stringify(record).toLowerCase();
-      return !textNeedle || haystack.includes(textNeedle);
-    }
-    return true;
+    const haystack = type === "botlog"
+      ? `${record.timestamp} ${record.logger} ${record.message}`.toLowerCase()
+      : JSON.stringify(record).toLowerCase();
+    return !textNeedle || haystack.includes(textNeedle);
   });
 }
 
@@ -443,20 +456,10 @@ function formatMarketClosedWaitMessage(count) {
   return count > 1 ? `Signal changed while market was closed (${count}x)` : "Signal changed while market was closed";
 }
 
-function formatMarketClosedNextOpenMessage(nextOpen, count) {
-  return count > 1 ? `Market closed (${count}x). Next open ${nextOpen}` : `Market closed. Next open ${nextOpen}`;
-}
-
 function formatMarketClosedPairMessage(nextOpen, count) {
   return count > 1
     ? `Signal changed while market was closed (${count}x). Next open ${nextOpen}`
     : `Signal changed while market was closed. Next open ${nextOpen}`;
-}
-
-function formatClosedSnapshotMessage(nextOpen, count) {
-  return count > 1
-    ? `Market closed (${count}x). Snapshots refreshed. Next open ${nextOpen}`
-    : `Market closed. Snapshots refreshed. Next open ${nextOpen}`;
 }
 
 function formatClosedSessionMessage(nextOpen, closedCount, snapshotCount) {
@@ -597,10 +600,6 @@ function compactBotLogRecords(records) {
         previous.message = formatClosedSessionMessage(nextOpen, previous._closedCount, previous._snapshotCount || 0);
         continue;
       }
-      if (previous && previous._compactType === "market_closed_next_open" && previous._nextOpen === nextOpen) {
-        mergeIntoClosedSession(previous, 1, 0);
-        continue;
-      }
       compacted.push({
         ...record,
         _compactType: "market_closed_session",
@@ -620,14 +619,6 @@ function compactBotLogRecords(records) {
         previous.message = formatClosedSessionMessage(previous._nextOpen, previous._closedCount || 0, previous._snapshotCount);
         continue;
       }
-      if (previous && previous._compactType === "market_closed_next_open") {
-        previous._compactType = "market_closed_session";
-        previous._closedCount = previous._count || 1;
-        previous._snapshotCount = 1;
-        previous.timestamp = record.timestamp;
-        previous.message = formatClosedSessionMessage(previous._nextOpen, previous._closedCount, previous._snapshotCount);
-        continue;
-      }
       compacted.push({
         ...record,
         _compactType: "closed_snapshot_pending",
@@ -642,18 +633,10 @@ function compactBotLogRecords(records) {
       const match = message.match(/^Waiting on\s+(\d+)\s+pending order\(s\)/);
       const pendingCount = match?.[1] || "?";
       const previous = compacted[compacted.length - 1];
-      if (
-        previous
-        && previous._compactType === "pending_settlement"
-        && previous._pendingCount === pendingCount
-      ) {
+      if (previous && previous._compactType === "pending_settlement" && previous._pendingCount === pendingCount) {
         previous._repeatCount += 1;
         previous.timestamp = record.timestamp;
-        previous.message = formatPendingSettlementMessage(
-          previous._pendingCount,
-          previous._repeatCount,
-          previous._tracked,
-        );
+        previous.message = formatPendingSettlementMessage(previous._pendingCount, previous._repeatCount, previous._tracked);
         continue;
       }
       compacted.push({
@@ -671,18 +654,10 @@ function compactBotLogRecords(records) {
       const match = message.match(/^Still tracking\s+(\d+)\s+pending order\(s\)/);
       const pendingCount = match?.[1] || "?";
       const previous = compacted[compacted.length - 1];
-      if (
-        previous
-        && previous._compactType === "pending_settlement"
-        && previous._pendingCount === pendingCount
-      ) {
+      if (previous && previous._compactType === "pending_settlement" && previous._pendingCount === pendingCount) {
         previous._tracked = true;
         previous.timestamp = record.timestamp;
-        previous.message = formatPendingSettlementMessage(
-          previous._pendingCount,
-          previous._repeatCount,
-          true,
-        );
+        previous.message = formatPendingSettlementMessage(previous._pendingCount, previous._repeatCount, true);
         continue;
       }
       compacted.push({
@@ -769,7 +744,7 @@ function renderBotLog(records) {
 
 function renderPortfolio(records, dataset) {
   if (!records.length) {
-    return "<section class=\"panel empty-state\"><h2>No portfolio snapshot</h2><p>The bot has not published a holdings snapshot yet.</p></section>";
+    return "<section class=\"panel empty-state\"><h2>No portfolio snapshot</h2><p>The selected bot has not published a holdings snapshot yet.</p></section>";
   }
   const rows = records.map((row) => `
     <tr>
@@ -806,12 +781,36 @@ function renderEmptyForTab(tab) {
   return `<h2>${escapeHtml(label)}</h2><p>No data loaded for this tab yet.</p>`;
 }
 
-function currentDataset() {
-  return state.datasets[state.activeTab];
+function setDataset(bundle, tab, payload) {
+  state.bundles[bundle].datasets[tab] = {
+    type: tab,
+    source: payload.source,
+    sourceLabel: payload.sourceLabel,
+    rawText: payload.rawText,
+    parsedType: payload.parsedType,
+    records: payload.records,
+    headers: payload.headers || [],
+    meta: payload.meta || null,
+    summary: summarize(payload),
+  };
 }
 
-function updateStatusText(dataset) {
-  return dataset;
+function syncBundleButtons() {
+  for (const button of dom.bundleButtons) {
+    const active = button.dataset.bundle === state.activeBundle;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  }
+}
+
+function renderBundleChrome() {
+  const config = BUNDLE_CONFIG[state.activeBundle];
+  dom.viewerTitle.textContent = config.heroTitle;
+  dom.viewerSubtitle.textContent = "Switch between the committed CopyBot and TeslaBot snapshot bundles.";
+  dom.bundleDescription.textContent = config.description;
+  dom.bundleLabel.textContent = `Committed ${config.label} snapshots`;
+  dom.bundleSummary.textContent = config.summary;
+  syncBundleButtons();
 }
 
 function syncTabButtons() {
@@ -824,11 +823,11 @@ function syncTabButtons() {
 }
 
 function render() {
+  renderBundleChrome();
   syncTabButtons();
   const dataset = currentDataset();
   syncAssetFilterOptions();
   renderSummary(dataset.summary);
-  updateStatusText(dataset);
 
   if (!dataset.rawText) {
     dom.resultsPanel.className = "panel empty-state";
@@ -857,25 +856,11 @@ function render() {
   dom.resultsPanel = document.querySelector(".results, .empty-state");
 }
 
-function setDataset(tab, payload) {
-  state.datasets[tab] = {
-    type: tab,
-    source: payload.source,
-    sourceLabel: payload.sourceLabel,
-    rawText: payload.rawText,
-    parsedType: payload.parsedType,
-    records: payload.records,
-    headers: payload.headers || [],
-    meta: payload.meta || null,
-    summary: summarize(payload),
-  };
-}
-
-async function loadBundledTab(tab) {
+async function loadBundledTab(bundle, tab) {
   const config = TAB_CONFIG[tab];
-  const response = await fetch(config.bundledPath, { cache: "no-store" });
+  const response = await fetch(bundlePath(bundle, tab), { cache: "no-store" });
   if (!response.ok) {
-    setDataset(tab, {
+    setDataset(bundle, tab, {
       source: "empty",
       sourceLabel: `Could not load ${config.bundledLabel}.`,
       rawText: "",
@@ -886,7 +871,6 @@ async function loadBundledTab(tab) {
     return;
   }
   const rawText = await response.text();
-  let parsedType = tab;
   let records = [];
   let headers = [];
   if (tab === "decisions") {
@@ -898,10 +882,10 @@ async function loadBundledTab(tab) {
   } else if (tab === "portfolio") {
     const parsed = parsePortfolioSnapshot(rawText);
     records = parsed.positions;
-    headers = ["symbol", "qty", "current_value", "target_weight", "target_value", "current_weight"];
-    setDataset(tab, {
+    headers = ["symbol", "qty", "current_value", "target_weight", "target_value", "current_weight", "points"];
+    setDataset(bundle, tab, {
       source: "bundled",
-      sourceLabel: `Showing ${config.bundledLabel}.`,
+      sourceLabel: `Showing ${BUNDLE_CONFIG[bundle].label} ${config.bundledLabel}.`,
       rawText,
       parsedType: tab,
       records,
@@ -912,24 +896,43 @@ async function loadBundledTab(tab) {
   } else {
     records = parseBotLog(rawText);
   }
-  setDataset(tab, {
+  setDataset(bundle, tab, {
     source: "bundled",
-    sourceLabel: `Showing ${config.bundledLabel}.`,
+    sourceLabel: `Showing ${BUNDLE_CONFIG[bundle].label} ${config.bundledLabel}.`,
     rawText,
-    parsedType,
+    parsedType: tab,
     records,
     headers,
   });
 }
 
+async function loadBundle(bundle) {
+  await Promise.all(Object.keys(TAB_CONFIG).map((tab) => loadBundledTab(bundle, tab)));
+  state.bundles[bundle].loaded = true;
+}
+
+async function ensureBundleLoaded(bundle) {
+  if (!state.bundles[bundle].loaded) {
+    await loadBundle(bundle);
+  }
+}
+
 async function loadAllBundled() {
-  await Promise.all(Object.keys(TAB_CONFIG).map((tab) => loadBundledTab(tab)));
+  await Promise.all(Object.keys(BUNDLE_CONFIG).map((bundle) => loadBundle(bundle)));
   render();
 }
 
 for (const button of dom.tabButtons) {
   button.addEventListener("click", () => {
     state.activeTab = button.dataset.tab;
+    render();
+  });
+}
+
+for (const button of dom.bundleButtons) {
+  button.addEventListener("click", async () => {
+    state.activeBundle = button.dataset.bundle;
+    await ensureBundleLoaded(state.activeBundle);
     render();
   });
 }
@@ -953,6 +956,7 @@ for (const input of filterInputs) {
 
 loadVersionBadge();
 loadAllBundled();
+
 async function loadVersionBadge() {
   try {
     const response = await fetch("./data/version.json", { cache: "no-store" });

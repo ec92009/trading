@@ -13,10 +13,7 @@ HERE = Path(__file__).resolve().parent
 DOCS_DATA_DIR = HERE / "docs" / "data"
 VERSION_PATH = HERE / "VERSION"
 PUBLIC_VERSION_PATH = DOCS_DATA_DIR / "version.json"
-RECENT_BOT_LOG_PATH = DOCS_DATA_DIR / "recent_bot.log"
-RECENT_DECISIONS_PATH = DOCS_DATA_DIR / "recent_decisions.json"
-RECENT_TRADES_PATH = DOCS_DATA_DIR / "recent_trades.tsv"
-RECENT_PORTFOLIO_PATH = DOCS_DATA_DIR / "recent_portfolio.json"
+DEFAULT_BUNDLE_NAME = "copybot"
 
 SNAPSHOT_PUBLISH_INTERVAL = int(os.getenv("REMOTE_SNAPSHOT_PUBLISH_INTERVAL", "900"))
 BOT_LOG_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_BOT_LOG_SNAPSHOT_LIMIT", "200"))
@@ -24,6 +21,22 @@ DECISION_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_DECISION_SNAPSHOT_LIMIT", "50"))
 TRADE_SNAPSHOT_LIMIT = int(os.getenv("REMOTE_TRADE_SNAPSHOT_LIMIT", "50"))
 GIT_TIMEOUT_SECONDS = int(os.getenv("REMOTE_SNAPSHOT_GIT_TIMEOUT", "30"))
 REMOTE_SNAPSHOT_PUBLISH_ENABLED = (os.getenv("ENABLE_REMOTE_SNAPSHOT_PUBLISH", "").strip().lower() in {"1", "true", "yes", "on"})
+
+
+def _bundle_dir(bundle_name: str) -> Path:
+    normalized = (bundle_name or DEFAULT_BUNDLE_NAME).strip().lower() or DEFAULT_BUNDLE_NAME
+    return DOCS_DATA_DIR / normalized
+
+
+def _bundle_paths(bundle_name: str) -> dict[str, Path]:
+    bundle_dir = _bundle_dir(bundle_name)
+    return {
+        "bundle_dir": bundle_dir,
+        "bot_log": bundle_dir / "recent_bot.log",
+        "decisions": bundle_dir / "recent_decisions.json",
+        "trades": bundle_dir / "recent_trades.tsv",
+        "portfolio": bundle_dir / "recent_portfolio.json",
+    }
 
 
 def _tail_jsonl(path: Path, limit: int) -> list[dict]:
@@ -79,12 +92,15 @@ def write_snapshot_files(
     bot_log_path: Path,
     decision_log_path: Path,
     trade_log_path: Path,
+    bundle_name: str = DEFAULT_BUNDLE_NAME,
     portfolio_snapshot: dict | None = None,
     bot_log_limit: int = BOT_LOG_SNAPSHOT_LIMIT,
     decision_limit: int = DECISION_SNAPSHOT_LIMIT,
     trade_limit: int = TRADE_SNAPSHOT_LIMIT,
 ) -> list[Path]:
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    bundle_paths = _bundle_paths(bundle_name)
+    bundle_paths["bundle_dir"].mkdir(parents=True, exist_ok=True)
     changed: list[Path] = []
 
     version_text = json.dumps(_shared_version_payload(), indent=2) + "\n"
@@ -94,31 +110,31 @@ def write_snapshot_files(
         changed.append(PUBLIC_VERSION_PATH)
 
     bot_log_text = _tail_lines(bot_log_path, bot_log_limit)
-    current_bot_log_text = RECENT_BOT_LOG_PATH.read_text(encoding="utf-8") if RECENT_BOT_LOG_PATH.exists() else None
+    current_bot_log_text = bundle_paths["bot_log"].read_text(encoding="utf-8") if bundle_paths["bot_log"].exists() else None
     if current_bot_log_text != bot_log_text:
-        RECENT_BOT_LOG_PATH.write_text(bot_log_text, encoding="utf-8")
-        changed.append(RECENT_BOT_LOG_PATH)
+        bundle_paths["bot_log"].write_text(bot_log_text, encoding="utf-8")
+        changed.append(bundle_paths["bot_log"])
 
     decision_rows = _tail_jsonl(decision_log_path, decision_limit)
     decision_text = json.dumps(decision_rows, indent=2) + "\n"
-    current_decision_text = RECENT_DECISIONS_PATH.read_text(encoding="utf-8") if RECENT_DECISIONS_PATH.exists() else None
+    current_decision_text = bundle_paths["decisions"].read_text(encoding="utf-8") if bundle_paths["decisions"].exists() else None
     if current_decision_text != decision_text:
-        RECENT_DECISIONS_PATH.write_text(decision_text, encoding="utf-8")
-        changed.append(RECENT_DECISIONS_PATH)
+        bundle_paths["decisions"].write_text(decision_text, encoding="utf-8")
+        changed.append(bundle_paths["decisions"])
 
     trade_fields, trade_rows = _tail_tsv(trade_log_path, trade_limit)
     trade_text = _render_trades_tsv(trade_fields, trade_rows)
-    current_trade_text = RECENT_TRADES_PATH.read_text(encoding="utf-8") if RECENT_TRADES_PATH.exists() else None
+    current_trade_text = bundle_paths["trades"].read_text(encoding="utf-8") if bundle_paths["trades"].exists() else None
     if current_trade_text != trade_text:
-        RECENT_TRADES_PATH.write_text(trade_text, encoding="utf-8")
-        changed.append(RECENT_TRADES_PATH)
+        bundle_paths["trades"].write_text(trade_text, encoding="utf-8")
+        changed.append(bundle_paths["trades"])
 
     if portfolio_snapshot is not None:
         portfolio_text = json.dumps(portfolio_snapshot, indent=2) + "\n"
-        current_portfolio_text = RECENT_PORTFOLIO_PATH.read_text(encoding="utf-8") if RECENT_PORTFOLIO_PATH.exists() else None
+        current_portfolio_text = bundle_paths["portfolio"].read_text(encoding="utf-8") if bundle_paths["portfolio"].exists() else None
         if current_portfolio_text != portfolio_text:
-            RECENT_PORTFOLIO_PATH.write_text(portfolio_text, encoding="utf-8")
-            changed.append(RECENT_PORTFOLIO_PATH)
+            bundle_paths["portfolio"].write_text(portfolio_text, encoding="utf-8")
+            changed.append(bundle_paths["portfolio"])
 
     return changed
 
@@ -130,6 +146,7 @@ class RemoteSnapshotPublisher:
         bot_log_path: Path,
         decision_log_path: Path,
         trade_log_path: Path,
+        bundle_name: str = DEFAULT_BUNDLE_NAME,
         portfolio_snapshot_provider=None,
         logger: logging.Logger | None = None,
         interval_seconds: int = SNAPSHOT_PUBLISH_INTERVAL,
@@ -138,6 +155,7 @@ class RemoteSnapshotPublisher:
         self.bot_log_path = bot_log_path
         self.decision_log_path = decision_log_path
         self.trade_log_path = trade_log_path
+        self.bundle_name = bundle_name
         self.portfolio_snapshot_provider = portfolio_snapshot_provider
         self.interval_seconds = max(60, interval_seconds)
         self.logger = logger or logging.getLogger("remote_snapshots")
@@ -159,6 +177,7 @@ class RemoteSnapshotPublisher:
             bot_log_path=self.bot_log_path,
             decision_log_path=self.decision_log_path,
             trade_log_path=self.trade_log_path,
+            bundle_name=self.bundle_name,
             portfolio_snapshot=self.portfolio_snapshot_provider() if self.portfolio_snapshot_provider else None,
         )
         if not changed:

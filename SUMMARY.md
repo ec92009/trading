@@ -41,9 +41,9 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 
 - Upgraded the GitHub Pages viewer under [docs/](/Users/ecohen/Dev/trading/docs) into three dedicated tabs for Runtime Log, Decision Log, and Trade Journal.
 - Added committed `10k` snapshot publishing for all three surfaces:
-- [docs/data/recent_bot.log](/Users/ecohen/Dev/trading/docs/data/recent_bot.log)
-- [docs/data/recent_decisions.json](/Users/ecohen/Dev/trading/docs/data/recent_decisions.json)
-- [docs/data/recent_trades.tsv](/Users/ecohen/Dev/trading/docs/data/recent_trades.tsv)
+- [docs/data/copybot/recent_bot.log](/Users/ecohen/Dev/trading/docs/data/copybot/recent_bot.log)
+- [docs/data/copybot/recent_decisions.json](/Users/ecohen/Dev/trading/docs/data/copybot/recent_decisions.json)
+- [docs/data/copybot/recent_trades.tsv](/Users/ecohen/Dev/trading/docs/data/copybot/recent_trades.tsv)
 - Added shared version publishing through [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) so the bot and web app stay on the same visible version.
 - Bumped the shared version through `51.3` in [VERSION](/Users/ecohen/Dev/trading/VERSION), kept [docs/data/version.json](/Users/ecohen/Dev/trading/docs/data/version.json) aligned, and reloaded CopyBot so new rationales use the same shared version source.
 - The local and LAN viewer URLs were verified at:
@@ -59,7 +59,7 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - The upload / drag-and-drop panel and extra intro block were removed from the viewer so the page focuses on the committed copy-bot snapshots only.
 - The filter bar was simplified to a single full-text search, `Show latest`, and an explicit `Apply Filters` button, with Enter-to-apply support.
 - The repo was synced forward to the latest `origin/main` first, with local research changes preserved across the fast-forward.
-- Added a fourth `Last Portfolio` tab to the viewer, backed by committed portfolio snapshots in [docs/data/recent_portfolio.json](/Users/ecohen/Dev/trading/docs/data/recent_portfolio.json).
+- Added a fourth `Last Portfolio` tab to the viewer, backed by committed portfolio snapshots in [docs/data/copybot/recent_portfolio.json](/Users/ecohen/Dev/trading/docs/data/copybot/recent_portfolio.json).
 - Added shared snapshot publishing support for the portfolio view in [remote_snapshots.py](/Users/ecohen/Dev/trading/remote_snapshots.py).
 - Fixed the trade journal / order sync path so partial fills are preserved as `partial_fill_canceled` with `filled_qty`, instead of lingering as `pending` or collapsing into plain `canceled`.
 - Fixed the Khanna completion logic so, when a disclosure-driven rebalance is underfilled, later open-market heartbeat cycles only retry the incomplete symbols rather than running a fresh full rebalance.
@@ -97,3 +97,17 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Restarted both launchd services and verified they were healthy afterward:
 - `com.trading.bot` for TeslaBot
 - `com.trading.bot.10k` for CopyBot
+- Changed the public viewer hero title from `Trading Log Viewer` to `CopyBot Viewer` so the current default view is explicit.
+- Reworked the GitHub Pages viewer under [docs/](/Users/ecohen/Dev/trading/docs/) into a single shared shell with a `CopyBot` / `TeslaBot` switcher instead of a CopyBot-only page.
+- Kept the existing reusable viewer surfaces for both bots:
+- `Runtime Log`
+- `Decision Log`
+- `Trade Journal`
+- `Last Portfolio`
+- Extended [remote_snapshots.py](/Users/ecohen/Dev/trading/remote_snapshots.py) so committed snapshot bundles now publish under:
+- [docs/data/copybot](/Users/ecohen/Dev/trading/docs/data/copybot)
+- [docs/data/teslabot](/Users/ecohen/Dev/trading/docs/data/teslabot)
+- Wired [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py) to publish the CopyBot bundle explicitly, and added a TeslaBot snapshot publisher plus basket-style portfolio snapshot in [bot.py](/Users/ecohen/Dev/trading/bot.py).
+- Generated committed snapshot files for both bots so the shared public viewer already has content behind the new switcher.
+- Refreshed the viewer docs in [README.md](/Users/ecohen/Dev/trading/README.md) and [docs/README.md](/Users/ecohen/Dev/trading/docs/README.md) to describe the shared dual-bot viewer.
+- Bumped the shared visible bot/web version to `53.1`, aligned the cache-busted asset URLs in [docs/index.html](/Users/ecohen/Dev/trading/docs/index.html), and refreshed the published snapshot metadata.
