@@ -1324,5 +1324,99 @@
     },
     "symbol": "AMRZ",
     "timestamp_utc": "2026-04-21T19:14:54Z"
+  },
+  {
+    "event_type": "stop_triggered",
+    "order": {},
+    "rationale": "Price breached the active stop floor and cooldown allowed a stop sale.",
+    "state": {
+      "floor": 95.0,
+      "position_qty": 10.0,
+      "price": 94.0,
+      "sell_qty": 5.5,
+      "stop_sell_pct": 0.55,
+      "trade_day": "2026-04-17"
+    },
+    "symbol": "AAPL",
+    "timestamp_utc": "2026-04-22T12:43:11Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "qty": 5.5,
+        "side": "sell",
+        "symbol": "AAPL",
+        "time_in_force": "DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "sell-2",
+      "status": "accepted",
+      "submitted_at": null
+    },
+    "rationale": "BOT v53.1->stop loss",
+    "state": {
+      "floor": 95.0,
+      "position_qty": 10.0,
+      "price": 94.0,
+      "qty": 5.5,
+      "reference_price": 94.0,
+      "side": "SELL",
+      "stop_sell_pct": 0.55,
+      "trade_day": "2026-04-17",
+      "trigger_type": "stop"
+    },
+    "symbol": "AAPL",
+    "timestamp_utc": "2026-04-22T12:43:11Z"
+  },
+  {
+    "event_type": "order_submitted",
+    "order": {
+      "alpaca_request": {
+        "qty": 2.25,
+        "side": "sell",
+        "symbol": "AAPL",
+        "time_in_force": "DAY",
+        "type": "market"
+      },
+      "executed_at": null,
+      "id": "sell-1",
+      "status": "accepted",
+      "submitted_at": null
+    },
+    "rationale": "BOT v53.1->stop",
+    "state": {
+      "qty": 2.25,
+      "reference_price": 101.5,
+      "side": "SELL",
+      "trade_day": null
+    },
+    "symbol": "AAPL",
+    "timestamp_utc": "2026-04-22T12:43:14Z"
+  },
+  {
+    "event_type": "order_status_update",
+    "order": {
+      "alpaca_request": "{}",
+      "avg_price": 247.92,
+      "executed_at": "2026-04-21T13:32:00Z",
+      "filled_at": "2026-04-21T13:32:00Z",
+      "filled_qty": 2.0,
+      "id": "order-1",
+      "status": "partial_fill_canceled",
+      "submitted_at": "2026-04-21T13:30:00Z"
+    },
+    "rationale": "test",
+    "state": {
+      "logged_avg_price": null,
+      "logged_executed_at": null,
+      "logged_filled_qty": null,
+      "logged_submitted_at": "2026-04-21 13:30:00 UTC",
+      "new_status": "partial_fill_canceled",
+      "previous_status": "pending"
+    },
+    "symbol": "AMZN",
+    "timestamp_utc": "2026-04-22T12:43:14Z"
   }
 ]
