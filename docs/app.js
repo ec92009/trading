@@ -51,6 +51,7 @@ const dom = {
   assetFilter: document.getElementById("assetFilter"),
   textFilter: document.getElementById("textFilter"),
   limitInput: document.getElementById("limitInput"),
+  limitLabel: document.getElementById("limitLabel"),
   summaryPanel: document.getElementById("summaryPanel"),
   resultsPanel: document.getElementById("resultsPanel"),
   summaryCardTemplate: document.getElementById("summaryCardTemplate"),
@@ -360,13 +361,16 @@ function compactTradeDetails(row) {
     if (!Number.isFinite(deltaSeconds)) {
       return null;
     }
-    return `${deltaSeconds} second${deltaSeconds === 1 ? "" : "s"} later`;
+    if (deltaSeconds === 0) {
+      return "immediately";
+    }
+    return `in ${deltaSeconds} s.`;
   };
 
   if (submitted !== "—" && executed) {
     const elapsed = formatElapsed(submitted, executed);
     if (elapsed) {
-      executedPart = `Executed ${elapsed}`;
+      executedPart = elapsed === "immediately" ? "Executed immediately" : `Executed ${elapsed}`;
     }
   }
   const status = String(row.status || "").toLowerCase();
@@ -383,7 +387,7 @@ function compactTradeDetails(row) {
   if (filled) {
     const elapsed = formatElapsed(executed || submitted, filled);
     if (elapsed) {
-      filledPart = `${finalStatus} ${elapsed}`;
+      filledPart = elapsed === "immediately" ? `${finalStatus} immediately` : `${finalStatus} ${elapsed}`;
     } else {
       filledPart = finalStatus;
     }
@@ -426,6 +430,9 @@ function applyFilters(records, type) {
 function visibleRecords(records, type) {
   const limit = Number.parseInt(dom.limitInput.value, 10);
   const normalizedLimit = Number.isFinite(limit) && limit > 0 ? limit : 120;
+  if (type === "botlog") {
+    return compactBotLogRecords([...records].reverse()).slice(0, normalizedLimit);
+  }
   if (type === "portfolio") {
     return [...records].slice(0, normalizedLimit);
   }
@@ -748,7 +755,7 @@ function renderBotLog(records) {
   if (!records.length) {
     return "<section class=\"panel empty-state\"><h2>No matching log lines</h2><p>Adjust the filters to widen the result set.</p></section>";
   }
-  const lines = compactBotLogRecords(records).map((record) => `
+  const lines = records.map((record) => `
     <article class="log-line-card">
       <div class="line-topline">
         <span class="badge ${severityClass(record.message)}">${escapeHtml(record.logger)}</span>
@@ -813,6 +820,7 @@ function syncTabButtons() {
     button.classList.toggle("is-active", active);
     button.setAttribute("aria-selected", active ? "true" : "false");
   }
+  dom.limitLabel.textContent = state.activeTab === "botlog" ? "Show latest UI entries" : "Show latest records";
 }
 
 function render() {

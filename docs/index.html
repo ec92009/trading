@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trading Log Viewer</title>
-    <link rel="stylesheet" href="./styles.css?v=51.5" />
+    <link rel="stylesheet" href="./styles.css?v=53.0" />
   </head>
   <body>
     <main class="app-shell">
@@ -56,7 +56,7 @@
           <input id="textFilter" type="text" placeholder="rebalance, Capitol, error, target" />
         </div>
         <div class="control">
-          <label for="limitInput">Show latest</label>
+          <label id="limitLabel" for="limitInput">Show latest</label>
           <input id="limitInput" type="number" min="1" step="1" value="120" />
         </div>
         <div class="control control-action">
@@ -80,6 +80,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=51.5"></script>
+    <script src="./app.js?v=53.0"></script>
   </body>
 </html>
