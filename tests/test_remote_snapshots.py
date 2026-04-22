@@ -58,20 +58,29 @@ class RemoteSnapshotTests(unittest.TestCase):
                 remote_snapshots, "RECENT_DECISIONS_PATH", docs_data / "recent_decisions.json"
             ), patch.object(
                 remote_snapshots, "RECENT_TRADES_PATH", docs_data / "recent_trades.tsv"
+            ), patch.object(
+                remote_snapshots, "RECENT_PORTFOLIO_PATH", docs_data / "recent_portfolio.json"
             ):
                 changed = remote_snapshots.write_snapshot_files(
                     bot_log_path=bot_log,
                     decision_log_path=decision_log,
                     trade_log_path=trade_log,
+                    portfolio_snapshot={
+                        "as_of": "2026-04-21T14:00:00Z",
+                        "equity": 10000.0,
+                        "cash": 500.0,
+                        "allocated": 9500.0,
+                        "positions": [{"symbol": "AMZN", "current_value": 1500.0, "target_weight": 0.15}],
+                    },
                     bot_log_limit=2,
                     decision_limit=2,
                     trade_limit=2,
                 )
 
-            self.assertEqual(len(changed), 4)
+            self.assertEqual(len(changed), 5)
             version_payload = json.loads((docs_data / "version.json").read_text(encoding="utf-8"))
-            self.assertEqual(version_payload["version"], "51.3")
-            self.assertEqual(version_payload["display"], "v51.3")
+            self.assertEqual(version_payload["version"], "51.5")
+            self.assertEqual(version_payload["display"], "v51.5")
             bot_log_snapshot = (docs_data / "recent_bot.log").read_text(encoding="utf-8")
             self.assertIn("first line", bot_log_snapshot)
             self.assertIn("second line", bot_log_snapshot)
@@ -82,6 +91,9 @@ class RemoteSnapshotTests(unittest.TestCase):
             self.assertIn("TSLA\t2\tBUY\t200.00\tpending", trade_snapshot)
             self.assertIn("AMZN\t3\tBUY\t300.00\tfilled", trade_snapshot)
             self.assertNotIn("AAPL\t1\tBUY\t100.00\tpending", trade_snapshot)
+            portfolio_snapshot = json.loads((docs_data / "recent_portfolio.json").read_text(encoding="utf-8"))
+            self.assertEqual(portfolio_snapshot["cash"], 500.0)
+            self.assertEqual(portfolio_snapshot["positions"][0]["symbol"], "AMZN")
 
     def test_khanna_live_publishes_remote_snapshots_on_startup(self):
         with install_alpaca_stubs():
@@ -92,7 +104,7 @@ class RemoteSnapshotTests(unittest.TestCase):
             with patch.object(live.signal_updater, "refresh_politician_signals", return_value={"added": 0, "pages_scanned": 1, "total_rows": 2}), patch.object(
                 manager,
                 "load_state",
-            ), patch.object(manager.order_sync, "sync_trade_log"), patch.object(manager, "evaluate"), patch.object(
+            ), patch.object(manager.order_sync, "sync_trade_log_until_settled"), patch.object(manager, "evaluate"), patch.object(
                 manager,
                 "save_state",
             ), patch.object(
@@ -102,6 +114,27 @@ class RemoteSnapshotTests(unittest.TestCase):
                 manager.startup_sync()
 
             publish_mock.assert_called_once_with(force=True)
+
+    def test_remote_snapshot_publisher_syncs_before_writing(self):
+        remote_snapshots = importlib.import_module("remote_snapshots")
+        importlib.reload(remote_snapshots)
+
+        publisher = remote_snapshots.RemoteSnapshotPublisher(
+            bot_log_path=Path("bot_10k.log"),
+            decision_log_path=Path("bot_decisions_10k.jsonl"),
+            trade_log_path=Path("trades_10k.tsv"),
+            enabled=True,
+        )
+
+        with patch.object(publisher, "_sync_branch") as sync_mock, patch.object(
+            remote_snapshots,
+            "write_snapshot_files",
+            return_value=[],
+        ) as write_mock:
+            publisher.publish_once()
+
+        sync_mock.assert_called_once_with()
+        write_mock.assert_called_once()
 
 
 if __name__ == "__main__":

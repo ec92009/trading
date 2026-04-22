@@ -1,200 +1,200 @@
-2026-04-21 10:36:38 [copytrade] SIGNAL REFRESH ERROR: <urlopen error _ssl.c:1011: The handshake operation timed out>
-2026-04-21 11:08:09 [portfolio] RECENT ORDER LOAD ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Read timed out. (read timeout=None)
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR ef9f6271-ac2d-4b5b-8ca6-9979b851faa6: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR 79b61cc1-04f3-446a-8a2a-a2075a6b5736: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/79b61cc1-04f3-446a-8a2a-a2075a6b5736 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR 2cf5312c-00cc-4a0d-94d3-b9e16771adba: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/2cf5312c-00cc-4a0d-94d3-b9e16771adba (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR 54075d1f-7bf9-4f47-b00a-b4cceadf83f4: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/54075d1f-7bf9-4f47-b00a-b4cceadf83f4 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR e46baa7b-b9fb-430e-bfec-119e229f9e77: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/e46baa7b-b9fb-430e-bfec-119e229f9e77 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR 1f25f596-bc79-480a-b813-4db02d0f7aca: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/1f25f596-bc79-480a-b813-4db02d0f7aca (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR 1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [portfolio] ORDER SYNC ERROR abeda6c8-43b6-47ac-a3be-235100ca0f1b: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/abeda6c8-43b6-47ac-a3be-235100ca0f1b (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:08:10 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 65] No route to host>
-2026-04-21 11:28:56 [portfolio] RECENT ORDER LOAD ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders?status=all&after=2026-04-07T09%3A28%3A56.249347%2B00%3A00 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR ef9f6271-ac2d-4b5b-8ca6-9979b851faa6: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR 79b61cc1-04f3-446a-8a2a-a2075a6b5736: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/79b61cc1-04f3-446a-8a2a-a2075a6b5736 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR 2cf5312c-00cc-4a0d-94d3-b9e16771adba: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/2cf5312c-00cc-4a0d-94d3-b9e16771adba (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR 54075d1f-7bf9-4f47-b00a-b4cceadf83f4: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/54075d1f-7bf9-4f47-b00a-b4cceadf83f4 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR e46baa7b-b9fb-430e-bfec-119e229f9e77: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/e46baa7b-b9fb-430e-bfec-119e229f9e77 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR 1f25f596-bc79-480a-b813-4db02d0f7aca: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/1f25f596-bc79-480a-b813-4db02d0f7aca (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR 1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:56 [portfolio] ORDER SYNC ERROR abeda6c8-43b6-47ac-a3be-235100ca0f1b: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/abeda6c8-43b6-47ac-a3be-235100ca0f1b (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:28:57 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
-2026-04-21 11:29:28 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-04-21 11:29:29 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [copytrade] Market closed. Next open 2026-04-21 09:30 -04:00
-2026-04-21 11:29:29 [copytrade] Signal state changed but market is closed. Waiting for the next session.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 11:29:29 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:29 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 11:29:30 [copytrade] REMOTE SNAPSHOT PUBLISH ERROR: To https://github.com/ec92009/trading.git
- ! [rejected]        main -> main (fetch first)
-error: failed to push some refs to 'https://github.com/ec92009/trading.git'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-2026-04-21 12:03:39 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-04-21 12:03:39 [portfolio] RECENT ORDER LOAD ERROR: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
-2026-04-21 12:03:40 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 12:03:40 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:03:40 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:03:40 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:03:40 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:41 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:41 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:41 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:41 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:41 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:41 [copytrade] Market closed. Next open 2026-04-21 09:30 -04:00
-2026-04-21 12:03:42 [copytrade] Signal state changed but market is closed. Waiting for the next session.
-2026-04-21 12:03:42 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 12:03:42 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:03:42 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:03:42 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:03:42 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:42 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:42 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:42 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:42 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:42 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:03:43 [copytrade] REMOTE SNAPSHOT PUBLISH ERROR: To https://github.com/ec92009/trading.git
- ! [rejected]        main -> main (fetch first)
-error: failed to push some refs to 'https://github.com/ec92009/trading.git'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-2026-04-21 12:30:15 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-04-21 12:30:15 [portfolio] RECENT ORDER LOAD ERROR: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
-2026-04-21 12:30:16 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 12:30:16 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:30:16 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:30:16 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:30:17 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:17 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:17 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:17 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:17 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:18 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:18 [copytrade] Market closed. Next open 2026-04-21 09:30 -04:00
-2026-04-21 12:30:18 [copytrade] Signal state changed but market is closed. Waiting for the next session.
-2026-04-21 12:30:19 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 12:30:19 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:30:19 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:30:19 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 12:30:19 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:19 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:19 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:19 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:19 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:19 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 12:30:20 [copytrade] REMOTE SNAPSHOT PUBLISH ERROR: To https://github.com/ec92009/trading.git
- ! [rejected]        main -> main (fetch first)
-error: failed to push some refs to 'https://github.com/ec92009/trading.git'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-2026-04-21 13:03:31 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-04-21 13:03:31 [portfolio] RECENT ORDER LOAD ERROR: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
-2026-04-21 13:03:32 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 13:03:32 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:03:32 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:03:32 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:03:32 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:32 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:32 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:33 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:33 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:33 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:33 [copytrade] Market closed. Next open 2026-04-21 09:30 -04:00
-2026-04-21 13:03:34 [copytrade] Signal state changed but market is closed. Waiting for the next session.
-2026-04-21 13:03:34 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 13:03:34 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:03:34 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:03:34 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:03:34 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:34 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:34 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:34 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:34 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:34 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:03:35 [copytrade] REMOTE SNAPSHOT PUBLISH ERROR: To https://github.com/ec92009/trading.git
- ! [rejected]        main -> main (fetch first)
-error: failed to push some refs to 'https://github.com/ec92009/trading.git'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-2026-04-21 13:15:05 [portfolio] RECENT ORDER LOAD ERROR: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
-2026-04-21 13:15:05 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 13:15:06 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:15:06 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:15:06 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:15:06 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:06 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:07 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:07 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:07 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:07 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:07 [copytrade] Market closed. Next open 2026-04-21 09:30 -04:00
-2026-04-21 13:15:08 [copytrade] Signal state changed but market is closed. Waiting for the next session.
-2026-04-21 13:15:08 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 13:15:08 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:15:08 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:15:08 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:15:08 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:08 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:08 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:08 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:08 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:15:08 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:08 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-04-21 13:31:08 [portfolio] RECENT ORDER LOAD ERROR: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
-2026-04-21 13:31:09 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 13:31:09 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:31:09 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:31:09 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:31:10 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:10 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:10 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:10 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:10 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:10 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:10 [copytrade] Market closed. Next open 2026-04-21 09:30 -04:00
-2026-04-21 13:31:11 [copytrade] Signal state changed but market is closed. Waiting for the next session.
-2026-04-21 13:31:11 [portfolio] ORDER SYNC TSLA canceled → canceled id=ef9f6271-ac2d-4b5b-8ca6-9979b851faa6 submitted_at=2026-04-19T14:53:04Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $5,000.00
-2026-04-21 13:31:11 [portfolio] ORDER SYNC TSM canceled → canceled id=79b61cc1-04f3-446a-8a2a-a2075a6b5736 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:31:11 [portfolio] ORDER SYNC NVDA canceled → canceled id=2cf5312c-00cc-4a0d-94d3-b9e16771adba submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:31:11 [portfolio] ORDER SYNC PLTR canceled → canceled id=54075d1f-7bf9-4f47-b00a-b4cceadf83f4 submitted_at=2026-04-19T14:53:05Z executed_at=— avg_price=— filled_qty=0.0 rationale=rebalance buy to target $1,250.00
-2026-04-21 13:31:11 [portfolio] ORDER SYNC ACI canceled → canceled id=e46baa7b-b9fb-430e-bfec-119e229f9e77 submitted_at=2026-04-20T13:30:29Z executed_at=2026-04-20T13:32:58Z avg_price=16.83 filled_qty=77.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:11 [portfolio] ORDER SYNC KO canceled → canceled id=428dc135-2fc0-4b92-90c1-3384c2f19fe0 submitted_at=2026-04-20T13:30:44Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:11 [portfolio] ORDER SYNC AMZN canceled → canceled id=1f25f596-bc79-480a-b813-4db02d0f7aca submitted_at=2026-04-20T13:30:54Z executed_at=2026-04-20T13:32:41Z avg_price=247.92 filled_qty=2.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:11 [portfolio] ORDER SYNC VIG canceled → canceled id=c783b96e-2ff9-461a-b14b-f2a0b86e3459 submitted_at=2026-04-20T13:31:13Z executed_at=— avg_price=— filled_qty=0.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:11 [portfolio] ORDER SYNC AMRZ canceled → canceled id=1b2ca2c4-7fc8-478d-99fa-03fb7e02ffed submitted_at=2026-04-20T13:31:20Z executed_at=2026-04-20T13:31:59Z avg_price=57.52 filled_qty=5.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
-2026-04-21 13:31:11 [portfolio] ORDER SYNC TD canceled → canceled id=abeda6c8-43b6-47ac-a3be-235100ca0f1b submitted_at=2026-04-20T13:31:26Z executed_at=2026-04-20T13:32:02Z avg_price=105.48 filled_qty=1.0 rationale=BOT v51.3->Backfilled local order history from Alpaca recent order activity.
+2026-04-22 08:36:06 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:36:37 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:37:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:37:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:38:10 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:38:41 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:39:12 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:39:43 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:40:14 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:40:45 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:41:15 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:41:46 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:42:18 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 08:42:18 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:42:21 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_portfolio.json
+2026-04-22 08:42:52 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:43:23 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:43:54 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:44:25 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:44:56 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:45:27 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:45:58 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:46:29 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:47:00 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:47:31 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:48:02 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:48:33 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:49:04 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:49:35 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:50:06 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:50:37 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:51:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:51:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:52:10 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:52:41 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:53:12 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:53:43 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:54:14 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:54:45 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:55:16 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:55:47 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:56:18 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:56:49 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:57:20 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 08:57:21 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:57:24 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_portfolio.json
+2026-04-22 08:57:55 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:58:26 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:58:57 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:59:28 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 08:59:59 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:00:30 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:01:01 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:01:32 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:02:03 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:02:34 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:03:05 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:03:37 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:04:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:04:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:05:10 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:05:41 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:06:12 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:06:43 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:07:14 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:07:45 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:08:16 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:08:47 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:09:18 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:09:49 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:10:20 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:10:51 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:11:22 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:11:52 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:12:24 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 09:12:24 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:12:27 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_portfolio.json
+2026-04-22 09:12:58 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:13:29 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:14:00 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:14:30 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:15:01 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:15:32 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:16:03 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:16:34 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:17:05 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:17:36 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:18:07 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:18:38 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:19:09 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:19:40 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:20:11 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:20:42 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:21:13 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:21:44 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:22:15 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:22:46 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:23:17 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:23:48 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:24:19 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:24:50 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:25:21 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:25:52 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:26:23 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:26:54 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:27:25 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 09:27:26 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:27:32 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_portfolio.json
+2026-04-22 09:28:02 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:28:34 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:29:05 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:29:36 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:30:07 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:30:37 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:31:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:31:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:32:10 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:32:41 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:33:12 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:33:43 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:34:14 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:34:45 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:35:16 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:35:47 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:36:18 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:36:48 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:37:19 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:37:50 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:38:22 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:38:53 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:39:24 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:39:54 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:40:25 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:40:56 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:41:27 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:41:58 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:42:29 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 09:42:30 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:42:33 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_portfolio.json
+2026-04-22 09:43:04 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:43:34 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:44:06 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:44:37 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:45:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:45:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:46:10 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:46:41 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:47:12 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:47:44 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:48:15 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:48:46 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:49:17 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:49:48 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:50:19 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:50:50 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:51:21 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:51:52 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:52:23 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:52:54 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:53:25 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:53:56 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:54:27 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:54:58 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:55:29 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:56:00 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:56:31 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:57:02 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:57:33 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 09:57:34 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:57:37 [copytrade] Published updated remote snapshot files: docs/data/recent_bot.log, docs/data/recent_portfolio.json
+2026-04-22 09:58:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:58:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:59:10 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 09:59:40 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:00:12 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:00:44 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:01:15 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:01:46 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:02:18 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:02:49 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:03:20 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:03:51 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:04:22 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:04:53 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:05:24 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:05:55 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:06:26 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:06:57 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:07:28 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:07:59 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:08:31 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:09:02 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:09:33 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:10:04 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:10:35 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:11:06 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:11:37 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:12:08 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00
+2026-04-22 10:12:39 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-22 10:12:39 [copytrade] Market closed. Next open 2026-04-22 09:30 -04:00

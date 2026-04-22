@@ -43,6 +43,7 @@ SIM_CAPITAL = 10000.0
 POLL_INTERVAL = 30
 SIGNAL_REFRESH_INTERVAL = 900
 IGNORED_SYMBOLS = {"SPX"}
+MAX_COMPLETION_ATTEMPTS_PER_ASSET = 5
 LIVE_POINT_SYSTEM = {
     "< 1K": 0.125,
     "1K-15K": 0.25,
@@ -97,6 +98,7 @@ class CopyTradeLiveManager:
             bot_log_path=basket_bot.LOG_PATH,
             decision_log_path=basket_bot.DECISION_LOG_PATH,
             trade_log_path=trade_log.LOG_PATH,
+            portfolio_snapshot_provider=self.build_portfolio_snapshot,
             logger=self.logger,
         )
 
@@ -196,6 +198,50 @@ class CopyTradeLiveManager:
     def current_positions(self) -> dict[str, object]:
         return {_normalize_live_symbol(position.symbol): position for position in basket_bot.trading.get_all_positions()}
 
+    def _target_value_by_symbol(self, target_weights: dict[str, float]) -> tuple[float, dict[str, float]]:
+        equity = float(basket_bot.trading.get_account().equity)
+        return equity, {symbol: round(equity * weight, 2) for symbol, weight in target_weights.items()}
+
+    def build_portfolio_snapshot(self) -> dict:
+        as_of = self.now_et().isoformat()
+        result = self.simulate_target_book(self.now_et().date().isoformat())
+        target_weights = _weights_from_simulation(result)
+        account = basket_bot.trading.get_account()
+        equity = float(account.equity)
+        cash = float(account.cash)
+        positions = self.current_positions()
+        rows = []
+        allocated_total = 0.0
+        _, target_value_by_symbol = self._target_value_by_symbol(target_weights)
+        current_points = result.get("current_points") or {}
+        for symbol in sorted(set(target_weights) | set(positions)):
+            position = positions.get(symbol)
+            current_value = float(getattr(position, "market_value", 0.0) or 0.0)
+            qty = float(getattr(position, "qty", 0.0) or 0.0) if position else 0.0
+            current_weight = (current_value / equity) if equity > 0 else 0.0
+            allocated_total += current_value
+            rows.append(
+                {
+                    "symbol": symbol,
+                    "target_weight": round(target_weights.get(symbol, 0.0), 6),
+                    "current_weight": round(current_weight, 6),
+                    "points": round(float(current_points.get(symbol, 0.0) or 0.0), 4),
+                    "current_value": round(current_value, 2),
+                    "qty": round(qty, 8 if "/" in symbol else 6),
+                    "target_value": round(target_value_by_symbol.get(symbol, 0.0), 2),
+                }
+            )
+        rows.sort(key=lambda row: row["current_value"], reverse=True)
+        return {
+            "as_of": as_of,
+            "strategy": "Khanna daily-bar copy-trade",
+            "equity": round(equity, 2),
+            "cash": round(cash, 2),
+            "allocated": round(allocated_total, 2),
+            "target_queue": result.get("active_queue") or [],
+            "positions": rows,
+        }
+
     def _tif_for(self, symbol: str):
         return TimeInForce.GTC if "/" in symbol else TimeInForce.DAY
 
@@ -279,9 +325,8 @@ class CopyTradeLiveManager:
             time.sleep(1)
 
     def rebalance_to_weights(self, target_weights: dict[str, float], result: dict, reason: str):
-        equity = float(basket_bot.trading.get_account().equity)
+        equity, target_value_by_symbol = self._target_value_by_symbol(target_weights)
         positions = self.current_positions()
-        target_value_by_symbol = {symbol: round(equity * weight, 2) for symbol, weight in target_weights.items()}
 
         sells: list[tuple[float, str, object]] = []
         for symbol, position in positions.items():
@@ -341,6 +386,147 @@ class CopyTradeLiveManager:
                 },
             )
 
+    def _latest_rebalance_rows_by_symbol(self, rationale: str) -> dict[str, dict]:
+        latest: dict[str, dict] = {}
+        for row in reversed(trade_log.all_rows()):
+            symbol = row.get("symbol")
+            if not symbol or symbol in latest:
+                continue
+            if not self._matches_rationale(row.get("rationale"), rationale):
+                continue
+            latest[symbol] = row
+        return latest
+
+    def _base_rationale_reason(self, rationale: str | None) -> str:
+        text = str(rationale or "").strip()
+        if "->" in text:
+            text = text.split("->", 1)[1]
+        if " [attempt " in text:
+            text = text.split(" [attempt ", 1)[0]
+        return text.strip()
+
+    def _matches_rationale(self, candidate: str | None, rationale: str) -> bool:
+        return self._base_rationale_reason(candidate) == self._base_rationale_reason(rationale)
+
+    def _attempt_count(self, rationale: str, symbol: str, side: str) -> int:
+        normalized_side = side.upper()
+        return sum(
+            1
+            for row in trade_log.all_rows()
+            if self._matches_rationale(row.get("rationale"), rationale)
+            and row.get("symbol") == symbol
+            and str(row.get("side") or "").upper() == normalized_side
+        )
+
+    def complete_incomplete_orders(self, target_weights: dict[str, float], result: dict, reason: str) -> int:
+        base_rationale = basket_bot._versioned_rationale(reason)
+        latest_rows = self._latest_rebalance_rows_by_symbol(base_rationale)
+        if not latest_rows:
+            return 0
+
+        _, target_value_by_symbol = self._target_value_by_symbol(target_weights)
+        positions = self.current_positions()
+        submitted = 0
+
+        sell_statuses = {"pending", "canceled", "cancelled", "partial_fill_canceled", "partial_fill_expired", "partial_fill_rejected"}
+        buy_statuses = sell_statuses
+
+        sells: list[tuple[str, float, float, dict]] = []
+        for symbol, row in latest_rows.items():
+            if str(row.get("side") or "").upper() != "SELL":
+                continue
+            if str(row.get("status") or "").lower() not in sell_statuses:
+                continue
+            position = positions.get(symbol)
+            current_qty = float(getattr(position, "qty", 0.0) or 0.0)
+            current_price = float(getattr(position, "current_price", 0.0) or 0.0)
+            current_value = float(getattr(position, "market_value", 0.0) or 0.0)
+            target_value = target_value_by_symbol.get(symbol, 0.0)
+            excess = round(current_value - target_value, 2)
+            if current_qty <= 0 or current_price <= 0 or excess <= 1.0:
+                continue
+            qty = current_qty if target_value <= 0 else min(current_qty, excess / current_price)
+            if qty <= 0:
+                continue
+            sells.append((symbol, qty, current_price, row))
+
+        for symbol, qty, current_price, row in sells:
+            attempt_count = self._attempt_count(base_rationale, symbol, "SELL")
+            if attempt_count >= MAX_COMPLETION_ATTEMPTS_PER_ASSET:
+                self.logger.warning(
+                    "Skipping SELL retry for %s; already reached %s attempts for the current Khanna rebalance.",
+                    symbol,
+                    MAX_COMPLETION_ATTEMPTS_PER_ASSET,
+                )
+                continue
+            rationale = f"{base_rationale} [attempt {attempt_count + 1}/{MAX_COMPLETION_ATTEMPTS_PER_ASSET}]"
+            self.logger.info("Completing unfinished SELL %s from the prior Khanna rebalance.", symbol)
+            self.submit_sell_qty(
+                symbol,
+                qty,
+                current_price,
+                rationale,
+                {
+                    "trigger_type": "copytrade_completion",
+                    "completion_of_order_id": row.get("order_id"),
+                    "previous_status": row.get("status"),
+                    "target_weight": target_weights.get(symbol, 0.0),
+                    "target_value": target_value_by_symbol.get(symbol, 0.0),
+                    "active_queue": result.get("active_queue") or [],
+                },
+            )
+            submitted += 1
+
+        if sells:
+            self.settle_sell_orders()
+            positions = self.current_positions()
+
+        buys: list[tuple[str, float, dict]] = []
+        for symbol, row in latest_rows.items():
+            if str(row.get("side") or "").upper() != "BUY":
+                continue
+            if str(row.get("status") or "").lower() not in buy_statuses:
+                continue
+            current_value = float(getattr(positions.get(symbol), "market_value", 0.0) or 0.0)
+            target_value = target_value_by_symbol.get(symbol, 0.0)
+            deficit = round(target_value - current_value, 2)
+            if deficit <= 1.0:
+                continue
+            buys.append((symbol, deficit, row))
+
+        for symbol, deficit, row in sorted(buys, key=lambda item: item[1], reverse=True):
+            attempt_count = self._attempt_count(base_rationale, symbol, "BUY")
+            if attempt_count >= MAX_COMPLETION_ATTEMPTS_PER_ASSET:
+                self.logger.warning(
+                    "Skipping BUY retry for %s; already reached %s attempts for the current Khanna rebalance.",
+                    symbol,
+                    MAX_COMPLETION_ATTEMPTS_PER_ASSET,
+                )
+                continue
+            cash = float(basket_bot.trading.get_account().cash)
+            spend = min(deficit, cash)
+            if spend <= 1.0:
+                continue
+            rationale = f"{base_rationale} [attempt {attempt_count + 1}/{MAX_COMPLETION_ATTEMPTS_PER_ASSET}]"
+            self.logger.info("Completing unfinished BUY %s from the prior Khanna rebalance.", symbol)
+            self.submit_buy_notional(
+                symbol,
+                spend,
+                rationale,
+                {
+                    "trigger_type": "copytrade_completion",
+                    "completion_of_order_id": row.get("order_id"),
+                    "previous_status": row.get("status"),
+                    "target_weight": target_weights.get(symbol, 0.0),
+                    "target_value": target_value_by_symbol.get(symbol, 0.0),
+                    "deficit": deficit,
+                    "cash_available": round(cash, 2),
+                    "active_queue": result.get("active_queue") or [],
+                },
+            )
+            submitted += 1
+        return submitted
+
     def evaluate(self, *, force: bool = False, reason: str):
         canceled_orders = self.cancel_open_orders()
         if canceled_orders:
@@ -350,7 +536,14 @@ class CopyTradeLiveManager:
         result = self.simulate_target_book(as_of)
         target_weights = _weights_from_simulation(result)
         signature = _signature_for(result, target_weights)
-        if not force and signature == self.last_rebalance_signature:
+        is_same_target = signature == self.last_rebalance_signature
+        if not force and is_same_target:
+            if not self.market_open():
+                return
+            completion_orders = self.complete_incomplete_orders(target_weights, result, reason)
+            if completion_orders:
+                self.order_sync.sync_trade_log_until_settled()
+                self.save_state()
             return
 
         if not self.market_open():
@@ -366,16 +559,16 @@ class CopyTradeLiveManager:
             (result.get("trade_window") or {}).get("last_trade_day"),
         )
         self.rebalance_to_weights(target_weights, result, reason=reason)
-        self.order_sync.sync_trade_log()
+        self.order_sync.sync_trade_log_until_settled()
         self.last_rebalance_signature = signature
         self.save_state()
 
     def startup_sync(self):
         self.refresh_signals_if_due(force=True)
         self.load_state()
-        self.order_sync.sync_trade_log()
+        self.order_sync.sync_trade_log_until_settled()
         self.evaluate(force=False, reason="Khanna copy-trade rebalance")
-        self.order_sync.sync_trade_log()
+        self.order_sync.sync_trade_log_until_settled()
         self.save_state()
         self.snapshot_publisher.publish_if_due(force=True)
 
@@ -388,12 +581,15 @@ class CopyTradeLiveManager:
         while True:
             try:
                 self.refresh_signals_if_due()
-                self.order_sync.sync_trade_log()
+                pending_count = self.order_sync.sync_trade_log()
                 clock = self.market_clock()
                 if not clock.is_open:
                     self.logger.info(f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}")
                 self.evaluate(reason="Khanna copy-trade rebalance")
-                self.order_sync.sync_trade_log()
+                if pending_count > 0:
+                    self.order_sync.sync_trade_log_until_settled()
+                else:
+                    self.order_sync.sync_trade_log()
                 self.save_state()
                 self.snapshot_publisher.publish_if_due()
                 time.sleep(POLL_INTERVAL)

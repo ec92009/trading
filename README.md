@@ -18,6 +18,7 @@ Current live state:
 - `bot.py` is still the 5-name basket bot
 - `bot_10k.py` is now the Ro Khanna daily copy-trade bot
 - the Khanna path refreshes Capitol Trades autonomously and stores visible disk cache under `_cache/`
+- the Khanna bot now retries incomplete disclosure-driven orders during open-market heartbeats instead of waiting for a special end-of-day rebalance
 - the intended deployment model is now a robust Python service (`RSCP`), not a compiled binary workflow
 
 ---
@@ -160,6 +161,17 @@ Important:
 - it still uses `copytrade_signals.json` as the local canonical signal file, but it now updates that file itself
 - it stores market data and politician refresh metadata under `_cache/hourly_bars`, `_cache/daily_bars`, and `_cache/politicians`
 - it now also maintains per-politician yearly signal caches under `_cache/politicians/<politician_slug>/<YYYY>/signals.json`
+- it does not perform time-based portfolio rebalances outside disclosure changes; during market hours it only retries incomplete buys/sells from the active disclosure-driven target book
+- incomplete order retries are capped at `5` attempts per asset and use versioned rationales like `BOT v51.4->Khanna copy-trade rebalance [attempt 2/5]`
+
+### `10K` viewer
+
+- the lightweight log viewer under [docs/](/Users/ecohen/Dev/trading/docs) now has four tabs:
+- Runtime Log
+- Decision Log
+- Trade Journal
+- Last Portfolio
+- the Last Portfolio view shows asset-level target weight, current weight, derived point distribution, and current balance from the most recent committed snapshot
 
 ### Service posture
 

@@ -629,17 +629,39 @@ class PortfolioManager:
 
     def canonical_order_status(self, order) -> str:
         status = str(getattr(order, "status", "pending")).lower()
-        if status in {"filled", "canceled", "cancelled", "rejected", "expired"}:
+        if "." in status:
+            status = status.rsplit(".", 1)[-1]
+        if status in {"filled", "canceled", "cancelled", "rejected", "expired", "partially_filled"}:
             return status
         return "pending"
 
+    def journal_order_status(self, order, current_status: str | None = None) -> str:
+        status = self.canonical_order_status(order)
+        filled_qty = _safe_float(getattr(order, "filled_qty", None))
+        if status == "partially_filled":
+            if getattr(order, "canceled_at", None) or str(current_status or "").startswith("partial_fill_"):
+                return "partial_fill_canceled"
+            return "pending"
+        if status in {"canceled", "cancelled"} and filled_qty and filled_qty > 0:
+            return "partial_fill_canceled"
+        if status == "expired" and filled_qty and filled_qty > 0:
+            return "partial_fill_expired"
+        if status == "rejected" and filled_qty and filled_qty > 0:
+            return "partial_fill_rejected"
+        return status
+
     def sync_trade_log(self):
+        pending_count = 0
         for row in trade_log.all_rows():
             order_id = row.get("order_id")
             if not order_id:
                 continue
             current_status = str(row.get("status") or "pending").lower()
-            if current_status in {"canceled", "cancelled", "rejected", "expired"}:
+            if current_status in {"partial_fill_canceled", "partial_fill_expired", "partial_fill_rejected"}:
+                continue
+            if current_status in {"canceled", "cancelled", "rejected", "expired"} and (
+                (row.get("executed_at") or row.get("filled_at") or row.get("avg_price") or row.get("filled_qty"))
+            ):
                 continue
             if current_status == "filled" and (row.get("executed_at") or row.get("filled_at")) and row.get("avg_price"):
                 continue
@@ -649,36 +671,46 @@ class PortfolioManager:
                 self.logger.error(f"ORDER SYNC ERROR {order_id}: {exc}")
                 continue
             if not order:
+                if current_status == "pending":
+                    pending_count += 1
                 continue
-            synced_status = self.canonical_order_status(order)
+            synced_status = self.journal_order_status(order, current_status=current_status)
             filled_avg_price = _safe_float(getattr(order, "filled_avg_price", None))
             if filled_avg_price is None:
                 filled_avg_price = _safe_float(getattr(order, "avg_fill_price", None))
+            filled_qty = _safe_float(getattr(order, "filled_qty", None))
             submitted_at = getattr(order, "submitted_at", None)
             filled_at = getattr(order, "filled_at", None)
             needs_update = synced_status != current_status
             needs_update = needs_update or bool(submitted_at and not row.get("submitted_at"))
-            if synced_status == "filled":
+            if synced_status == "filled" or synced_status.startswith("partial_fill_"):
                 needs_update = needs_update or (
                     filled_avg_price is not None and not row.get("avg_price")
                 )
                 needs_update = needs_update or bool(filled_at and not row.get("executed_at"))
+                needs_update = needs_update or (
+                    filled_qty is not None and str(row.get("filled_qty") or "").strip() == ""
+                )
+            if synced_status == "pending":
+                pending_count += 1
             if not needs_update:
                 continue
             trade_log.update_order(
                 order_id,
                 synced_status,
-                avg_price=filled_avg_price if synced_status == "filled" else None,
+                avg_price=filled_avg_price if synced_status == "filled" or synced_status.startswith("partial_fill_") else None,
+                filled_qty=filled_qty if synced_status == "filled" or synced_status.startswith("partial_fill_") else None,
                 submitted_at=submitted_at,
-                filled_at=filled_at if synced_status == "filled" else None,
+                filled_at=filled_at if synced_status == "filled" or synced_status.startswith("partial_fill_") else None,
             )
             submitted_at_s = _format_order_timestamp(submitted_at)
-            executed_at_s = _format_order_timestamp(filled_at) if synced_status == "filled" else None
+            executed_at_s = _format_order_timestamp(filled_at) if synced_status == "filled" or synced_status.startswith("partial_fill_") else None
             self.logger.info(
                 f"ORDER SYNC {row.get('symbol')} {current_status} → {synced_status} "
                 f"id={order_id} submitted_at={submitted_at_s or row.get('submitted_at') or '—'} "
                 f"executed_at={executed_at_s or row.get('executed_at') or '—'} "
                 f"avg_price={filled_avg_price if filled_avg_price is not None else '—'} "
+                f"filled_qty={filled_qty if filled_qty is not None else '—'} "
                 f"rationale={row.get('rationale') or 'Synchronized local state with Alpaca.'}"
             )
             log_decision(
@@ -691,6 +723,7 @@ class PortfolioManager:
                     "logged_submitted_at": row.get("submitted_at") or None,
                     "logged_executed_at": row.get("executed_at") or None,
                     "logged_avg_price": row.get("avg_price") or None,
+                    "logged_filled_qty": row.get("filled_qty") or None,
                 },
                 order={
                     "id": str(order_id),
@@ -700,8 +733,21 @@ class PortfolioManager:
                     "executed_at": executed_at_s or row.get("executed_at") or None,
                     "filled_at": executed_at_s or row.get("filled_at") or None,
                     "avg_price": round(filled_avg_price, 4) if filled_avg_price is not None else None,
+                    "filled_qty": filled_qty,
                 },
             )
+        return pending_count
+
+    def sync_trade_log_until_settled(self, *, timeout_seconds: int = 120, poll_interval_seconds: int = 5):
+        deadline = time.time() + max(1, timeout_seconds)
+        pending_count = self.sync_trade_log()
+        while pending_count > 0 and time.time() < deadline:
+            self.logger.info("Waiting on %s pending order(s) to settle before the next cycle.", pending_count)
+            time.sleep(max(1, poll_interval_seconds))
+            pending_count = self.sync_trade_log()
+        if pending_count > 0:
+            self.logger.info("Still tracking %s pending order(s); will continue syncing on later loops.", pending_count)
+        return pending_count
 
     def should_monitor_bot(self, bot: Bot, market_is_open: bool) -> bool:
         if bot.cfg.asset_class == "stock":
@@ -846,6 +892,7 @@ class PortfolioManager:
                 self.logger.error(f"REBALANCE BUY FAILED {bot.cfg.symbol}: {exc}")
 
         time.sleep(2)
+        self.sync_trade_log_until_settled()
         for bot in self.bots:
             pos = bot.refresh_position()
             if pos:
@@ -868,14 +915,14 @@ class PortfolioManager:
                 self.rebalance_portfolio("startup sync")
             except Exception as exc:
                 self.logger.error(f"STARTUP REBALANCE ERROR: {exc}")
-        self.sync_trade_log()
+        self.sync_trade_log_until_settled()
         self.save_state()
 
     def run(self):
         self.startup_sync()
         while True:
             try:
-                self.sync_trade_log()
+                pending_count = self.sync_trade_log()
                 clock = self.market_clock()
                 now = clock.timestamp
                 monitored_any = False
@@ -894,7 +941,10 @@ class PortfolioManager:
                     self.logger.info(
                         f"Market closed. Next open {clock.next_open.strftime('%Y-%m-%d %H:%M %Z')}"
                     )
-                self.sync_trade_log()
+                if pending_count > 0:
+                    self.sync_trade_log_until_settled()
+                else:
+                    self.sync_trade_log()
                 self.save_state()
                 sleep_for = min(cfg.poll_interval for cfg in (bot.cfg for bot in self.bots))
                 time.sleep(sleep_for)
