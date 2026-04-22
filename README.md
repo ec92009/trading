@@ -10,6 +10,9 @@ All trades run against a **paper trading account** (no real money).
 - [TODO.md](/Users/ecohen/Dev/trading/TODO.md): active follow-up work
 - [walk_forward_hourly_results.json](/Users/ecohen/Dev/trading/walk_forward_hourly_results.json): latest rolling walk-forward validation artifact
 - [bot_refit_results.json](/Users/ecohen/Dev/trading/bot_refit_results.json): latest full-history production refit artifact, with an explicit do-not-auto-promote policy
+- [ENVIRONMENT_SOP.md](/Users/ecohen/Dev/trading/ENVIRONMENT_SOP.md): workspace Python and package-management preferences
+- [VERSIONING_SOP.md](/Users/ecohen/Dev/trading/VERSIONING_SOP.md): bot/web visible versioning rules
+- [SHOW_ME_SOP.md](/Users/ecohen/Dev/trading/SHOW_ME_SOP.md): local/public viewer show-and-report workflow
 
 Use this `README` for setup and operational scripts. For current strategy behavior and research conclusions, prefer the docs above.
 
@@ -71,9 +74,9 @@ trading/
 ```bash
 git clone https://github.com/ec92009/trading.git
 cd ~/Dev/trading
-python3 -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+uv pip install --python .venv/bin/python -r requirements.txt
 ```
 
 ### 3. Configure credentials
