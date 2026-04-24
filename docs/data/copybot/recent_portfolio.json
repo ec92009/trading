@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-04-23T23:22:15.547248-04:00",
+  "as_of": "2026-04-23T23:56:58.987561-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9842.93,
+  "equity": 9842.97,
   "cash": 16.6,
-  "allocated": 9826.33,
+  "allocated": 9826.37,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,36 +20,36 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.169393,
+      "current_weight": 0.169392,
       "points": 2.0449,
       "current_value": 1667.32,
       "qty": 10.995996,
-      "target_value": 1651.64
+      "target_value": 1651.65
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.168231,
+      "current_weight": 0.16823,
       "points": 2.1973,
       "current_value": 1655.88,
       "qty": 99.392732,
-      "target_value": 1671.33
+      "target_value": 1671.34
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.117784,
+      "current_weight": 0.117783,
       "points": 1.5,
       "current_value": 1159.34,
       "qty": 15.238393,
-      "target_value": 1128.98
+      "target_value": 1128.99
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.105249,
+      "current_weight": 0.105253,
       "points": 1.25,
-      "current_value": 1035.96,
+      "current_value": 1036.0,
       "qty": 4.062602,
       "target_value": 1007.92
     },
@@ -69,12 +69,12 @@
       "points": 1.25,
       "current_value": 959.98,
       "qty": 3.176644,
-      "target_value": 977.4
+      "target_value": 977.41
     },
     {
       "symbol": "IT",
       "target_weight": 0.0931,
-      "current_weight": 0.086844,
+      "current_weight": 0.086843,
       "points": 1.1545,
       "current_value": 854.8,
       "qty": 5.945177,
@@ -87,7 +87,7 @@
       "points": 0.7758,
       "current_value": 618.5,
       "qty": 2.720716,
-      "target_value": 608.29
+      "target_value": 608.3
     },
     {
       "symbol": "AMRZ",
@@ -96,7 +96,7 @@
       "points": 0.6585,
       "current_value": 507.63,
       "qty": 8.926211,
-      "target_value": 502.97
+      "target_value": 502.98
     },
     {
       "symbol": "TD",
@@ -105,7 +105,7 @@
       "points": 0.4524,
       "current_value": 343.36,
       "qty": 3.481954,
-      "target_value": 363.2
+      "target_value": 363.21
     },
     {
       "symbol": "BTC/USD",
