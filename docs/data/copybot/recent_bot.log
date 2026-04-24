@@ -1,17 +1,3 @@
-2026-04-24 04:00:14 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-2026-04-24 04:00:15 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:00:19 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-04-24 04:00:49 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-04-24 04:00:49 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:01:20 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:01:51 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:02:22 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:02:53 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:03:24 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:03:55 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:04:26 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:04:57 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
-2026-04-24 04:05:28 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
 2026-04-24 04:05:59 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
 2026-04-24 04:06:30 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
 2026-04-24 04:07:01 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
@@ -198,3 +184,17 @@
 2026-04-24 07:22:06 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
 2026-04-24 07:22:39 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
 2026-04-24 07:23:11 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:23:18 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-04-24 07:23:49 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-24 07:23:50 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:24:23 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:24:55 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:25:27 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:25:59 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:26:31 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:27:03 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:27:35 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:28:07 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:28:40 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:29:11 [copytrade] Market closed. Next open 2026-04-24 09:30 -04:00
+2026-04-24 07:36:29 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
