@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-04-27T00:07:39.761003-04:00",
+  "as_of": "2026-04-27T00:22:44.952540-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9884.27,
+  "equity": 9884.34,
   "cash": 16.6,
-  "allocated": 9867.67,
+  "allocated": 9867.74,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,38 +20,38 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.169263,
+      "current_weight": 0.169262,
       "points": 2.0449,
       "current_value": 1673.04,
       "qty": 10.995996,
-      "target_value": 1658.58
+      "target_value": 1658.59
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.167527,
+      "current_weight": 0.167526,
       "points": 2.1973,
       "current_value": 1655.88,
       "qty": 99.392732,
-      "target_value": 1678.35
+      "target_value": 1678.36
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.117939,
+      "current_weight": 0.117892,
       "points": 1.5,
-      "current_value": 1165.74,
+      "current_value": 1165.28,
       "qty": 15.238393,
       "target_value": 1133.73
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.109067,
+      "current_weight": 0.10912,
       "points": 1.25,
-      "current_value": 1078.05,
+      "current_value": 1078.58,
       "qty": 4.062602,
-      "target_value": 1012.15
+      "target_value": 1012.16
     },
     {
       "symbol": "JPM",
@@ -74,7 +74,7 @@
     {
       "symbol": "IT",
       "target_weight": 0.0931,
-      "current_weight": 0.086481,
+      "current_weight": 0.08648,
       "points": 1.1545,
       "current_value": 854.8,
       "qty": 5.945177,
@@ -92,7 +92,7 @@
     {
       "symbol": "AMRZ",
       "target_weight": 0.0511,
-      "current_weight": 0.051972,
+      "current_weight": 0.051971,
       "points": 0.6585,
       "current_value": 513.7,
       "qty": 8.926211,
@@ -101,7 +101,7 @@
     {
       "symbol": "TD",
       "target_weight": 0.0369,
-      "current_weight": 0.034738,
+      "current_weight": 0.034737,
       "points": 0.4524,
       "current_value": 343.36,
       "qty": 3.481954,
