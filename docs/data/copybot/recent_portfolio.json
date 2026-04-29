@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-04-28T20:53:58.539047-04:00",
+  "as_of": "2026-04-28T21:09:00.884320-04:00",
   "strategy": "Khanna daily-bar copy-trade",
   "equity": 9909.56,
   "cash": 16.6,
@@ -47,18 +47,18 @@
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.106715,
+      "current_weight": 0.106592,
       "points": 1.25,
-      "current_value": 1057.5,
+      "current_value": 1056.28,
       "qty": 4.062602,
       "target_value": 1014.74
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.103728,
+      "current_weight": 0.103851,
       "points": 1.3199,
-      "current_value": 1027.9,
+      "current_value": 1029.12,
       "qty": 3.290437,
       "target_value": 1022.67
     },
