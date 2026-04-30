@@ -1,5 +1,3 @@
-2026-04-30 13:56:16 [copytrade] Market closed. Next open 2026-04-30 09:30 -04:00
-2026-04-30 13:56:47 [copytrade] Market closed. Next open 2026-04-30 09:30 -04:00
 2026-04-30 13:57:18 [copytrade] Market closed. Next open 2026-04-30 09:30 -04:00
 2026-04-30 13:57:49 [copytrade] Market closed. Next open 2026-04-30 09:30 -04:00
 2026-04-30 13:58:20 [copytrade] Market closed. Next open 2026-04-30 09:30 -04:00
@@ -198,3 +196,5 @@
 2026-04-30 16:08:47 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
 2026-04-30 16:08:51 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
 2026-04-30 16:23:55 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-04-30 16:23:59 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-04-30 16:39:20 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
