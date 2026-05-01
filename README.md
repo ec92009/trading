@@ -35,6 +35,16 @@ Current bot naming:
 | `.env` vars | `TESLABOT_API_KEY`, `TESLABOT_SECRET_KEY`, `TESLABOT_BASE_URL` | `COPYBOT_API_KEY`, `COPYBOT_SECRET_KEY`, `COPYBOT_BASE_URL` |
 | Status | Legacy bot, still in repo, not the main production path | Current primary live bot |
 
+Operational source of truth:
+
+- David's always-on Mac checkout at `/Users/ecohen/Dev/trading` is production.
+- GitHub records publication/history, but it does not replace the live checkout.
+- Preserve running launchd services, local logs, `_cache/`, and `trades*.tsv` during handoff work.
+- Keep the current production split unless David explicitly approves a refactor:
+- TeslaBot runs through [bot.py](/Users/ecohen/Dev/trading/bot.py).
+- CopyBot runs through [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py) into [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py).
+- Published viewer snapshots stay under `docs/data/copybot` and `docs/data/teslabot`.
+
 ---
 
 ## What this project does

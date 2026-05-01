@@ -2,6 +2,21 @@
 
 Working preferences for `~/Dev/trading`.
 
+## Production Source Of Truth
+
+- David's always-on Mac checkout at `/Users/ecohen/Dev/trading` is the production/live source of truth.
+- Treat GitHub as publication and history, not as a replacement for the live operations host.
+- Do not treat `codex/max-work-handoff-20260501` or `MAX_WORK.md` as canonical; that branch is historical drift from stale `main`.
+- Do not force-push, rebase over, or replace the live bot checkout.
+- Preserve running bots, local logs, `_cache/`, `trades*.tsv`, and launchd services unless David explicitly directs otherwise.
+- Future changes should be small patches based on current `main`, or explicit instructions for David/Codex to apply locally.
+- Do not rename `bot_10k.py` to `copybot.py` or move snapshot paths unless David explicitly approves that refactor.
+- Preserve the current split:
+  - TeslaBot: `bot.py`
+  - CopyBot: `bot_10k.py` -> `khanna_daily/live.py`
+  - viewer data: `docs/data/copybot` and `docs/data/teslabot`
+- For live-ops work, coordinate around David's machine first, then push or publish after verification.
+
 ## Environment
 
 - Full procedure lives in [ENVIRONMENT_SOP.md](ENVIRONMENT_SOP.md).

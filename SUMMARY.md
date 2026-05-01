@@ -117,3 +117,14 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Revalidated the live CopyBot bundle after the fix: the public `Last Portfolio` view now centers on `ACI`, `BMO`, `KO`, `JPM`, `AMZN`, `MCD`, `IT`, `VIG`, `AMRZ`, and `TD`.
 - Added a regression check in [tests/test_repo_audit.py](/Users/ecohen/Dev/trading/tests/test_repo_audit.py) so future direct imports of `khanna_daily.live` stay pinned to the `10K` profile and `10k` log suffix.
 - Bumped the shared visible bot/web version again to `53.2` so the published viewer badge reflects the CopyBot snapshot-account fix.
+
+## 2026-05-01 Source-Of-Truth Correction
+
+- Clarified that David's always-on Mac checkout at [~/Dev/trading](/Users/ecohen/Dev/trading) is the production/live source of truth.
+- Confirmed GitHub should be treated as publication/history, not as a replacement for the live operations host.
+- Marked the old `codex/max-work-handoff-20260501` branch and `MAX_WORK.md` as historical drift from stale `main`, not approved work to merge.
+- Preserved the current production split:
+- TeslaBot stays in [bot.py](/Users/ecohen/Dev/trading/bot.py).
+- CopyBot stays in [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py) -> [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py).
+- Viewer data stays under [docs/data/copybot](/Users/ecohen/Dev/trading/docs/data/copybot) and [docs/data/teslabot](/Users/ecohen/Dev/trading/docs/data/teslabot).
+- Future live-ops work should coordinate around David's machine first, preserve running services/logs/cache/trade logs, then push or publish after verification.
