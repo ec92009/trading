@@ -202,6 +202,17 @@ Working Mullin split:
 - test: `2026-01-01` through `2026-04-19`
 - full local actionable window through `2026-04-19`
 
+Default normalized full-window rerun on `2026-05-01`:
+
+- command: `./.venv/bin/python copytrade_demo.py --politician "Markwayne Mullin"`
+- policy: `50K-100K+`, daily decay `0.00`, soft queue limit `10`, normalized active weights
+- trade window: `2025-08-14` through `2026-04-17`
+- Mullin final equity: `$15,702.53`
+- Mullin return: `+57.03%`
+- same-window `SPY` buy-and-hold final equity: `$11,118.70`
+- same-window `SPY` return: `+11.19%`
+- note: the soft queue expanded to `13` active names after the `2026-01-20` burst, matching the current queue-expansion mechanics.
+
 #### `50K-100K+` Mullin
 
 | Daily Decay `x` | Train Return | Test Return | Full-Window Return | SPY Test |
@@ -314,6 +325,23 @@ Practical takeaway:
 - `Ro Khanna 50K+`: about `2` calendar days
 - `Markwayne Mullin 50K+`: about `1` calendar day
 
+Event-trace sanity check on `2026-05-01`:
+
+- command equivalent: `Markwayne Mullin`, `50K-100K+`, daily decay `0.50`, soft queue limit `10`
+- final equity: `$18,475.20`
+- return: `+84.75%`
+- same-window `SPY` return: `+11.19%`
+- trade path: `LLY -> ISRG -> MSFT -> COF -> 10-name January burst -> UNH`
+- final active book: effectively `100%` `UNH`
+- read: the high-decay Mullin result is intuitive as a latest-large-disclosure strategy, but it is also highly concentrated and should not be treated like a diversified politician basket.
+
+Below-`1`-day half-life sweep on `2026-05-01`:
+
+- `50K-100K+`: half-lives from `0.125` through about `1.25` calendar days all landed around `+84.75%`, with the final book effectively all-in on `UNH`.
+- `15K-50K+`: half-lives from `0.25` through `1.0` calendar days landed around `+67.97%` to `+67.98%`, also overwhelmingly `UNH` by the end.
+- `15K-50K+` at `0.125` calendar days fell to `+41.22%`, so making the memory nearly instantaneous can damage the broader-band setup.
+- read: the cleaner default does not need to be tuned below `1` day for performance precision; the larger decision is whether this latest-event concentration is acceptable for any live-style Mullin variant.
+
 ### Other Whale Checks
 
 We sanity-checked the same `50K+` half-life idea on other Capitol whales:
@@ -364,6 +392,7 @@ Practical takeaway:
 - For Capitol, Mullin still looks promising as a standalone normalized strategy, but the edge is modest and the actionable history is short.
 - The strongest new Mullin finding is that explicit point decay matters more than the older queue-only tweaks.
 - For `50K+` Mullin, the strategy wants very high decay, which effectively says the latest large event dominates the older ones.
+- The `1`-day half-life trace confirms that the strongest Mullin setting behaves like a concentrated latest-large-disclosure strategy, ending effectively all-in on the newest active name.
 - For `15K-50K+` Mullin, `x = 0.65` is the best current practical default:
 - materially better than `x = 0.00` on test and full-window returns
 - better balanced than `x = 1.00`
@@ -377,8 +406,7 @@ Practical takeaway:
 
 ## Most Useful Next Steps
 
-- Sanity-check the Mullin event trace under the roughly `1`-day half-life framing so we understand whether the strong result is intuitive or just a side effect of near-total concentration in the latest event.
-- Tighten the Mullin half-life grid below `1` calendar day so we can decide whether the cleaner default should stay at `1` day or move closer to the earlier `x = 0.65` result.
+- Decide whether high-decay Mullin is acceptable as a concentrated latest-event strategy, or whether a live-style version needs a minimum diversification rule even if it lowers backtest return.
 - Decide whether Khanna should be the default Capitol paper-trading candidate now that the soft `10`-slot queue and `~2`-day half-life look stable.
 - Handle the unsupported / empty-cache merged-whale symbols more explicitly before treating any merged-whale PnL as a final answer.
 - If merged whales stay interesting, compare a strict tradable-symbol merged feed against the raw merged feed to measure how much the weird Alpaca symbols are distorting the idea.

@@ -128,3 +128,15 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - CopyBot stays in [bot_10k.py](/Users/ecohen/Dev/trading/bot_10k.py) -> [khanna_daily/live.py](/Users/ecohen/Dev/trading/khanna_daily/live.py).
 - Viewer data stays under [docs/data/copybot](/Users/ecohen/Dev/trading/docs/data/copybot) and [docs/data/teslabot](/Users/ecohen/Dev/trading/docs/data/teslabot).
 - Future live-ops work should coordinate around David's machine first, preserve running services/logs/cache/trade logs, then push or publish after verification.
+
+## 2026-05-01 Capitol Research Continuation
+
+- Picked up the next Capitol research thread and reran [copytrade_demo.py](/Users/ecohen/Dev/trading/copytrade_demo.py) on `Markwayne Mullin` with normalized active weights.
+- Recorded the default `50K+` Mullin full-window comparison: `+57.03%` versus same-window `SPY` at `+11.19%`.
+- Sanity-checked the high-decay Mullin path and below-`1`-day half-life grid; the strongest settings behave like a concentrated latest-large-disclosure strategy and end effectively all-in on `UNH`.
+
+## 2026-05-01 Post-MAX Sync
+
+- Fetched and fast-forwarded David's local `main` to MAX's `24d90c1` source-of-truth documentation commit.
+- Preserved the local Mullin research handoff by stashing only [RESEARCH.md](/Users/ecohen/Dev/trading/RESEARCH.md), [SUMMARY.md](/Users/ecohen/Dev/trading/SUMMARY.md), and [TODO.md](/Users/ecohen/Dev/trading/TODO.md), then reapplying them after the fast-forward.
+- Resolved the append-only [SUMMARY.md](/Users/ecohen/Dev/trading/SUMMARY.md) conflict by keeping both the source-of-truth correction and the Capitol research continuation.

@@ -26,6 +26,6 @@
 
 ## Capitol Research
 
-- Run the upgraded [copytrade_demo.py](/Users/ecohen/Dev/trading/copytrade_demo.py) on Mullin with normalized active weights, then compare those results against `SPY` over the same actionable window.
+- Decide whether high-decay Mullin is acceptable as a concentrated latest-event strategy, or whether a live-style version needs a minimum diversification rule even if it lowers backtest return.
 - Backfill Josh Gottheimer and compare his actionable publication history and symbol cleanliness against Mullin before committing to a single Capitol source.
 - Decide whether CopyBot's live `60`-day half-life should stay intentionally smoother than the shorter-memory research winners, or whether CopyBot should move closer to the stronger but more twitchy research settings.
