@@ -1,42 +1,3 @@
-2026-05-03 10:57:31 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 10:58:02 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-python(3435) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3436) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3442) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3443) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3444) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3445) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3446) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(3449) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-03 10:58:06 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-03 10:58:36 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 10:59:07 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 10:59:38 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:00:10 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-05-03 11:00:10 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:00:41 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:01:12 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:01:43 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:02:14 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:02:45 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:03:17 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:03:48 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:04:19 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:04:50 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:05:22 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:05:53 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:06:24 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:06:55 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:07:26 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:07:57 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:08:28 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:09:00 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:09:31 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:10:02 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:10:33 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:11:04 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:11:36 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
-2026-05-03 11:12:08 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
 2026-05-03 11:12:39 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
 2026-05-03 11:13:10 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
 python(4669) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
@@ -198,3 +159,42 @@ python(7089) MallocStackLogging: can't turn off malloc stack logging because it 
 python(8147) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(8148) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(8154) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8155) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8156) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8157) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8158) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8161) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-05-03 12:13:51 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-05-03 12:14:21 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:14:53 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:15:24 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:15:55 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-05-03 12:15:56 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:16:27 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:16:58 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:17:30 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:18:01 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:18:32 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:19:04 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:19:35 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:20:06 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:20:38 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:21:09 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:21:40 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:22:12 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:22:43 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:23:14 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:23:45 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:24:17 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:24:48 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:25:19 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:25:51 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:26:22 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:26:53 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:27:24 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:27:55 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:28:26 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+2026-05-03 12:28:57 [copytrade] Market closed. Next open 2026-05-04 09:30 -04:00
+python(8902) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8905) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(8911) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
