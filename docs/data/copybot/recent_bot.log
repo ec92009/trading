@@ -1,42 +1,3 @@
-python(74697) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(74704) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(74711) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(74712) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(74715) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-04 19:59:52 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-04 20:04:01 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(80752) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80753) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80759) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80760) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80761) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80762) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80763) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(80766) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-04 20:15:04 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-04 20:19:13 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(85669) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85675) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85691) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85700) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85701) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85702) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85703) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(85707) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-04 20:30:12 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-04 20:34:23 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(99232) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99234) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99257) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99272) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99273) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99274) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99275) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(99279) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-04 20:45:27 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-04 20:49:37 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(14744) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(14746) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(14762) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(14776) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(14777) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
@@ -198,3 +159,42 @@ python(56220) MallocStackLogging: can't turn off malloc stack logging because it
 python(57833) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(57834) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(57841) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(57842) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(57843) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(57844) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(57845) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(57848) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-05-04 22:46:37 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-05-04 22:47:08 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:47:39 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:48:10 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:48:41 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:49:12 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:49:43 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:50:14 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:50:45 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-05-04 22:50:46 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:51:17 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:51:48 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:52:19 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:52:50 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:53:21 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:53:52 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:54:23 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:54:54 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:55:25 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:55:56 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:56:27 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:56:58 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:57:29 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:58:00 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:58:32 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:59:03 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 22:59:34 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 23:00:05 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 23:00:36 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 23:01:07 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-04 23:01:38 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+python(58564) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(58565) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(58580) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
