@@ -1,40 +1,3 @@
-2026-05-05 02:48:52 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by ConnectTimeoutError(<HTTPSConnection(host='paper-api.alpaca.markets', port=443) at 0x113a06d90>, 'Connection to paper-api.alpaca.markets timed out. (connect timeout=None)'))
-2026-05-05 02:49:41 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by ConnectTimeoutError(<HTTPSConnection(host='paper-api.alpaca.markets', port=443) at 0x10faeab90>, 'Connection to paper-api.alpaca.markets timed out. (connect timeout=None)'))
-2026-05-05 02:51:01 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by ConnectTimeoutError(<HTTPSConnection(host='paper-api.alpaca.markets', port=443) at 0x10f86a850>, 'Connection to paper-api.alpaca.markets timed out. (connect timeout=None)'))
-2026-05-05 02:51:01 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-python(83063) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83065) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83071) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83072) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83073) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83074) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83075) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(83078) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-05 02:51:05 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-05 02:51:35 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:52:06 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:52:37 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:53:08 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:53:39 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-05-05 02:53:40 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:54:11 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:54:42 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:55:13 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:55:44 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:56:15 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:56:46 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:57:17 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:58:23 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-2026-05-05 02:58:24 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:58:55 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:59:26 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 02:59:57 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 03:00:28 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 03:00:59 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 03:01:30 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 03:02:01 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 03:02:32 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
-2026-05-05 03:03:03 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
 2026-05-05 03:03:34 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
 2026-05-05 03:04:05 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
 2026-05-05 03:04:36 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
@@ -198,3 +161,40 @@ python(85823) MallocStackLogging: can't turn off malloc stack logging because it
 python(87026) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(87027) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(87034) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87035) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87036) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87037) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87038) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87041) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-05-05 04:06:35 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-05-05 04:07:06 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:07:37 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:08:08 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:08:39 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:09:10 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-05-05 04:09:11 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:09:42 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:10:13 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:10:44 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:11:15 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:11:46 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:12:17 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:12:48 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:13:19 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:13:50 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:14:21 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:15:56 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-05-05 04:16:08 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:16:40 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:17:11 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:17:42 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:18:13 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:18:44 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:19:15 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:19:46 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+2026-05-05 04:21:02 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-05-05 04:22:17 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by ConnectTimeoutError(<HTTPSConnection(host='paper-api.alpaca.markets', port=443) at 0x113812e90>, 'Connection to paper-api.alpaca.markets timed out. (connect timeout=None)'))
+2026-05-05 04:22:18 [copytrade] Market closed. Next open 2026-05-05 09:30 -04:00
+python(87683) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87684) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87690) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
