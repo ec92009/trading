@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-06T01:51:01.518868-04:00",
+  "as_of": "2026-05-06T02:06:05.936994-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9852.97,
+  "equity": 9853.01,
   "cash": 16.6,
-  "allocated": 9836.37,
+  "allocated": 9836.41,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,11 +20,11 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.16854,
+      "current_weight": 0.168539,
       "points": 2.0449,
       "current_value": 1660.62,
       "qty": 10.995996,
-      "target_value": 1653.33
+      "target_value": 1653.34
     },
     {
       "symbol": "ACI",
@@ -33,7 +33,7 @@
       "points": 2.1973,
       "current_value": 1606.19,
       "qty": 99.392732,
-      "target_value": 1673.03
+      "target_value": 1673.04
     },
     {
       "symbol": "KO",
@@ -47,11 +47,11 @@
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.112609,
+      "current_weight": 0.112613,
       "points": 1.25,
-      "current_value": 1109.54,
+      "current_value": 1109.58,
       "qty": 4.062602,
-      "target_value": 1008.94
+      "target_value": 1008.95
     },
     {
       "symbol": "JPM",
@@ -65,7 +65,7 @@
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.092166,
+      "current_weight": 0.092165,
       "points": 1.25,
       "current_value": 908.11,
       "qty": 3.176644,
@@ -78,16 +78,16 @@
       "points": 1.1545,
       "current_value": 891.78,
       "qty": 5.945177,
-      "target_value": 917.31
+      "target_value": 917.32
     },
     {
       "symbol": "VIG",
       "target_weight": 0.0618,
-      "current_weight": 0.063207,
+      "current_weight": 0.063206,
       "points": 0.7758,
       "current_value": 622.77,
       "qty": 2.720716,
-      "target_value": 608.91
+      "target_value": 608.92
     },
     {
       "symbol": "AMRZ",
@@ -105,7 +105,7 @@
       "points": 0.4524,
       "current_value": 343.36,
       "qty": 3.481954,
-      "target_value": 363.57
+      "target_value": 363.58
     },
     {
       "symbol": "BTC/USD",
