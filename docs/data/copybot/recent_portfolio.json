@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-12T01:25:47.783324-04:00",
+  "as_of": "2026-05-12T01:40:58.180678-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9769.95,
+  "equity": 9769.99,
   "cash": 16.6,
-  "allocated": 9753.35,
+  "allocated": 9753.39,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -29,7 +29,7 @@
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.163587,
+      "current_weight": 0.163586,
       "points": 2.1973,
       "current_value": 1598.24,
       "qty": 99.392732,
@@ -38,25 +38,25 @@
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.122766,
+      "current_weight": 0.122765,
       "points": 1.5,
       "current_value": 1199.41,
       "qty": 15.238393,
-      "target_value": 1120.61
+      "target_value": 1120.62
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.111371,
+      "current_weight": 0.111358,
       "points": 1.25,
-      "current_value": 1088.09,
+      "current_value": 1087.96,
       "qty": 4.062602,
-      "target_value": 1000.44
+      "target_value": 1000.45
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.101159,
+      "current_weight": 0.101158,
       "points": 1.3199,
       "current_value": 988.32,
       "qty": 3.290437,
@@ -69,25 +69,25 @@
       "points": 1.1545,
       "current_value": 891.78,
       "qty": 5.945177,
-      "target_value": 909.58
+      "target_value": 909.59
     },
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.089418,
+      "current_weight": 0.089434,
       "points": 1.25,
-      "current_value": 873.61,
+      "current_value": 873.77,
       "qty": 3.176644,
       "target_value": 970.16
     },
     {
       "symbol": "VIG",
       "target_weight": 0.0618,
-      "current_weight": 0.063744,
+      "current_weight": 0.063743,
       "points": 0.7758,
       "current_value": 622.77,
       "qty": 2.720716,
-      "target_value": 603.78
+      "target_value": 603.79
     },
     {
       "symbol": "AMRZ",
@@ -96,7 +96,7 @@
       "points": 0.6585,
       "current_value": 464.52,
       "qty": 8.926211,
-      "target_value": 499.24
+      "target_value": 499.25
     },
     {
       "symbol": "TD",
