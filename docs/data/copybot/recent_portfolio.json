@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-12T20:23:28.949285-04:00",
+  "as_of": "2026-05-12T20:38:44.817278-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9784.88,
+  "equity": 9784.91,
   "cash": 16.6,
-  "allocated": 9768.28,
+  "allocated": 9768.31,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -24,7 +24,7 @@
       "points": 2.0449,
       "current_value": 1677.11,
       "qty": 10.995996,
-      "target_value": 1641.9
+      "target_value": 1641.91
     },
     {
       "symbol": "ACI",
@@ -33,12 +33,12 @@
       "points": 2.1973,
       "current_value": 1598.24,
       "qty": 99.392732,
-      "target_value": 1661.47
+      "target_value": 1661.48
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.12465,
+      "current_weight": 0.124649,
       "points": 1.5,
       "current_value": 1219.68,
       "qty": 15.238393,
@@ -69,14 +69,14 @@
       "points": 1.1545,
       "current_value": 891.78,
       "qty": 5.945177,
-      "target_value": 910.97
+      "target_value": 910.98
     },
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.089441,
+      "current_weight": 0.089444,
       "points": 1.25,
-      "current_value": 875.17,
+      "current_value": 875.2,
       "qty": 3.176644,
       "target_value": 971.64
     },
