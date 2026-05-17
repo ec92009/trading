@@ -13,6 +13,7 @@ import copytrade_demo as demo
 import trade_log
 from alpaca.trading.enums import OrderSide, QueryOrderStatus, TimeInForce
 from alpaca.trading.requests import GetOrdersRequest, MarketOrderRequest
+from asset_policy import normalize_tracked_symbol, qty_precision_for_symbol, time_in_force_for_symbol
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,11 +60,6 @@ def _live_point_system():
         yield
     finally:
         demo.BAND_POINTS = original
-
-
-def _normalize_live_symbol(symbol: str) -> str:
-    return "BTC/USD" if symbol == "BTCUSD" else symbol
-
 
 def _skip_reason(exc: Exception) -> str:
     message = str(exc).strip()
@@ -211,13 +207,7 @@ class CopyTradeLiveManager:
         return result
 
     def current_positions(self) -> dict[str, object]:
-        return {_normalize_live_symbol(position.symbol): position for position in basket_bot.trading.get_all_positions()}
-
-    def _tif_for(self, symbol: str):
-        return TimeInForce.GTC if "/" in symbol else TimeInForce.DAY
-
-    def _qty_precision_for(self, symbol: str) -> int:
-        return 8 if "/" in symbol else 6
+        return {normalize_tracked_symbol(position.symbol): position for position in basket_bot.trading.get_all_positions()}
 
     def cancel_open_orders(self) -> int:
         open_orders = basket_bot.trading.get_orders(
@@ -272,7 +262,7 @@ class CopyTradeLiveManager:
     def submit_buy_notional(self, symbol: str, notional: float, rationale: str, state: dict):
         if notional <= 1.0:
             return None
-        tif = self._tif_for(symbol)
+        tif = time_in_force_for_symbol(symbol, TimeInForce)
         alpaca_request = basket_bot._order_request_payload(
             symbol=symbol,
             side="buy",
@@ -307,10 +297,10 @@ class CopyTradeLiveManager:
         rationale: str,
         state: dict,
     ):
-        qty = round(qty, self._qty_precision_for(symbol))
+        qty = round(qty, qty_precision_for_symbol(symbol))
         if qty <= 0:
             return None
-        tif = self._tif_for(symbol)
+        tif = time_in_force_for_symbol(symbol, TimeInForce)
         alpaca_request = basket_bot._order_request_payload(
             symbol=symbol,
             side="sell",

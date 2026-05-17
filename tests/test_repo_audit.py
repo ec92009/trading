@@ -100,6 +100,18 @@ def install_alpaca_stubs():
 
 
 class BotBehaviorTests(unittest.TestCase):
+    def test_asset_policy_centralizes_live_symbol_rules(self):
+        asset_policy = importlib.import_module("asset_policy")
+        importlib.reload(asset_policy)
+
+        self.assertEqual(asset_policy.normalize_tracked_symbol("BTCUSD"), "BTC/USD")
+        self.assertTrue(asset_policy.is_crypto_symbol("BTC/USD"))
+        self.assertTrue(asset_policy.is_crypto_symbol("BTCUSD"))
+        self.assertEqual(asset_policy.asset_class_for_symbol("BTCUSD"), "crypto")
+        self.assertEqual(asset_policy.asset_class_for_symbol("TSLA"), "stock")
+        self.assertEqual(asset_policy.qty_precision_for_symbol("BTC/USD"), 8)
+        self.assertEqual(asset_policy.qty_precision_for_symbol("TSLA"), 6)
+
     def test_khanna_daily_live_uses_inclusive_60_day_policy(self):
         with install_alpaca_stubs():
             live = importlib.import_module("khanna_daily.live")
@@ -113,6 +125,22 @@ class BotBehaviorTests(unittest.TestCase):
             self.assertEqual(live.os.getenv("ALPACA_PROFILE"), "10K")
             self.assertEqual(live.os.getenv("BOT_LOG_SUFFIX"), "10k")
             self.assertEqual(live.basket_bot.BOT_FILE_SUFFIX, "10k")
+
+    def test_khanna_live_current_positions_normalizes_btc_symbol(self):
+        with install_alpaca_stubs():
+            live = importlib.import_module("khanna_daily.live")
+            importlib.reload(live)
+
+            manager = live.CopyTradeLiveManager()
+            fake_positions = [
+                SimpleNamespace(symbol="BTCUSD", qty="1.25", market_value="125"),
+                SimpleNamespace(symbol="AMZN", qty="2", market_value="400"),
+            ]
+            with patch.object(live.basket_bot.trading, "get_all_positions", return_value=fake_positions, create=True):
+                positions = manager.current_positions()
+
+            self.assertIn("BTC/USD", positions)
+            self.assertIn("AMZN", positions)
 
     def test_khanna_daily_market_data_collapses_hourly_rows(self):
         market_data = importlib.import_module("khanna_daily.market_data")

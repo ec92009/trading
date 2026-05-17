@@ -29,6 +29,13 @@ from alpaca.trading.requests import GetCalendarRequest, GetOrdersRequest, Market
 
 import trade_log
 from alpaca_env import load_alpaca_credentials
+from asset_policy import (
+    asset_class_for_symbol,
+    normalize_tracked_symbol,
+    qty_precision_for_asset_class,
+    qty_precision_for_symbol,
+    time_in_force_for_asset_class,
+)
 from remote_snapshots import RemoteSnapshotPublisher
 
 logging.basicConfig(
@@ -236,7 +243,7 @@ class Bot:
         self.floor = 0.0
         self.trail_next = 0.0
         self.total_qty = 0.0
-        self.qty_precision = 8 if cfg.asset_class == "crypto" else 6
+        self.qty_precision = qty_precision_for_asset_class(cfg.asset_class)
         self.beta = 1.0
         self.beta_asof: date | None = None
         self.stop_ready_on: date | None = None
@@ -244,7 +251,7 @@ class Bot:
 
     @property
     def tif(self):
-        return TimeInForce.GTC if self.cfg.asset_class == "crypto" else TimeInForce.DAY
+        return time_in_force_for_asset_class(self.cfg.asset_class, TimeInForce)
 
     def get_price(self) -> float:
         if self.cfg.asset_class == "crypto":
@@ -802,16 +809,16 @@ class PortfolioManager:
     def flatten_unmanaged_positions(self):
         positions = self.current_positions()
         for alpaca_symbol, pos in positions.items():
-            live_symbol = "BTC/USD" if alpaca_symbol == "BTCUSD" else alpaca_symbol
+            live_symbol = normalize_tracked_symbol(alpaca_symbol)
             if live_symbol in TARGET_SYMBOLS:
                 continue
             qty = float(pos.qty)
             price = float(pos.current_price)
-            rounded_qty = round(qty, 8 if "/" in live_symbol else 6)
+            rounded_qty = round(qty, qty_precision_for_symbol(live_symbol))
             if qty <= 0 or rounded_qty <= 0 or qty * price < 1.0:
                 continue
-            asset_class = "crypto" if "USD" in live_symbol and "/" in live_symbol else "stock"
-            tif = TimeInForce.GTC if asset_class == "crypto" else TimeInForce.DAY
+            asset_class = asset_class_for_symbol(live_symbol)
+            tif = time_in_force_for_asset_class(asset_class, TimeInForce)
             order = trading.submit_order(
                 MarketOrderRequest(
                     symbol=live_symbol,

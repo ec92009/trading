@@ -3,10 +3,10 @@
 ## Live Bot
 
 - Continue simplifying the codebase around the current long-term assumptions: Alpaca as the broker path, fractional stocks as the default for TeslaBot research, and fewer broker-agnostic compatibility leftovers.
-- Decide how much more TeslaBot cleanup is worth doing now that it is the old ~$350 Alpaca basket bot rather than the main production path.
-- Decide whether the autonomous Capitol refresh path should stay Khanna-only or become a reusable framework for other politician CopyBot-style politician bots too.
+- Decide what level of ongoing maintenance and cleanup TeslaBot needs as the retained `~$350` fake-account Alpaca basket bot, even though it is no longer the main production path.
+- Refactor the autonomous Capitol refresh path into a reusable multi-politician framework for all five tracked politicians, while keeping Khanna as the only live execution target for now.
 - Decide whether `copytrade_signals.json` should remain the canonical merged signal file or whether politician-specific cached snapshots under `/_cache/politicians/` should become first-class live artifacts.
-- Decide whether additional politician refresh jobs should be turned on in CopyBot now that yearly politician caches exist for Khanna, Mullin, Gottheimer, Hern, and Taylor.
+- Turn on and maintain signal refresh for all five politicians using the same baseline algorithm for now; keep only Khanna applied to the `~$10,000` fake account, use the other four for apples-to-apples simulations, and defer any optimization of the 5-politician mix or cross-politician balancing rules until later.
 - Decide whether CopyBot should support more than one crypto symbol now that off-hours monitoring is keyed off asset class instead of a hardcoded BTC path.
 - Decide whether same-day startup rebalance should be allowed again near the close, or whether one rebalance per day is the desired TeslaBot rule.
 - Handle TeslaBot dust positions more explicitly so tiny leftovers like the residual `AAPL` share do not trigger repeated cleanup attempts.

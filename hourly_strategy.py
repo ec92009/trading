@@ -24,6 +24,7 @@ from alpaca.data.enums import Adjustment
 from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
 from alpaca_env import load_alpaca_credentials
+from asset_policy import is_crypto_symbol
 
 ET = ZoneInfo("America/New_York")
 HERE = Path(__file__).parent
@@ -62,11 +63,6 @@ def display(sym: str) -> str:
 
 def is_fractional(sym: str) -> bool:
     return is_crypto_symbol(sym) or sym in FRACTIONAL_SYMBOLS
-
-
-def is_crypto_symbol(sym: str) -> bool:
-    return "/" in sym
-
 
 def market_data_symbol(sym: str) -> str:
     if is_crypto_symbol(sym):

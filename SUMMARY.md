@@ -117,6 +117,8 @@ This thread moved the repo from a partially manual Khanna paper-trading setup in
 - Revalidated the live CopyBot bundle after the fix: the public `Last Portfolio` view now centers on `ACI`, `BMO`, `KO`, `JPM`, `AMZN`, `MCD`, `IT`, `VIG`, `AMRZ`, and `TD`.
 - Added a regression check in [tests/test_repo_audit.py](/Users/ecohen/Dev/trading/tests/test_repo_audit.py) so future direct imports of `khanna_daily.live` stay pinned to the `10K` profile and `10k` log suffix.
 - Bumped the shared visible bot/web version again to `53.2` so the published viewer badge reflects the CopyBot snapshot-account fix.
+- Centralized crypto/stock symbol policy in [asset_policy.py](/Users/ecohen/Dev/trading/asset_policy.py), reused it from TeslaBot and CopyBot live paths, and added regression coverage for BTC/USD normalization and live position mapping.
+- Bumped the shared visible bot/web version to `78.0` for the asset-policy cleanup handoff.
 
 ## 2026-05-01 Source-Of-Truth Correction
 
