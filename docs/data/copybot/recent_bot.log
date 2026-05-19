@@ -1,39 +1,3 @@
-2026-05-19 18:28:04 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(91317) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91319) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91326) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91332) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91335) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91336) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91337) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(91341) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-19 18:42:46 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-19 18:43:17 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(96430) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96431) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96438) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96449) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96450) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96451) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96452) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(96455) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-19 18:58:11 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-19 18:58:41 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-python(1588) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1589) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1595) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1596) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1597) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1598) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1599) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(1602) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-05-19 19:13:38 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-05-19 19:14:20 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-05-19 19:18:39 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-2026-05-19 19:18:46 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 19:18:46 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 19:19:16 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 19:19:16 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
 2026-05-19 19:19:16 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
 2026-05-19 19:19:46 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
 2026-05-19 19:19:46 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
@@ -198,3 +162,39 @@ python(71536) MallocStackLogging: can't turn off malloc stack logging because it
 python(75762) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(75763) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(75774) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75776) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75777) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75778) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75779) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75786) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-05-19 22:05:18 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-05-19 22:05:49 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:06:22 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:06:53 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:07:24 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:07:55 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:08:39 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:09:14 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:09:47 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:10:19 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:11:01 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:11:37 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:12:20 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:13:08 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:13:39 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:14:15 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:14:46 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:15:21 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:15:52 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:16:23 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:16:55 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:17:26 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:17:58 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:18:40 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:19:23 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-05-19 22:19:24 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:19:56 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+2026-05-19 22:20:27 [copytrade] Market closed. Next open 2026-05-20 09:30 -04:00
+python(79062) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(79063) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(79070) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
