@@ -1,13 +1,3 @@
-2026-05-19 16:44:32 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:45:02 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
-2026-05-19 16:45:02 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:45:02 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:45:02 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:45:39 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
-2026-05-19 16:45:39 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:45:39 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:45:39 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
-2026-05-19 16:46:10 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
 python(57034) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(57035) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(57048) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
@@ -198,3 +188,13 @@ python(15695) MallocStackLogging: can't turn off malloc stack logging because it
 python(15706) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(15765) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(15768) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(15888) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(15889) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(15890) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(15891) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(15894) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-05-19 19:48:12 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-05-19 20:01:30 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+python(23757) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(23758) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(23765) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
