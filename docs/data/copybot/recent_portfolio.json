@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-18T23:06:09.612017-04:00",
+  "as_of": "2026-05-18T23:21:20.381606-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9555.55,
+  "equity": 9555.59,
   "cash": 16.6,
-  "allocated": 9538.95,
+  "allocated": 9538.99,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -24,32 +24,32 @@
       "points": 2.1973,
       "current_value": 1598.24,
       "qty": 99.392732,
-      "target_value": 1622.53
+      "target_value": 1622.54
     },
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.155995,
+      "current_weight": 0.155994,
       "points": 2.0449,
       "current_value": 1490.62,
       "qty": 10.995996,
-      "target_value": 1603.42
+      "target_value": 1603.43
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.129475,
+      "current_weight": 0.129474,
       "points": 1.5,
       "current_value": 1237.21,
       "qty": 15.238393,
-      "target_value": 1096.02
+      "target_value": 1096.03
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.112118,
+      "current_weight": 0.112122,
       "points": 1.25,
-      "current_value": 1071.35,
+      "current_value": 1071.39,
       "qty": 4.062602,
       "target_value": 978.49
     },
@@ -60,12 +60,12 @@
       "points": 1.3199,
       "current_value": 989.27,
       "qty": 3.290437,
-      "target_value": 986.13
+      "target_value": 986.14
     },
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.093971,
+      "current_weight": 0.09397,
       "points": 1.25,
       "current_value": 897.94,
       "qty": 3.176644,
@@ -78,7 +78,7 @@
       "points": 1.1545,
       "current_value": 821.98,
       "qty": 5.945177,
-      "target_value": 889.62
+      "target_value": 889.63
     },
     {
       "symbol": "VIG",
@@ -87,7 +87,7 @@
       "points": 0.7758,
       "current_value": 627.13,
       "qty": 2.720716,
-      "target_value": 590.53
+      "target_value": 590.54
     },
     {
       "symbol": "AMRZ",
