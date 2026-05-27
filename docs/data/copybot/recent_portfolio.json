@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-27T17:14:58.766258-04:00",
+  "as_of": "2026-05-27T17:30:00.097986-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 10087.71,
+  "equity": 10087.66,
   "cash": 16.6,
-  "allocated": 10071.11,
+  "allocated": 10071.06,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,20 +20,20 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.177676,
+      "current_weight": 0.177677,
       "points": 2.0449,
       "current_value": 1792.35,
       "qty": 10.995996,
-      "target_value": 1692.72
+      "target_value": 1692.71
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.158729,
+      "current_weight": 0.15873,
       "points": 2.1973,
       "current_value": 1601.22,
       "qty": 99.392732,
-      "target_value": 1712.89
+      "target_value": 1712.88
     },
     {
       "symbol": "KO",
@@ -42,34 +42,34 @@
       "points": 1.5,
       "current_value": 1242.84,
       "qty": 15.238393,
-      "target_value": 1157.06
+      "target_value": 1157.05
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.109763,
+      "current_weight": 0.109766,
       "points": 1.25,
-      "current_value": 1107.26,
+      "current_value": 1107.29,
       "qty": 4.062602,
       "target_value": 1032.98
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.097604,
+      "current_weight": 0.097598,
       "points": 1.3199,
-      "current_value": 984.6,
+      "current_value": 984.53,
       "qty": 3.290437,
       "target_value": 1041.05
     },
     {
       "symbol": "IT",
       "target_weight": 0.0931,
-      "current_weight": 0.094278,
+      "current_weight": 0.094279,
       "points": 1.1545,
       "current_value": 951.05,
       "qty": 5.945177,
-      "target_value": 939.17
+      "target_value": 939.16
     },
     {
       "symbol": "MCD",
@@ -78,12 +78,12 @@
       "points": 1.25,
       "current_value": 893.49,
       "qty": 3.176644,
-      "target_value": 1001.71
+      "target_value": 1001.7
     },
     {
       "symbol": "VIG",
       "target_weight": 0.0618,
-      "current_weight": 0.063111,
+      "current_weight": 0.063112,
       "points": 0.7758,
       "current_value": 636.65,
       "qty": 2.720716,
@@ -105,7 +105,7 @@
       "points": 0.4524,
       "current_value": 389.98,
       "qty": 3.481954,
-      "target_value": 372.24
+      "target_value": 372.23
     },
     {
       "symbol": "BTC/USD",
