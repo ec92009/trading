@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-28T18:57:23.517089-04:00",
+  "as_of": "2026-05-28T19:12:31.164267-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 10033.62,
+  "equity": 10033.61,
   "cash": 16.6,
-  "allocated": 10017.02,
+  "allocated": 10017.01,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -38,27 +38,27 @@
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.122197,
+      "current_weight": 0.122196,
       "points": 1.5,
-      "current_value": 1226.08,
+      "current_value": 1226.06,
       "qty": 15.238393,
       "target_value": 1150.86
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.110537,
+      "current_weight": 0.110521,
       "points": 1.25,
-      "current_value": 1109.09,
+      "current_value": 1108.93,
       "qty": 4.062602,
       "target_value": 1027.44
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.097251,
+      "current_weight": 0.097268,
       "points": 1.3199,
-      "current_value": 975.78,
+      "current_value": 975.95,
       "qty": 3.290437,
       "target_value": 1035.47
     },
