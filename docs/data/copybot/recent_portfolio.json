@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-28T05:18:58.580467-04:00",
+  "as_of": "2026-05-28T05:34:02.042593-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 10090.93,
+  "equity": 10090.94,
   "cash": 16.6,
-  "allocated": 10074.33,
+  "allocated": 10074.34,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -38,29 +38,29 @@
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.123678,
+      "current_weight": 0.123481,
       "points": 1.5,
-      "current_value": 1248.02,
+      "current_value": 1246.04,
       "qty": 15.238393,
       "target_value": 1157.43
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.109245,
+      "current_weight": 0.109318,
       "points": 1.25,
-      "current_value": 1102.39,
+      "current_value": 1103.12,
       "qty": 4.062602,
       "target_value": 1033.31
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.097556,
+      "current_weight": 0.097576,
       "points": 1.3199,
-      "current_value": 984.43,
+      "current_value": 984.63,
       "qty": 3.290437,
-      "target_value": 1041.38
+      "target_value": 1041.39
     },
     {
       "symbol": "IT",
@@ -74,9 +74,9 @@
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.0884,
+      "current_weight": 0.088401,
       "points": 1.25,
-      "current_value": 892.03,
+      "current_value": 892.05,
       "qty": 3.176644,
       "target_value": 1002.03
     },
@@ -101,9 +101,9 @@
     {
       "symbol": "TD",
       "target_weight": 0.0369,
-      "current_weight": 0.038715,
+      "current_weight": 0.038819,
       "points": 0.4524,
-      "current_value": 390.68,
+      "current_value": 391.72,
       "qty": 3.481954,
       "target_value": 372.36
     },
