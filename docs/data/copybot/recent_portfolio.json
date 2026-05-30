@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-05-29T19:57:57.406312-04:00",
+  "as_of": "2026-05-29T20:13:02.437438-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 10002.58,
+  "equity": 10002.65,
   "cash": 16.6,
-  "allocated": 9985.98,
+  "allocated": 9986.05,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,25 +20,25 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.1781,
+      "current_weight": 0.178099,
       "points": 2.0449,
       "current_value": 1781.46,
       "qty": 10.995996,
-      "target_value": 1678.43
+      "target_value": 1678.44
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.154943,
+      "current_weight": 0.154942,
       "points": 2.1973,
       "current_value": 1549.83,
       "qty": 99.392732,
-      "target_value": 1698.44
+      "target_value": 1698.45
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.120474,
+      "current_weight": 0.120473,
       "points": 1.5,
       "current_value": 1205.05,
       "qty": 15.238393,
@@ -47,16 +47,16 @@
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.109848,
+      "current_weight": 0.109855,
       "points": 1.25,
-      "current_value": 1098.77,
+      "current_value": 1098.84,
       "qty": 4.062602,
-      "target_value": 1024.26
+      "target_value": 1024.27
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.097997,
+      "current_weight": 0.097996,
       "points": 1.3199,
       "current_value": 980.22,
       "qty": 3.290437,
@@ -65,11 +65,11 @@
     {
       "symbol": "IT",
       "target_weight": 0.0931,
-      "current_weight": 0.096406,
+      "current_weight": 0.096405,
       "points": 1.1545,
       "current_value": 964.31,
       "qty": 5.945177,
-      "target_value": 931.24
+      "target_value": 931.25
     },
     {
       "symbol": "MCD",
@@ -96,7 +96,7 @@
       "points": 0.6585,
       "current_value": 485.5,
       "qty": 8.926211,
-      "target_value": 511.13
+      "target_value": 511.14
     },
     {
       "symbol": "TD",
