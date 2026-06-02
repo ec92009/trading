@@ -1,33 +1,3 @@
-2026-06-02 22:06:04 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:06:36 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:07:07 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:07:39 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:08:11 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:08:43 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:09:15 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:09:47 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:10:19 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:10:51 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:11:22 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:11:55 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:12:27 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:12:58 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:13:30 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:14:03 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
-2026-06-02 22:14:03 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-2026-06-02 22:14:04 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:14:36 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-2026-06-02 22:14:37 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:14:45 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-06-02 22:15:16 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:15:49 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:16:21 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:16:53 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:17:26 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:17:58 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:18:30 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:19:03 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
-2026-06-02 22:19:35 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
 2026-06-02 22:20:07 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
 2026-06-02 22:20:39 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
 2026-06-02 22:21:12 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
@@ -198,3 +168,33 @@
 2026-06-02 23:46:05 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
 2026-06-02 23:46:06 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
 2026-06-02 23:46:39 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:46:46 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-06-02 23:47:17 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:47:49 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:48:22 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:48:54 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:49:27 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:49:59 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:50:32 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:51:05 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:51:37 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:52:10 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:52:42 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:53:14 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:53:48 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:54:20 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:54:52 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:55:25 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:55:57 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:56:29 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:57:02 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:57:35 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:58:07 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:58:40 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:59:12 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-02 23:59:45 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-03 00:00:17 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-03 00:00:50 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-03 00:01:24 [copytrade] Checked Capitol signals for Ro Khanna: no new trades across 1 page(s).
+2026-06-03 00:01:25 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
+2026-06-03 00:01:57 [copytrade] Market closed. Next open 2026-06-03 09:30 -04:00
