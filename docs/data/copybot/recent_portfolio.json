@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-06-04T08:41:32.951262-04:00",
+  "as_of": "2026-06-04T08:56:43.246242-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9989.17,
+  "equity": 9989.19,
   "cash": 16.6,
-  "allocated": 9972.57,
+  "allocated": 9972.59,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,16 +20,16 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.178692,
+      "current_weight": 0.178691,
       "points": 2.0449,
       "current_value": 1784.98,
       "qty": 10.995996,
-      "target_value": 1676.18
+      "target_value": 1676.19
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.157211,
+      "current_weight": 0.15721,
       "points": 2.1973,
       "current_value": 1570.41,
       "qty": 99.392732,
@@ -38,27 +38,27 @@
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.121963,
+      "current_weight": 0.12178,
       "points": 1.5,
-      "current_value": 1218.31,
+      "current_value": 1216.48,
       "qty": 15.238393,
       "target_value": 1145.76
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.102903,
+      "current_weight": 0.103017,
       "points": 1.25,
-      "current_value": 1027.92,
+      "current_value": 1029.06,
       "qty": 4.062602,
       "target_value": 1022.89
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.100237,
+      "current_weight": 0.10017,
       "points": 1.3199,
-      "current_value": 1001.28,
+      "current_value": 1000.62,
       "qty": 3.290437,
       "target_value": 1030.88
     },
@@ -74,11 +74,11 @@
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.088206,
+      "current_weight": 0.088343,
       "points": 1.25,
-      "current_value": 881.11,
+      "current_value": 882.47,
       "qty": 3.176644,
-      "target_value": 991.92
+      "target_value": 991.93
     },
     {
       "symbol": "VIG",
