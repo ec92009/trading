@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-06-04T00:18:06.774014-04:00",
+  "as_of": "2026-06-04T00:33:17.447918-04:00",
   "strategy": "Khanna daily-bar copy-trade",
   "equity": 9600.81,
   "cash": 16.6,
@@ -47,9 +47,9 @@
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.106296,
+      "current_weight": 0.106253,
       "points": 1.25,
-      "current_value": 1020.53,
+      "current_value": 1020.12,
       "qty": 4.062602,
       "target_value": 983.12
     },
@@ -74,9 +74,9 @@
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.090593,
+      "current_weight": 0.090636,
       "points": 1.25,
-      "current_value": 869.77,
+      "current_value": 870.18,
       "qty": 3.176644,
       "target_value": 953.36
     },
