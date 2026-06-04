@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-06-04T04:52:02.602685-04:00",
+  "as_of": "2026-06-04T05:07:18.728340-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 9947.63,
+  "equity": 9950.72,
   "cash": 16.6,
-  "allocated": 9931.03,
+  "allocated": 9934.12,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,92 +20,92 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.179438,
+      "current_weight": 0.179382,
       "points": 2.0449,
       "current_value": 1784.98,
       "qty": 10.995996,
-      "target_value": 1669.21
+      "target_value": 1669.73
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.156259,
+      "current_weight": 0.15621,
       "points": 2.1973,
       "current_value": 1554.4,
       "qty": 99.392732,
-      "target_value": 1689.11
+      "target_value": 1689.63
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.121783,
+      "current_weight": 0.121837,
       "points": 1.5,
-      "current_value": 1211.45,
+      "current_value": 1212.37,
       "qty": 15.238393,
-      "target_value": 1140.99
+      "target_value": 1141.35
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.102508,
+      "current_weight": 0.102517,
       "points": 1.25,
-      "current_value": 1019.71,
+      "current_value": 1020.12,
       "qty": 4.062602,
-      "target_value": 1018.64
+      "target_value": 1018.95
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.10003,
+      "current_weight": 0.100177,
       "points": 1.3199,
-      "current_value": 995.06,
+      "current_value": 996.84,
       "qty": 3.290437,
-      "target_value": 1026.6
+      "target_value": 1026.91
     },
     {
       "symbol": "IT",
       "target_weight": 0.0931,
-      "current_weight": 0.098462,
+      "current_weight": 0.098432,
       "points": 1.1545,
       "current_value": 979.47,
       "qty": 5.945177,
-      "target_value": 926.12
+      "target_value": 926.41
     },
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.087846,
+      "current_weight": 0.087819,
       "points": 1.25,
       "current_value": 873.86,
       "qty": 3.176644,
-      "target_value": 987.8
+      "target_value": 988.11
     },
     {
       "symbol": "VIG",
       "target_weight": 0.0618,
-      "current_weight": 0.06441,
+      "current_weight": 0.06439,
       "points": 0.7758,
       "current_value": 640.73,
       "qty": 2.720716,
-      "target_value": 614.76
+      "target_value": 614.95
     },
     {
       "symbol": "AMRZ",
       "target_weight": 0.0511,
-      "current_weight": 0.048626,
+      "current_weight": 0.048611,
       "points": 0.6585,
       "current_value": 483.71,
       "qty": 8.926211,
-      "target_value": 508.32
+      "target_value": 508.48
     },
     {
       "symbol": "TD",
       "target_weight": 0.0369,
-      "current_weight": 0.038969,
+      "current_weight": 0.038957,
       "points": 0.4524,
       "current_value": 387.65,
       "qty": 3.481954,
-      "target_value": 367.07
+      "target_value": 367.18
     },
     {
       "symbol": "BTC/USD",
