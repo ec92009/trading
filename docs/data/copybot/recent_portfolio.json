@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-06-05T04:32:44.488372-04:00",
+  "as_of": "2026-06-05T04:47:49.661739-04:00",
   "strategy": "Khanna daily-bar copy-trade",
-  "equity": 10021.35,
+  "equity": 10021.3,
   "cash": 16.6,
-  "allocated": 10004.75,
+  "allocated": 10004.7,
   "target_queue": [
     "VIG",
     "AMRZ",
@@ -20,63 +20,63 @@
     {
       "symbol": "BMO",
       "target_weight": 0.1678,
-      "current_weight": 0.181278,
+      "current_weight": 0.181279,
       "points": 2.0449,
       "current_value": 1816.65,
       "qty": 10.995996,
-      "target_value": 1681.58
+      "target_value": 1681.57
     },
     {
       "symbol": "ACI",
       "target_weight": 0.1698,
-      "current_weight": 0.157995,
+      "current_weight": 0.157996,
       "points": 2.1973,
       "current_value": 1583.33,
       "qty": 99.392732,
-      "target_value": 1701.63
+      "target_value": 1701.62
     },
     {
       "symbol": "KO",
       "target_weight": 0.1147,
-      "current_weight": 0.117633,
+      "current_weight": 0.117558,
       "points": 1.5,
-      "current_value": 1178.84,
+      "current_value": 1178.08,
       "qty": 15.238393,
-      "target_value": 1149.45
+      "target_value": 1149.44
     },
     {
       "symbol": "AMZN",
       "target_weight": 0.1024,
-      "current_weight": 0.102494,
+      "current_weight": 0.102513,
       "points": 1.25,
-      "current_value": 1027.13,
+      "current_value": 1027.31,
       "qty": 4.062602,
-      "target_value": 1026.19
+      "target_value": 1026.18
     },
     {
       "symbol": "JPM",
       "target_weight": 0.1032,
-      "current_weight": 0.102387,
+      "current_weight": 0.102443,
       "points": 1.3199,
-      "current_value": 1026.06,
+      "current_value": 1026.62,
       "qty": 3.290437,
       "target_value": 1034.2
     },
     {
       "symbol": "IT",
       "target_weight": 0.0931,
-      "current_weight": 0.097809,
+      "current_weight": 0.09781,
       "points": 1.1545,
       "current_value": 980.18,
       "qty": 5.945177,
-      "target_value": 932.99
+      "target_value": 932.98
     },
     {
       "symbol": "MCD",
       "target_weight": 0.0993,
-      "current_weight": 0.086826,
+      "current_weight": 0.086823,
       "points": 1.25,
-      "current_value": 870.11,
+      "current_value": 870.08,
       "qty": 3.176644,
       "target_value": 995.12
     },
