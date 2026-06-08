@@ -1,56 +1,3 @@
-2026-06-08 07:53:19 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:53:21 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:53:55 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:54:00 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:54:36 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:54:36 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:55:07 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:55:07 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:55:39 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:55:39 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:56:10 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:56:10 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:56:41 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:56:42 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:57:12 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:57:13 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:57:44 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:57:44 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-python(65192) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65193) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65199) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65200) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65201) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65202) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65203) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(65206) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-06-08 07:57:47 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-06-08 07:58:18 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:58:18 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:58:49 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:58:49 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:59:20 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:59:20 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 07:59:51 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 07:59:52 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:00:23 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:00:23 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:00:54 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:00:55 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:01:25 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:01:26 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:01:57 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:01:57 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:02:29 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:02:31 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:03:04 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:03:05 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:03:38 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:03:39 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:04:12 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:04:13 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
-2026-06-08 08:04:46 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-08 08:04:46 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
 2026-06-08 08:05:17 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
 2026-06-08 08:05:17 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
 2026-06-08 08:05:48 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
@@ -198,3 +145,56 @@ python(77563) MallocStackLogging: can't turn off malloc stack logging because it
 python(82575) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(82577) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(82583) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(82585) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(82586) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(82587) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(82588) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(82591) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-06-08 08:43:38 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-06-08 08:44:09 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:44:09 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:44:40 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:44:40 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:46:11 [copytrade] SIGNAL REFRESH ERROR: <urlopen error timed out>
+2026-06-08 08:47:05 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-08 08:47:05 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:47:05 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:48:05 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-06-08 08:48:05 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:48:05 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:48:05 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:49:05 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-06-08 08:49:05 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:49:05 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:49:05 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NewConnectionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to establish a new connection: [Errno 65] No route to host"))
+2026-06-08 08:50:05 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-06-08 08:50:35 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:51:05 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:51:35 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:52:35 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-06-08 08:53:05 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:53:35 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:54:05 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:54:41 [copytrade] SIGNAL REFRESH ERROR: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-06-08 08:54:42 [portfolio] ORDER SYNC ERROR 428dc135-2fc0-4b92-90c1-3384c2f19fe0: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/428dc135-2fc0-4b92-90c1-3384c2f19fe0 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:54:42 [portfolio] ORDER SYNC ERROR c783b96e-2ff9-461a-b14b-f2a0b86e3459: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/orders/c783b96e-2ff9-461a-b14b-f2a0b86e3459 (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:54:42 [copytrade] LOOP ERROR: HTTPSConnectionPool(host='paper-api.alpaca.markets', port=443): Max retries exceeded with url: /v2/clock (Caused by NameResolutionError("HTTPSConnection(host='paper-api.alpaca.markets', port=443): Failed to resolve 'paper-api.alpaca.markets' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-08 08:55:12 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:55:13 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:55:44 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:55:45 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:56:16 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:56:17 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:56:48 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:56:49 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:57:20 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:57:21 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:57:52 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:57:53 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:58:24 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:58:25 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+2026-06-08 08:58:56 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-08 08:58:57 [copytrade] Market closed. Next open 2026-06-08 09:30 -04:00
+python(87785) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87786) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(87792) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
