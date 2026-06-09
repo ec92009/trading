@@ -1,41 +1,3 @@
-2026-06-09 19:49:40 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:50:12 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:50:44 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:51:15 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:51:46 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:52:18 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:52:49 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-python(34826) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34827) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34833) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34835) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34836) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34837) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34838) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(34841) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-06-09 19:52:53 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-06-09 19:53:23 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:53:55 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:54:26 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:54:57 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:55:29 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:56:00 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:56:32 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:57:03 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:57:35 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:58:06 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:58:37 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:59:09 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 19:59:40 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:00:12 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:00:44 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:01:15 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:01:47 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:02:18 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:02:50 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:03:21 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:03:53 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-09 20:04:24 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
 2026-06-09 20:04:55 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
 2026-06-09 20:05:27 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
 2026-06-09 20:05:58 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
@@ -198,3 +160,41 @@ python(87299) MallocStackLogging: can't turn off malloc stack logging because it
 python(2238) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(2239) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(2245) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2246) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2247) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2248) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2249) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2252) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-06-09 21:09:35 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-06-09 21:10:05 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:10:37 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:11:08 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:11:40 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:12:11 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:12:43 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:13:14 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:13:45 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:14:17 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:14:48 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:15:20 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:15:51 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:16:22 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:16:54 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:17:25 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:17:57 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:18:28 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:18:59 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:19:31 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:20:03 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:20:34 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:21:06 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:21:37 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:22:09 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:22:40 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:23:11 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:23:43 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:24:14 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-09 21:24:46 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+python(7187) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(7188) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(7194) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
