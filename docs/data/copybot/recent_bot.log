@@ -1,70 +1,3 @@
-python(62385) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(62386) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(62387) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(62390) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-2026-06-10 02:13:31 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
-2026-06-10 02:14:01 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:14:02 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:14:32 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:14:33 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:15:04 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:15:04 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:15:35 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:15:35 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:16:06 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:16:06 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:16:37 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:16:37 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:17:08 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:17:09 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:17:39 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:17:40 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:18:10 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:18:11 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:18:42 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:18:42 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:19:13 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:19:13 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:19:44 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:19:44 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:20:15 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:20:16 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:20:46 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:20:47 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:21:18 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:21:18 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:21:49 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:21:49 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:22:20 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:22:20 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:22:51 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:22:51 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:23:22 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:23:22 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:23:53 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:23:53 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:24:24 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:24:25 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:24:55 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:24:56 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:25:27 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:25:27 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:25:58 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:25:58 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:26:29 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:26:29 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:27:00 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:27:01 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:27:31 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:27:32 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:28:02 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:28:03 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-2026-06-10 02:28:33 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
-2026-06-10 02:28:34 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
-python(66503) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(66504) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(66510) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
-python(66512) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(66513) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(66514) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(66515) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
@@ -198,3 +131,70 @@ python(70708) MallocStackLogging: can't turn off malloc stack logging because it
 python(75046) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(75047) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
 python(75053) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75054) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75055) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75056) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75057) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(75060) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-06-10 02:58:50 [copytrade] Published updated remote snapshot files: docs/data/copybot/recent_bot.log, docs/data/copybot/recent_portfolio.json
+2026-06-10 02:59:20 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 02:59:21 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 02:59:52 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 02:59:52 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:00:23 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:00:23 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:00:54 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:00:54 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:01:25 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:01:26 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:01:56 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:01:57 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:02:27 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:02:28 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:02:59 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:02:59 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:03:30 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:03:30 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:04:01 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:04:01 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:04:32 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:04:32 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:05:03 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:05:03 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:05:34 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:05:34 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:06:05 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:06:06 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:06:37 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:06:37 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:07:08 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:07:08 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:07:39 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:07:39 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:08:10 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:08:11 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:08:41 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:08:42 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:09:13 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:09:13 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:09:44 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:09:44 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:10:15 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:10:16 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:10:46 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:10:47 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:11:17 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:11:18 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:11:49 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:11:49 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:12:20 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:12:20 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:12:51 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:12:51 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:13:22 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:13:22 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+2026-06-10 03:13:53 [copytrade] SIGNAL REFRESH ERROR: HTTP Error 404: Not Found
+2026-06-10 03:13:54 [copytrade] Market closed. Next open 2026-06-10 09:30 -04:00
+python(79556) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(79557) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(79563) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
