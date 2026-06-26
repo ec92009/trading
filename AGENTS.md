@@ -6,8 +6,8 @@ Working preferences for `~/Dev/trading`.
 
 ## Environment
 
-- Full procedure lives in [ENVIRONMENT_SOP.md](ENVIRONMENT_SOP.md).
-- Apply `ENVIRONMENT_SOP.md` for Python commands, tests, and package installs in this workspace.
+- Follow `~/Dev/.SOPs/ENVIRONMENT_SOP.md`.
+- Trading environment deltas live in [ENVIRONMENT_SOP.md](ENVIRONMENT_SOP.md).
 
 ## Versioning
 
